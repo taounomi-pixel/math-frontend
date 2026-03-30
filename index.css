@@ -121,21 +121,21 @@ ul {
 .math-vector {
   position: absolute;
   color: var(--text-tertiary);
-  opacity: 0.05;
+  opacity: 0.10;
 }
 
 .shape-circle { top: 10%; right: -5%; width: 400px; height: 400px; }
 .shape-triangle { bottom: -10%; left: -5%; width: 500px; height: 500px; }
 
 /* LaTeX MathJax Symbols Sizing and Positioning */
-.symbol-pi       { top: 20%; left: 8%;   font-size: 140px; transform: rotate(-15deg); opacity: 0.04; }
-.symbol-integral { top: 10%; right: 20%; font-size: 200px; transform: rotate(10deg);  opacity: 0.03; }
-.symbol-sigma    { bottom: 15%; right: 10%; font-size: 160px; transform: rotate(5deg);   opacity: 0.04; }
-.symbol-infinity { top: 35%; left: 35%;  font-size: 220px; transform: rotate(-10deg); opacity: 0.03; }
-.symbol-alpha    { top: 65%; left: 12%;  font-size: 130px; transform: rotate(15deg);  opacity: 0.04; }
-.symbol-beta     { bottom: 10%; left: 40%; font-size: 120px; transform: rotate(-8deg);  opacity: 0.04; }
-.symbol-phi      { top: 45%; right: 15%; font-size: 150px; transform: rotate(5deg);   opacity: 0.04; }
-.symbol-theta    { top: 75%; right: 40%; font-size: 130px; transform: rotate(20deg);  opacity: 0.04; }
+.symbol-pi       { top: 20%; left: 8%;   font-size: 140px; transform: rotate(-15deg); opacity: 0.10; }
+.symbol-integral { top: 10%; right: 20%; font-size: 200px; transform: rotate(10deg);  opacity: 0.08; }
+.symbol-sigma    { bottom: 15%; right: 10%; font-size: 160px; transform: rotate(5deg);   opacity: 0.10; }
+.symbol-infinity { top: 35%; left: 35%;  font-size: 220px; transform: rotate(-10deg); opacity: 0.08; }
+.symbol-alpha    { top: 65%; left: 12%;  font-size: 130px; transform: rotate(15deg);  opacity: 0.10; }
+.symbol-beta     { bottom: 10%; left: 40%; font-size: 120px; transform: rotate(-8deg);  opacity: 0.10; }
+.symbol-phi      { top: 45%; right: 15%; font-size: 150px; transform: rotate(5deg);   opacity: 0.10; }
+.symbol-theta    { top: 75%; right: 40%; font-size: 130px; transform: rotate(20deg);  opacity: 0.10; }
 
 /* =========================================
    Header & Navigation
@@ -842,5 +842,10 @@ kbd {
   
   .video-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* Hide decorative background math symbols on mobile to prevent crowding */
+  .bg-vectors {
+    display: none;
   }
 }

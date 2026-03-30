@@ -18,14 +18,13 @@ const Sidebar = () => {
         <NavLink 
           to="/"
           className={({ isActive }) => `topic-btn ${isActive ? 'active' : ''}`}
-          style={{ 
-            background: 'var(--bg-tertiary)', 
-            border: '1px solid var(--border-color)', 
+          style={({ isActive }) => ({ 
+            ...(isActive ? {} : { background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)' }),
             fontWeight: 'bold', 
             display: 'flex', 
             alignItems: 'center', 
             gap: '6px' 
-          }}
+          })}
           end
         >
           <LayoutGrid size={16} />
