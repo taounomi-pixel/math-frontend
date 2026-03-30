@@ -68,7 +68,13 @@ const translations = {
     errInvalidFile: "Please select a valid .mp4 file.",
     errFieldsRequired: "Both title and MP4 file are required.",
     errLoginRequired: "You must be logged in to upload.",
-    errUploadFail: "Upload failed"
+    errUploadFail: "Upload failed",
+    
+    // Delete
+    btnDelete: "Delete",
+    deleteConfirm: "Are you sure you want to delete this video? This action cannot be undone.",
+    errDeleteFail: "Failed to delete video.",
+    deleteSuccess: "Video deleted successfully."
   },
   zh: {
     // Header
@@ -137,7 +143,13 @@ const translations = {
     errInvalidFile: "请选择一个有效的 .mp4 格式文件。",
     errFieldsRequired: "标题和视频文件均为必填项。",
     errLoginRequired: "你需要登录后才能上传视频。",
-    errUploadFail: "上传失败"
+    errUploadFail: "上传失败",
+    
+    // 删除
+    btnDelete: "删除",
+    deleteConfirm: "你确定要删除这段视频吗？此操作无法撤销。",
+    errDeleteFail: "删除视频失败。",
+    deleteSuccess: "视频已成功删除。"
   }
 };
 
