@@ -1,73 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { PlayCircle, Bookmark, Play, Heart, Loader2, Trash2, Code, Tag, FolderOpen } from 'lucide-react';
 import { useParams } from 'react-router-dom';
+import { Play, User, Calendar, Heart, Trash2, Code } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { API_BASE } from '../utils/api';
 
-const TheoremCard = ({ searchQuery = "" }) => {
-  const { t } = useLanguage();
+const TheoremCard = ({ searchQuery }) => {
   const { categoryL1, categoryL2 } = useParams();
+  const { lang, t } = useLanguage();
   const [videos, setVideos] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchVideos();
+    // Listen for upload success to refresh
+    window.addEventListener('videoUploaded', fetchVideos);
+    return () => window.removeEventListener('videoUploaded', fetchVideos);
+  }, [categoryL1, categoryL2, searchQuery]);
 
   const fetchVideos = async () => {
-    setIsLoading(true);
+    setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/videos`);
-      if (!response.ok) throw new Error('Failed to fetch videos');
-      const data = await response.json();
+      let url = `${API_BASE}/videos`;
+      const params = new URLSearchParams();
+      if (categoryL1) params.append('category_l1', categoryL1);
+      if (categoryL2) params.append('category_l2', categoryL2);
+      if (searchQuery) params.append('q', searchQuery);
+      
+      if (params.toString()) url += `?${params.toString()}`;
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Failed to fetch videos');
+      const data = await res.json();
       setVideos(data);
     } catch (err) {
       setError(err.message);
     } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchVideos();
-    
-    // Listen for upload success events triggered by Header > UploadModal
-    window.addEventListener('videoUploaded', fetchVideos);
-    return () => {
-      window.removeEventListener('videoUploaded', fetchVideos);
-    };
-  }, []);
-
-  const currentUserId = localStorage.getItem('user_id') ? parseInt(localStorage.getItem('user_id'), 10) : null;
-  const currentUsername = localStorage.getItem('username');
-
-  const handleDelete = async (videoId) => {
-    if (!window.confirm(t('deleteConfirm'))) return;
-
-    const token = localStorage.getItem('access_token');
-    try {
-      const fullUrl = `${API_BASE}/videos/${videoId}`;
-      console.log(`[DEBUG] Attempting DELETE at: ${fullUrl}`);
-      const response = await fetch(fullUrl, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        let errorMsg = t('errDeleteFail');
-        try {
-          const errorData = await response.json();
-          if (errorData.detail) errorMsg += `: ${errorData.detail}`;
-        } catch (e) {
-          // ignore parsing error
-        }
-        throw new Error(errorMsg);
-      }
-
-      // Remove from state
-      setVideos(prev => prev.filter(v => v.id !== videoId));
-      alert(t('deleteSuccess'));
-    } catch (err) {
-      alert(err.message);
+      setLoading(false);
     }
   };
 
@@ -77,232 +46,108 @@ const TheoremCard = ({ searchQuery = "" }) => {
       alert(t('loginToLike'));
       return;
     }
-    
     try {
       const res = await fetch(`${API_BASE}/videos/${videoId}/like`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (!res.ok) throw new Error('Action failed');
-      const data = await res.json();
-      
-      // Update UI optimistically
-      setVideos(prev => prev.map(v => 
-        v.id === videoId 
-          ? { ...v, like_count: data.like_count, _liked: data.action === 'liked' } 
-          : v
-      ));
+      if (res.ok) fetchVideos();
     } catch (err) {
       console.error(err);
     }
   };
 
-  if (isLoading && videos.length === 0) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '64px' }}>
-        <Loader2 className="spinning" size={32} color="var(--primary)" />
-      </div>
-    );
-  }
+  const handleDelete = async (videoId) => {
+    if (!window.confirm(t('deleteConfirm'))) return;
+    const token = localStorage.getItem('access_token');
+    try {
+      const res = await fetch(`${API_BASE}/videos/${videoId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        alert(t('deleteSuccess'));
+        fetchVideos();
+      } else {
+        alert(t('errDeleteFail'));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  if (error) {
-    return <div className="error-message" style={{ margin: '32px' }}>{error}</div>;
-  }
+  const handleViewSource = (sourceUrl) => {
+    if (!sourceUrl) return;
+    window.open(sourceUrl, '_blank');
+  };
 
-  // Fallback to static if no database entries yet
+  if (loading) return <div className="loading-state">{t('loading')}</div>;
+
   if (videos.length === 0) {
     return (
-      <div style={{ 
-        textAlign: 'center', padding: '64px', margin: '32px 0',
-        background: 'var(--bg-secondary)', borderRadius: '16px', border: '1px dashed var(--border-color)'
-      }}>
-        <h3 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>{t('noRecords')}</h3>
-        <p style={{ color: 'var(--text-secondary)' }}>{t('loginToUploadDesc')}</p>
-      </div>
-    );
-  }
-
-  // --- Filter by category from URL params ---
-  const decodedL1 = categoryL1 ? decodeURIComponent(categoryL1) : null;
-  const decodedL2 = categoryL2 ? decodeURIComponent(categoryL2) : null;
-
-  let filteredVideos = videos;
-
-  // Apply category filter
-  if (decodedL1) {
-    filteredVideos = filteredVideos.filter(v => v.category_l1 === decodedL1);
-  }
-  if (decodedL2) {
-    filteredVideos = filteredVideos.filter(v => v.category_l2 === decodedL2);
-  }
-
-  // Apply search text filter
-  const lowerQuery = searchQuery.toLowerCase().trim();
-  if (lowerQuery) {
-    filteredVideos = filteredVideos.filter(video => {
-      const titleMatch = (video.title || "").toLowerCase().includes(lowerQuery);
-      const uploaderMatch = (video.uploader_username || "").toLowerCase().includes(lowerQuery);
-      const tags = video.tags || [];
-      const tagsMatch = tags.some(tag => tag.toLowerCase().includes(lowerQuery));
-      return titleMatch || uploaderMatch || tagsMatch;
-    });
-  }
-
-  // Category header
-  const categoryHeader = decodedL2 
-    ? `${decodedL1} › ${decodedL2}` 
-    : decodedL1 || null;
-
-  if (filteredVideos.length === 0) {
-    return (
-      <div style={{ textAlign: 'center', margin: '32px 0', padding: '64px', background: 'var(--bg-secondary)', borderRadius: '16px' }}>
-        {categoryHeader && (
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '12px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            <Tag size={16} /> {categoryHeader}
-          </p>
-        )}
-        <h3 style={{ color: 'var(--text-primary)' }}>
-          {searchQuery 
-            ? `${t('noResultsFor')} "${searchQuery}"` 
-            : t('noRecords')
-          }
+      <div className="no-records-container" style={{ padding: '80px 0', textAlign: 'center' }}>
+        <h3 style={{ fontSize: '20px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+          {searchQuery ? `${t('noResultsFor')} "${searchQuery}"` : t('noRecords')}
         </h3>
-        <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>{t('loginToUploadDesc')}</p>
+        <p style={{ color: 'var(--text-tertiary)' }}>{t('loginToUploadDesc')}</p>
       </div>
     );
   }
+
+  const currentUsername = localStorage.getItem('username');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '48px', margin: '24px 0' }}>
-      {categoryHeader && (
-        <div style={{ 
-          padding: '12px 20px', 
-          background: 'linear-gradient(135deg, var(--bg-secondary), var(--bg-primary))',
-          borderRadius: '12px', 
-          border: '1px solid var(--border-color)',
-          fontSize: '16px',
-          fontWeight: '600',
-          color: 'var(--text-primary)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <FolderOpen size={18} /> {categoryHeader}
-          <span style={{ fontSize: '13px', fontWeight: '400', color: 'var(--text-secondary)', marginLeft: 'auto' }}>
-            {filteredVideos.length} 个结果
-          </span>
+    <div className="video-grid">
+      {videos.map((v) => (
+        <div key={v.id} className="video-card">
+          <div className="thumbnail" onClick={() => window.open(v.file_url, '_blank')}>
+            <div className="thumbnail-placeholder">
+               <video src={v.file_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+            <div className="hover-overlay">
+              <Play fill="white" size={48} />
+            </div>
+            <span className="duration">Manim</span>
+          </div>
+          
+          <div className="video-info">
+            <div className="creator-avatar">
+              {v.owner && v.owner.username ? v.owner.username[0].toUpperCase() : 'U'}
+            </div>
+            <div className="video-meta">
+              <h3 className="video-title">{v.title}</h3>
+              <div className="creator-name">
+                <User size={14} style={{ display: 'inline', marginRight: '4px' }} />
+                {v.owner ? v.owner.username : 'Unknown'}
+              </div>
+              <div className="video-stats">
+                <Calendar size={12} style={{ display: 'inline', marginRight: '4px' }} />
+                {new Date(v.created_at).toLocaleDateString()}
+              </div>
+              
+              <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                <button onClick={() => handleLike(v.id)} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                  <Heart size={14} fill={v.likes > 0 ? '#ef4444' : 'none'} color={v.likes > 0 ? '#ef4444' : 'currentColor'} />
+                  {v.likes}
+                </button>
+                
+                {v.source_url && (
+                   <button onClick={() => handleViewSource(v.source_url)} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: 'var(--accent-primary)' }}>
+                    <Code size={14} /> {t('viewCode')}
+                  </button>
+                )}
+
+                {v.owner && v.owner.username === currentUsername && (
+                  <button onClick={() => handleDelete(v.id)} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#ef4444' }}>
+                    <Trash2 size={14} /> {t('btnDelete')}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-      )}
-      {filteredVideos.map(video => (
-        <VideoItem 
-          key={video.id} 
-          video={video} 
-          handleLike={handleLike} 
-          handleDelete={handleDelete}
-          isOwner={currentUserId === video.uploader_id || (currentUsername && currentUsername === video.uploader_username)}
-          t={t} 
-        />
       ))}
     </div>
-  );
-};
-
-const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
-  const categoryLabel = [video.category_l1, video.category_l2].filter(Boolean).join(' › ');
-
-  return (
-    <section className="hero-section" style={{ minHeight: 'auto', padding: '32px', gap: '32px' }}>
-      <div className="hero-content">
-        <span className="badge">{t('uploadedBy')} @{video.uploader_username}</span>
-        <h2 className="hero-title" style={{ fontSize: '32px', margin: '16px 0' }}>{video.title}</h2>
-        {video.tags && video.tags.length > 0 && (
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
-            {video.tags.map(tag => (
-              <span key={tag} style={{ 
-                padding: '4px 10px', 
-                borderRadius: '16px', 
-                background: 'var(--bg-tertiary)', 
-                fontSize: '13px', 
-                color: 'var(--text-secondary)',
-                border: '1px solid var(--border-color)'
-              }}>
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
-        {categoryLabel && (
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Tag size={14} /> {categoryLabel}
-          </p>
-        )}
-        <p className="hero-desc" style={{ fontSize: '15px' }}>
-          {t('uploadedOn')} {new Date(video.upload_time).toLocaleDateString()}
-        </p>
-        <div className="hero-actions" style={{ marginTop: '24px' }}>
-          <button 
-            className={`btn-primary ${video._liked ? 'liked' : ''}`} 
-            onClick={() => handleLike(video.id)} 
-            style={video._liked ? { 
-              display: 'flex', gap: '8px', alignItems: 'center',
-              backgroundColor: '#ec4899',
-              borderColor: '#ec4899',
-              transition: 'background 0.2s'
-            } : {
-              display: 'flex', gap: '8px', alignItems: 'center',
-              transition: 'background 0.2s'
-            }}
-          >
-            <Heart size={20} fill={video._liked ? "currentColor" : "none"} /> 
-            {video.like_count} {t('likes')}
-          </button>
-          
-          {video.manim_source_url && (
-            <button 
-              className="btn-ghost" 
-              onClick={() => window.open(video.manim_source_url, '_blank')}
-              style={{ 
-                display: 'flex', gap: '8px', alignItems: 'center', 
-                padding: '8px 16px', border: '1px solid var(--border-color)', 
-                borderRadius: '8px', color: 'var(--text-primary)' 
-              }}
-            >
-              <Code size={18} />
-              {t('viewCode')}
-            </button>
-          )}
-          
-          {isOwner && (
-            <button 
-              className="btn-ghost" 
-              onClick={() => handleDelete(video.id)}
-              style={{ 
-                display: 'flex', gap: '8px', alignItems: 'center', 
-                color: '#ef4444', padding: '8px 16px',
-                border: '1px solid #fecaca', borderRadius: '8px'
-              }}
-            >
-              <Trash2 size={18} />
-              {t('btnDelete')}
-            </button>
-          )}
-        </div>
-      </div>
-      <div className="hero-visual" style={{ flex: '1 1 50%' }}>
-        <div style={{ borderRadius: '16px', overflow: 'hidden', background: '#000', width: '100%', aspectRatio: '16/9', boxShadow: 'var(--shadow-md)' }}>
-          <video 
-            src={video.video_url.startsWith('http') ? video.video_url : `${API_BASE.replace('/api', '')}${video.video_url}`}
-            controls 
-            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-            preload="metadata"
-          >
-            Your browser does not support HTML video.
-          </video>
-        </div>
-      </div>
-    </section>
   );
 };
 
