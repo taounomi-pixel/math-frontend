@@ -13,7 +13,7 @@
   --text-secondary: #475569;
   --text-tertiary: #94a3b8;
   
-  --accent-primary: #0284c7;
+  --accent-primary: #0284c7; /* A sleek math-focused blue */
   --accent-primary-hover: #0369a1;
   --accent-primary-light: #e0f2fe;
   
@@ -30,12 +30,15 @@
   --radius-lg: 16px;
   --radius-full: 9999px;
 
+  /* Typography */
   --font-ui: 'Times New Roman', Times, serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-math: 'Times New Roman', Times, serif;
   
+  /* Layout */
   --header-height: 72px;
   --container-max: 1400px;
   
+  /* Transition timings */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -124,7 +127,7 @@ ul {
 .shape-circle { top: 10%; right: -5%; width: 400px; height: 400px; }
 .shape-triangle { bottom: -10%; left: -5%; width: 500px; height: 500px; }
 
-/* Math Symbols Sizing and Positioning */
+/* LaTeX MathJax Symbols Sizing and Positioning */
 .symbol-pi       { top: 20%; left: 8%;   font-size: 140px; transform: rotate(-15deg); opacity: 0.10; }
 .symbol-integral { top: 10%; right: 20%; font-size: 200px; transform: rotate(10deg);  opacity: 0.08; }
 .symbol-sigma    { bottom: 15%; right: 10%; font-size: 160px; transform: rotate(5deg);   opacity: 0.10; }
@@ -426,7 +429,7 @@ kbd {
 .mobile-search {
   display: flex !important;
   width: 100%;
-  flex: none !important;
+  flex: none !important; /* Fixes height bug triggered by column flex-basis */
 }
 
 .mobile-actions {
@@ -448,10 +451,11 @@ kbd {
   padding-bottom: 80px;
 }
 
+/* Hero Section with Grid and Aesthetics */
 .hero-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
-   gap: 48px;
+  gap: 48px;
   align-items: center;
   margin-bottom: 64px;
   background: var(--bg-main);
@@ -467,11 +471,11 @@ kbd {
   content: "";
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-image: linear-gradient(var(--border-color) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+  background-image: linear-gradient(var(--border-color-light) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-color-light) 1px, transparent 1px);
   background-size: 40px 40px;
   background-position: center;
-  opacity: 0.3;
+  opacity: 0.5;
   pointer-events: none;
   z-index: 0;
 }
@@ -523,15 +527,7 @@ kbd {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-color);
-}
-
-.euler-graphic {
-  width: 100%;
-  height: 100%;
-  max-width: 300px;
-  color: rgba(255,255,255,0.1);
+  box-shadow: var(--shadow-lg);
 }
 
 .play-btn-large {
@@ -549,25 +545,10 @@ kbd {
   transition: var(--transition-smooth);
 }
 
-.play-btn-large i {
-  width: 32px;
-  height: 32px;
-  margin-left: 4px;
-}
-
 .featured-video:hover .play-btn-large {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
   transform: scale(1.1);
-}
-
-.point-euler, .path-euler {
-  animation: drawMath 4s ease-in-out infinite alternate;
-}
-
-@keyframes drawMath {
-  from { stroke-dasharray: 0 400; stroke-dashoffset: 0; }
-  to   { stroke-dasharray: 400 0; stroke-dashoffset: 0; }
 }
 
 /* =========================================
@@ -622,7 +603,7 @@ kbd {
   flex-direction: column;
   gap: 12px;
   cursor: pointer;
-  group: true;
+  animation: fadeIn 0.4s ease-out forwards;
 }
 
 .thumbnail {
@@ -632,22 +613,17 @@ kbd {
   position: relative;
   overflow: hidden;
   background: var(--bg-tertiary);
-  border: 1px solid var(--border-color-light);
 }
 
-.thumbnail-placeholder {
+.video-card:hover .thumbnail img {
+  transform: scale(1.05);
+}
+
+.thumbnail img {
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  object-fit: cover;
   transition: transform var(--transition-smooth);
-}
-
-.thumb-svg {
-  width: 50%;
-  height: 50%;
-  opacity: 0.8;
 }
 
 .duration {
@@ -660,60 +636,18 @@ kbd {
   border-radius: 4px;
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.5px;
-  z-index: 2;
-}
-
-.hover-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity var(--transition-fast);
-  z-index: 1;
-}
-
-.hover-overlay i {
-  color: white;
-  width: 48px;
-  height: 48px;
-  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
-  transform: scale(0.8);
-  transition: transform var(--transition-smooth);
-}
-
-.video-card:hover .thumbnail-placeholder {
-  transform: scale(1.05);
-}
-
-.video-card:hover .hover-overlay {
-  opacity: 1;
-}
-
-.video-card:hover .hover-overlay i {
-  transform: scale(1);
 }
 
 .video-info {
   display: flex;
   gap: 12px;
-  align-items: flex-start;
 }
 
 .creator-avatar {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--accent-primary);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 14px;
+  background: var(--bg-tertiary);
   flex-shrink: 0;
 }
 
@@ -746,116 +680,79 @@ kbd {
 }
 
 /* =========================================
-   Footer
+   Animations
    ========================================= */
-.footer {
-  background: var(--bg-main);
-  border-top: 1px solid var(--border-color);
-  padding: 64px 0 32px;
-  margin-top: 64px;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.footer-inner {
-  display: flex;
-  justify-content: space-between;
-  gap: 48px;
-  flex-wrap: wrap;
+@keyframes spinning {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
-
-.footer-brand {
-  max-width: 300px;
-}
-
-.footer-logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 700;
-  font-size: 20px;
-  color: var(--text-primary);
-  margin-bottom: 16px;
-}
-
-.footer-desc {
-  color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.footer-links {
-  display: flex;
-  gap: 64px;
-  flex-wrap: wrap;
-}
-
-.link-group h4 {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 16px;
-}
-
-.link-group a {
-  display: block;
-  color: var(--text-secondary);
-  font-size: 14px;
-  margin-bottom: 12px;
-  transition: color var(--transition-fast);
-}
-
-.link-group a:hover {
-  color: var(--accent-primary);
+.spinning {
+  animation: spinning 1s linear infinite;
 }
 
 /* =========================================
-   Responsive Design
+   Modal
    ========================================= */
-@media (max-width: 1024px) {
-  .hero-section {
-    grid-template-columns: 1fr;
-    gap: 32px;
-    padding: 32px;
-  }
-
-  /* Tablet: hide 3 symbols, keep 5 (pi, integral, sigma, infinity, phi) */
-  .symbol-alpha,
-  .symbol-beta,
-  .symbol-theta {
-    display: none;
-  }
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.3);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
 }
 
-@media (max-width: 768px) {
-  .header-actions {
-    display: none;
-  }
-  
-  .header-inner .header-search {
-    display: none;
-  }
+.modal-content {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-glass);
+  position: relative;
+  animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
-  .mobile-menu-btn {
-    display: block;
-  }
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
 
-  .hero-title {
-    font-size: 32px;
-  }
-  
-  .video-grid {
-    grid-template-columns: 1fr;
-  }
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  color: var(--text-tertiary);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: var(--transition-fast);
+}
 
-  /* Mobile: keep only pi and sigma, shrink to fit narrow screens */
-  .symbol-integral,
-  .symbol-infinity,
-  .symbol-alpha,
-  .symbol-beta,
-  .symbol-phi,
-  .symbol-theta {
-    display: none;
-  }
+.modal-close:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
 
-  .symbol-pi    { font-size: 80px; top: 15%; left: 5%; }
-  .symbol-sigma { font-size: 90px; bottom: 20%; right: 5%; }
+.form-group label {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  transition: var(--transition-fast);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-primary-light);
 }
