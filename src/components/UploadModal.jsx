@@ -128,7 +128,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
       <div 
         className="modal-content" 
         onClick={e => e.stopPropagation()}
-        style={{ width: '400px', maxWidth: '90%', padding: '24px', maxHeight: '90vh', overflowY: 'auto' }}
+        style={{ width: '400px', maxWidth: '90%', padding: '24px' }}
       >
         <button className="modal-close" onClick={onClose}>
           <X size={24} />
