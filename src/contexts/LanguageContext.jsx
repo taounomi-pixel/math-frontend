@@ -74,7 +74,13 @@ const translations = {
     btnDelete: "Delete",
     deleteConfirm: "Are you sure you want to delete this video? This action cannot be undone.",
     errDeleteFail: "Failed to delete video.",
-    deleteSuccess: "Video deleted successfully."
+    deleteSuccess: "Video deleted successfully.",
+    
+    // Manim Source
+    manimSource: "Manim Source Code (Optional)",
+    sourceFileHint: "Select .py file",
+    viewCode: "View Code",
+    errInvalidSource: "Please select a valid .py file for Manim source."
   },
   zh: {
     // Header
@@ -149,7 +155,13 @@ const translations = {
     btnDelete: "删除",
     deleteConfirm: "你确定要删除这段视频吗？此操作无法撤销。",
     errDeleteFail: "删除视频失败。",
-    deleteSuccess: "视频已成功删除。"
+    deleteSuccess: "视频已成功删除。",
+    
+    // Manim 源码
+    manimSource: "Manim 源代码 (可选)",
+    sourceFileHint: "选择 .py 文件",
+    viewCode: "查看代码",
+    errInvalidSource: "请选择一个有效的 .py 格式文件作为源码。"
   }
 };
 

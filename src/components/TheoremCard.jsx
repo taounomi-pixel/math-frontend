@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PlayCircle, Bookmark, Play, Heart, Loader2, Trash2 } from 'lucide-react';
+import { PlayCircle, Bookmark, Play, Heart, Loader2, Trash2, Code } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const TheoremCard = ({ searchQuery = "" }) => {
@@ -177,6 +177,21 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
             <Heart size={20} fill={video._liked ? "currentColor" : "none"} /> 
             {video.like_count} {t('likes')}
           </button>
+          
+          {video.manim_source_url && (
+            <button 
+              className="btn-ghost" 
+              onClick={() => window.open(video.manim_source_url, '_blank')}
+              style={{ 
+                display: 'flex', gap: '8px', alignItems: 'center', 
+                padding: '8px 16px', border: '1px solid var(--border-color)', 
+                borderRadius: '8px', color: 'var(--text-primary)' 
+              }}
+            >
+              <Code size={18} />
+              {t('viewCode')}
+            </button>
+          )}
           
           {isOwner && (
             <button 

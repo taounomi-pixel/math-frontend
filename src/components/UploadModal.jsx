@@ -6,6 +6,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
   const { t } = useLanguage();
   const [title, setTitle] = useState('');
   const [file, setFile] = useState(null);
+  const [sourceFile, setSourceFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState('');
@@ -19,6 +20,19 @@ const UploadModal = ({ onClose, onSuccess }) => {
     } else {
       setFile(null);
       setError(t('errInvalidFile'));
+    }
+  };
+
+  const handleSourceChange = (e) => {
+    const selected = e.target.files[0];
+    if (selected) {
+      if (selected.name.endsWith('.py')) {
+        setSourceFile(selected);
+        setError('');
+      } else {
+        setSourceFile(null);
+        setError(t('errInvalidSource'));
+      }
     }
   };
 
@@ -42,6 +56,9 @@ const UploadModal = ({ onClose, onSuccess }) => {
     const formData = new FormData();
     formData.append('title', title);
     formData.append('file', file);
+    if (sourceFile) {
+      formData.append('source_file', sourceFile);
+    }
 
     const apiUrl = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000/api`;
     
@@ -121,7 +138,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
               style={{
                 border: '2px dashed var(--border-color)',
                 borderRadius: '8px',
-                padding: '32px',
+                padding: '24px 32px',
                 textAlign: 'center',
                 cursor: 'pointer',
                 background: 'var(--bg-secondary)',
@@ -136,10 +153,41 @@ const UploadModal = ({ onClose, onSuccess }) => {
                 style={{ display: 'none' }} 
                 disabled={isUploading}
               />
-              <Upload size={32} style={{ color: 'var(--primary-color)', margin: '0 auto 12px auto' }} />
-              <div style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
+              <Upload size={24} style={{ color: 'var(--primary-color)', margin: '0 auto 8px auto' }} />
+              <div style={{ color: 'var(--text-primary)', fontWeight: '500', fontSize: '14px' }}>
                 {file ? file.name : t("selectFileHint")}
               </div>
+            </div>
+          </div>
+
+          <div className="form-group" style={{ marginBottom: '32px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>{t('manimSource')}</label>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <input 
+                type="file" 
+                accept=".py" 
+                onChange={handleSourceChange}
+                style={{ display: 'none' }}
+                id="source-upload"
+                disabled={isUploading}
+              />
+              <label 
+                htmlFor="source-upload"
+                className="btn-ghost"
+                style={{ 
+                  cursor: 'pointer', 
+                  flex: '0 0 auto', 
+                  padding: '8px 16px', 
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '6px',
+                  fontSize: '14px'
+                }}
+              >
+                {t('sourceFileHint')}
+              </label>
+              <span style={{ fontSize: '14px', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {sourceFile ? sourceFile.name : ''}
+              </span>
             </div>
           </div>
           
