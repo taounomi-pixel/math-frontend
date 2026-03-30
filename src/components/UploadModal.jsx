@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { CATEGORIES } from '../constants/categories';
+import { API_BASE } from '../utils/api';
 
 const UploadModal = ({ onClose, onSuccess }) => {
   const { t } = useLanguage();
@@ -81,7 +82,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
       console.log('FormData:', pair[0], pair[1]);
     }
 
-    const apiUrl = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000/api`;
+    const apiUrl = API_BASE;
     
     // Using XMLHttpRequest for progress tracking
     const xhr = new XMLHttpRequest();

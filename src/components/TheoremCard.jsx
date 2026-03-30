@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PlayCircle, Bookmark, Play, Heart, Loader2, Trash2, Code, Tag, FolderOpen } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import { API_BASE } from '../utils/api';
 
 const TheoremCard = ({ searchQuery = "" }) => {
   const { t } = useLanguage();
@@ -13,8 +14,7 @@ const TheoremCard = ({ searchQuery = "" }) => {
   const fetchVideos = async () => {
     setIsLoading(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000/api`;
-      const response = await fetch(`${apiUrl}/videos`);
+      const response = await fetch(`${API_BASE}/videos`);
       if (!response.ok) throw new Error('Failed to fetch videos');
       const data = await response.json();
       setVideos(data);
@@ -43,8 +43,7 @@ const TheoremCard = ({ searchQuery = "" }) => {
 
     const token = localStorage.getItem('access_token');
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000/api`;
-      const fullUrl = `${apiUrl}/videos/${videoId}`;
+      const fullUrl = `${API_BASE}/videos/${videoId}`;
       console.log(`[DEBUG] Attempting DELETE at: ${fullUrl}`);
       const response = await fetch(fullUrl, {
         method: 'DELETE',
@@ -80,8 +79,7 @@ const TheoremCard = ({ searchQuery = "" }) => {
     }
     
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000/api`;
-      const res = await fetch(`${apiUrl}/videos/${videoId}/like`, {
+      const res = await fetch(`${API_BASE}/videos/${videoId}/like`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -295,7 +293,7 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
       <div className="hero-visual" style={{ flex: '1 1 50%' }}>
         <div style={{ borderRadius: '16px', overflow: 'hidden', background: '#000', width: '100%', aspectRatio: '16/9', boxShadow: 'var(--shadow-md)' }}>
           <video 
-            src={video.video_url.startsWith('http') ? video.video_url : `${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : `http://${window.location.hostname}:8000`}${video.video_url}`}
+            src={video.video_url.startsWith('http') ? video.video_url : `${API_BASE.replace('/api', '')}${video.video_url}`}
             controls 
             style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             preload="metadata"
