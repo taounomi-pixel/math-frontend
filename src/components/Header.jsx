@@ -46,13 +46,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     try {
       if (authModal === 'register') {
         const apiUrl = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000/api`;
-        const url = new URL(`${apiUrl}/register`);
-        url.searchParams.append('password', authForm.password);
-
-        const res = await fetch(url.toString(), {
+        const res = await fetch(`${apiUrl}/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: authForm.username })
+          body: JSON.stringify({ 
+            username: authForm.username,
+            password: authForm.password
+          })
         });
 
         if (!res.ok) {
