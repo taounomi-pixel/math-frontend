@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { LayoutGrid } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { CATEGORIES } from '../constants/categories';
 
@@ -17,10 +18,18 @@ const Sidebar = () => {
         <NavLink 
           to="/"
           className={({ isActive }) => `topic-btn ${isActive ? 'active' : ''}`}
-          style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', fontWeight: 'bold' }}
+          style={{ 
+            background: 'var(--bg-tertiary)', 
+            border: '1px solid var(--border-color)', 
+            fontWeight: 'bold', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '6px' 
+          }}
           end
         >
-          🏠 {t('allVideos') || '全部视频'}
+          <LayoutGrid size={16} />
+          {t('allVideos') || '所有'}
         </NavLink>
         
         {Object.keys(CATEGORIES).map(cat => {

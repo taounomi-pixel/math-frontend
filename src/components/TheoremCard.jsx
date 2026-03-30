@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PlayCircle, Bookmark, Play, Heart, Loader2, Trash2, Code } from 'lucide-react';
+import { PlayCircle, Bookmark, Play, Heart, Loader2, Trash2, Code, Tag, FolderOpen } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -161,8 +161,8 @@ const TheoremCard = ({ searchQuery = "" }) => {
     return (
       <div style={{ textAlign: 'center', margin: '32px 0', padding: '64px', background: 'var(--bg-secondary)', borderRadius: '16px' }}>
         {categoryHeader && (
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '12px', fontSize: '14px' }}>
-            🏷️ {categoryHeader}
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '12px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <Tag size={16} /> {categoryHeader}
           </p>
         )}
         <h3 style={{ color: 'var(--text-primary)' }}>
@@ -191,7 +191,7 @@ const TheoremCard = ({ searchQuery = "" }) => {
           alignItems: 'center',
           gap: '8px'
         }}>
-          📂 {categoryHeader}
+          <FolderOpen size={18} /> {categoryHeader}
           <span style={{ fontSize: '13px', fontWeight: '400', color: 'var(--text-secondary)', marginLeft: 'auto' }}>
             {filteredVideos.length} 个结果
           </span>
@@ -237,7 +237,7 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
         )}
         {categoryLabel && (
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            🏷️ {categoryLabel}
+            <Tag size={14} /> {categoryLabel}
           </p>
         )}
         <p className="hero-desc" style={{ fontSize: '15px' }}>
