@@ -218,6 +218,18 @@ const Header = ({ searchQuery, setSearchQuery }) => {
               />
             </div>
             <div className="mobile-actions">
+              {currentUser && (
+                <button 
+                  className="btn-primary mobile-nav-btn" 
+                  onClick={() => {
+                    setShowUploadModal(true);
+                    setIsMobileNavOpen(false);
+                  }}
+                  style={{ marginBottom: '4px' }}
+                >
+                  <Upload size={16} /> {t('upload')}
+                </button>
+              )}
               <button className="btn-outline mobile-nav-btn" onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}>
                 <Globe size={16} /> {t('language')}: {lang.toUpperCase()}
               </button>
