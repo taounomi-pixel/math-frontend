@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { PlayCircle, Bookmark, Play, Heart, Loader2, Trash2, Code } from 'lucide-react';
+import { PlayCircle, Bookmark, Play, Heart, Loader2, Trash2, Code, Tag, FolderOpen } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const TheoremCard = ({ searchQuery = "" }) => {
   const { t } = useLanguage();
+  const { categoryL1, categoryL2 } = useParams();
   const [videos, setVideos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -34,6 +36,7 @@ const TheoremCard = ({ searchQuery = "" }) => {
   }, []);
 
   const currentUserId = localStorage.getItem('user_id') ? parseInt(localStorage.getItem('user_id'), 10) : null;
+  const currentUsername = localStorage.getItem('username');
 
   const handleDelete = async (videoId) => {
     if (!window.confirm(t('deleteConfirm'))) return;
@@ -41,14 +44,25 @@ const TheoremCard = ({ searchQuery = "" }) => {
     const token = localStorage.getItem('access_token');
     try {
       const apiUrl = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000/api`;
-      const response = await fetch(`${apiUrl}/videos/${videoId}`, {
+      const fullUrl = `${apiUrl}/videos/${videoId}`;
+      console.log(`[DEBUG] Attempting DELETE at: ${fullUrl}`);
+      const response = await fetch(fullUrl, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
-      if (!response.ok) throw new Error(t('errDeleteFail'));
+      if (!response.ok) {
+        let errorMsg = t('errDeleteFail');
+        try {
+          const errorData = await response.json();
+          if (errorData.detail) errorMsg += `: ${errorData.detail}`;
+        } catch (e) {
+          // ignore parsing error
+        }
+        throw new Error(errorMsg);
+      }
 
       // Remove from state
       setVideos(prev => prev.filter(v => v.id !== videoId));
@@ -112,38 +126,84 @@ const TheoremCard = ({ searchQuery = "" }) => {
     );
   }
 
-  // Define Filter Logic: title, uploader_username, and tags
+  // --- Filter by category from URL params ---
+  const decodedL1 = categoryL1 ? decodeURIComponent(categoryL1) : null;
+  const decodedL2 = categoryL2 ? decodeURIComponent(categoryL2) : null;
+
+  let filteredVideos = videos;
+
+  // Apply category filter
+  if (decodedL1) {
+    filteredVideos = filteredVideos.filter(v => v.category_l1 === decodedL1);
+  }
+  if (decodedL2) {
+    filteredVideos = filteredVideos.filter(v => v.category_l2 === decodedL2);
+  }
+
+  // Apply search text filter
   const lowerQuery = searchQuery.toLowerCase().trim();
-  const filteredVideos = videos.filter(video => {
-    if (!lowerQuery) return true;
-    
-    const titleMatch = (video.title || "").toLowerCase().includes(lowerQuery);
-    const uploaderMatch = (video.uploader_username || "").toLowerCase().includes(lowerQuery);
-    
-    // Check tags if they exist. (Simulating backend tags support for flexibility)
-    const tags = video.tags || [];
-    const tagsMatch = tags.some(tag => tag.toLowerCase().includes(lowerQuery));
+  if (lowerQuery) {
+    filteredVideos = filteredVideos.filter(video => {
+      const titleMatch = (video.title || "").toLowerCase().includes(lowerQuery);
+      const uploaderMatch = (video.uploader_username || "").toLowerCase().includes(lowerQuery);
+      const tags = video.tags || [];
+      const tagsMatch = tags.some(tag => tag.toLowerCase().includes(lowerQuery));
+      return titleMatch || uploaderMatch || tagsMatch;
+    });
+  }
 
-    return titleMatch || uploaderMatch || tagsMatch;
-  });
+  // Category header
+  const categoryHeader = decodedL2 
+    ? `${decodedL1} › ${decodedL2}` 
+    : decodedL1 || null;
 
-  if (filteredVideos.length === 0 && videos.length > 0) {
+  if (filteredVideos.length === 0) {
     return (
       <div style={{ textAlign: 'center', margin: '32px 0', padding: '64px', background: 'var(--bg-secondary)', borderRadius: '16px' }}>
-        <h3 style={{ color: 'var(--text-primary)' }}>{t('noResultsFor')} "{searchQuery}"</h3>
+        {categoryHeader && (
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '12px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <Tag size={16} /> {categoryHeader}
+          </p>
+        )}
+        <h3 style={{ color: 'var(--text-primary)' }}>
+          {searchQuery 
+            ? `${t('noResultsFor')} "${searchQuery}"` 
+            : t('noRecords')
+          }
+        </h3>
+        <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>{t('loginToUploadDesc')}</p>
       </div>
     );
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '48px', margin: '24px 0' }}>
+      {categoryHeader && (
+        <div style={{ 
+          padding: '12px 20px', 
+          background: 'linear-gradient(135deg, var(--bg-secondary), var(--bg-primary))',
+          borderRadius: '12px', 
+          border: '1px solid var(--border-color)',
+          fontSize: '16px',
+          fontWeight: '600',
+          color: 'var(--text-primary)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <FolderOpen size={18} /> {categoryHeader}
+          <span style={{ fontSize: '13px', fontWeight: '400', color: 'var(--text-secondary)', marginLeft: 'auto' }}>
+            {filteredVideos.length} 个结果
+          </span>
+        </div>
+      )}
       {filteredVideos.map(video => (
         <VideoItem 
           key={video.id} 
           video={video} 
           handleLike={handleLike} 
           handleDelete={handleDelete}
-          isOwner={currentUserId === video.uploader_id}
+          isOwner={currentUserId === video.uploader_id || (currentUsername && currentUsername === video.uploader_username)}
           t={t} 
         />
       ))}
@@ -152,11 +212,34 @@ const TheoremCard = ({ searchQuery = "" }) => {
 };
 
 const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
+  const categoryLabel = [video.category_l1, video.category_l2].filter(Boolean).join(' › ');
+
   return (
     <section className="hero-section" style={{ minHeight: 'auto', padding: '32px', gap: '32px' }}>
       <div className="hero-content">
         <span className="badge">{t('uploadedBy')} @{video.uploader_username}</span>
         <h2 className="hero-title" style={{ fontSize: '32px', margin: '16px 0' }}>{video.title}</h2>
+        {video.tags && video.tags.length > 0 && (
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+            {video.tags.map(tag => (
+              <span key={tag} style={{ 
+                padding: '4px 10px', 
+                borderRadius: '16px', 
+                background: 'var(--bg-tertiary)', 
+                fontSize: '13px', 
+                color: 'var(--text-secondary)',
+                border: '1px solid var(--border-color)'
+              }}>
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
+        {categoryLabel && (
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Tag size={14} /> {categoryLabel}
+          </p>
+        )}
         <p className="hero-desc" style={{ fontSize: '15px' }}>
           {t('uploadedOn')} {new Date(video.upload_time).toLocaleDateString()}
         </p>

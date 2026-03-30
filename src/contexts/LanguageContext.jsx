@@ -28,6 +28,7 @@ const translations = {
     regSuccess: "Registration successful! Please sign in.",
     
     // Sidebar & Topics
+    "allVideos": "All",
     "All Topics": "All Topics",
     "Calculus": "Calculus",
     "Geometry": "Geometry",
@@ -109,6 +110,7 @@ const translations = {
     regSuccess: "注册成功！请登入。",
     
     // Sidebar & Topics
+    "allVideos": "所有",
     "All Topics": "所有主题",
     "Calculus": "微积分",
     "Geometry": "几何学",
