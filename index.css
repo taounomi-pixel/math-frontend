@@ -13,7 +13,7 @@
   --text-secondary: #475569;
   --text-tertiary: #94a3b8;
   
-  --accent-primary: #0284c7; /* A sleek math-focused blue */
+  --accent-primary: #0284c7;
   --accent-primary-hover: #0369a1;
   --accent-primary-light: #e0f2fe;
   
@@ -30,15 +30,12 @@
   --radius-lg: 16px;
   --radius-full: 9999px;
 
-  /* Typography */
   --font-ui: 'Times New Roman', Times, serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-math: 'Times New Roman', Times, serif;
   
-  /* Layout */
   --header-height: 72px;
   --container-max: 1400px;
   
-  /* Transition timings */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -127,7 +124,7 @@ ul {
 .shape-circle { top: 10%; right: -5%; width: 400px; height: 400px; }
 .shape-triangle { bottom: -10%; left: -5%; width: 500px; height: 500px; }
 
-/* LaTeX MathJax Symbols Sizing and Positioning */
+/* Math Symbols Sizing and Positioning */
 .symbol-pi       { top: 20%; left: 8%;   font-size: 140px; transform: rotate(-15deg); opacity: 0.10; }
 .symbol-integral { top: 10%; right: 20%; font-size: 200px; transform: rotate(10deg);  opacity: 0.08; }
 .symbol-sigma    { bottom: 15%; right: 10%; font-size: 160px; transform: rotate(5deg);   opacity: 0.10; }
@@ -429,7 +426,7 @@ kbd {
 .mobile-search {
   display: flex !important;
   width: 100%;
-  flex: none !important; /* Fixes height bug triggered by column flex-basis */
+  flex: none !important;
 }
 
 .mobile-actions {
@@ -466,7 +463,6 @@ kbd {
   overflow: hidden;
 }
 
-/* Add a subtle geometric grid overlay on hero */
 .hero-section::before {
   content: "";
   position: absolute;
@@ -518,10 +514,9 @@ kbd {
   gap: 16px;
 }
 
-/* Featured Video Placeholder / Visualization */
 .featured-video {
   aspect-ratio: 16/9;
-  background: #0f172a; /* Darker bg to contrast with light theme and make visuals pop */
+  background: #0f172a;
   border-radius: var(--radius-md);
   position: relative;
   display: flex;
@@ -557,7 +552,7 @@ kbd {
 .play-btn-large i {
   width: 32px;
   height: 32px;
-  margin-left: 4px; /* Optical center for play icon */
+  margin-left: 4px;
 }
 
 .featured-video:hover .play-btn-large {
@@ -821,6 +816,13 @@ kbd {
     gap: 32px;
     padding: 32px;
   }
+
+  /* Tablet: hide 3 symbols, keep 5 (pi, integral, sigma, infinity, phi) */
+  .symbol-alpha,
+  .symbol-beta,
+  .symbol-theta {
+    display: none;
+  }
 }
 
 @media (max-width: 768px) {
@@ -844,8 +846,16 @@ kbd {
     grid-template-columns: 1fr;
   }
 
-  /* Hide decorative background math symbols on mobile to prevent crowding */
-  .bg-vectors {
+  /* Mobile: keep only pi and sigma, shrink to fit narrow screens */
+  .symbol-integral,
+  .symbol-infinity,
+  .symbol-alpha,
+  .symbol-beta,
+  .symbol-phi,
+  .symbol-theta {
     display: none;
   }
+
+  .symbol-pi    { font-size: 80px; top: 15%; left: 5%; }
+  .symbol-sigma { font-size: 90px; bottom: 20%; right: 5%; }
 }
