@@ -100,9 +100,9 @@ const TheoremCard = ({ searchQuery }) => {
     <div className="video-grid">
       {videos.map((v) => (
         <div key={v.id} className="video-card">
-          <div className="thumbnail" onClick={() => window.open(v.file_url, '_blank')}>
+          <div className="thumbnail" onClick={() => window.open(v.video_url, '_blank')}>
             <div className="thumbnail-placeholder">
-               <video src={v.file_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+               <video src={v.video_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <div className="hover-overlay">
               <Play fill="white" size={48} />
@@ -112,32 +112,32 @@ const TheoremCard = ({ searchQuery }) => {
           
           <div className="video-info">
             <div className="creator-avatar">
-              {v.owner && v.owner.username ? v.owner.username[0].toUpperCase() : 'U'}
+              {v.uploader_username ? v.uploader_username[0].toUpperCase() : 'U'}
             </div>
             <div className="video-meta">
               <h3 className="video-title">{v.title}</h3>
               <div className="creator-name">
                 <User size={14} style={{ display: 'inline', marginRight: '4px' }} />
-                {v.owner ? v.owner.username : 'Unknown'}
+                {v.uploader_username || 'Unknown'}
               </div>
               <div className="video-stats">
                 <Calendar size={12} style={{ display: 'inline', marginRight: '4px' }} />
-                {new Date(v.created_at).toLocaleDateString()}
+                {new Date(v.upload_time).toLocaleDateString()}
               </div>
               
               <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
                 <button onClick={() => handleLike(v.id)} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                  <Heart size={14} fill={v.likes > 0 ? '#ef4444' : 'none'} color={v.likes > 0 ? '#ef4444' : 'currentColor'} />
-                  {v.likes}
+                  <Heart size={14} fill={v.like_count > 0 ? '#ef4444' : 'none'} color={v.like_count > 0 ? '#ef4444' : 'currentColor'} />
+                  {v.like_count}
                 </button>
                 
-                {v.source_url && (
-                   <button onClick={() => handleViewSource(v.source_url)} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: 'var(--accent-primary)' }}>
+                {v.manim_source_url && (
+                   <button onClick={() => handleViewSource(v.manim_source_url)} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: 'var(--accent-primary)' }}>
                     <Code size={14} /> {t('viewCode')}
                   </button>
                 )}
 
-                {v.owner && v.owner.username === currentUsername && (
+                {v.uploader_username === currentUsername && (
                   <button onClick={() => handleDelete(v.id)} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#ef4444' }}>
                     <Trash2 size={14} /> {t('btnDelete')}
                   </button>
