@@ -7,6 +7,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
   const [title, setTitle] = useState('');
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
 
@@ -21,7 +22,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
     }
   };
 
-  const handleUpload = async (e) => {
+  const handleUpload = (e) => {
     e.preventDefault();
     if (!title.trim() || !file) {
       setError(t('errFieldsRequired'));
@@ -35,34 +36,51 @@ const UploadModal = ({ onClose, onSuccess }) => {
     }
 
     setIsUploading(true);
+    setUploadProgress(0);
     setError('');
 
-    try {
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('file', file);
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('file', file);
 
-      const apiUrl = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000/api`;
-      const response = await fetch(`${apiUrl}/videos`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
+    const apiUrl = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000/api`;
+    
+    // Using XMLHttpRequest for progress tracking
+    const xhr = new XMLHttpRequest();
+    
+    xhr.open('POST', `${apiUrl}/videos`, true);
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.detail || t('errUploadFail'));
+    // Track upload progress
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percent = Math.round((event.loaded / event.total) * 100);
+        setUploadProgress(percent);
       }
+    };
 
-      onSuccess && onSuccess();
-      onClose();
-    } catch (err) {
-      setError(err.message);
-    } finally {
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        onSuccess && onSuccess();
+        onClose();
+      } else {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          setError(response.detail || t('errUploadFail'));
+        } catch (e) {
+          setError(t('errUploadFail'));
+        } finally {
+          setIsUploading(false);
+        }
+      }
+    };
+
+    xhr.onerror = () => {
+      setError(t('errUploadFail'));
       setIsUploading(false);
-    }
+    };
+
+    xhr.send(formData);
   };
 
   return (
@@ -128,15 +146,76 @@ const UploadModal = ({ onClose, onSuccess }) => {
           <button 
             type="submit" 
             className="btn-primary" 
-            style={{ width: '100%', padding: '12px', fontSize: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
+            style={{ 
+              width: '100%', 
+              padding: '12px', 
+              fontSize: '16px', 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              gap: '8px',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
             disabled={isUploading}
           >
             {isUploading ? (
-              <span style={{ display: 'flex', alignItems: 'center' }}><Loader2 size={20} className="spinning" style={{ marginRight: '8px' }} /> {t('btnUploading')}</span>
+              <span style={{ display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                <Loader2 size={20} className="spinning" style={{ marginRight: '8px' }} /> 
+                {uploadProgress}% {t('btnUploading')}
+              </span>
             ) : (
               t('btnUpload')
             )}
+            
+            {/* Background progress fill */}
+            {isUploading && (
+              <div 
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  height: '100%',
+                  width: `${uploadProgress}%`,
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  transition: 'width 0.3s ease-out',
+                  zIndex: 1
+                }}
+              />
+            )}
           </button>
+
+          {/* Detailed progress bar below button */}
+          {isUploading && (
+            <div style={{ marginTop: '16px' }}>
+              <div style={{ 
+                height: '6px', 
+                width: '100%', 
+                background: 'var(--bg-tertiary)', 
+                borderRadius: '3px',
+                overflow: 'hidden',
+                border: '1px solid var(--border-color)'
+              }}>
+                <div style={{ 
+                  height: '100%', 
+                  width: `${uploadProgress}%`, 
+                  background: 'var(--accent-primary)',
+                  boxShadow: '0 0 10px var(--accent-primary)',
+                  transition: 'width 0.3s ease-out'
+                }} />
+              </div>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                marginTop: '8px', 
+                fontSize: '12px', 
+                color: 'var(--text-secondary)' 
+              }}>
+                <span>{uploadProgress < 100 ? t('btnUploading') : 'Processing...'}</span>
+                <span>{uploadProgress}%</span>
+              </div>
+            </div>
+          )}
         </form>
       </div>
     </div>
