@@ -132,22 +132,20 @@ const Header = ({ searchQuery, setSearchQuery }) => {
               value={searchQuery || ''}
               onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
             />
-            <div className="search-kbd">
-              <kbd>Ctrl</kbd>+<kbd>K</kbd>
-            </div>
           </div>
 
-          <nav className="header-actions">
+          <nav className="header-actions" style={{ flexWrap: 'nowrap' }}>
             <div className="dropdown" id="lang-switcher">
               <button 
                 className="dropdown-trigger btn-ghost" 
                 aria-haspopup="true" 
                 aria-expanded={isLangDropdownOpen}
                 onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
+                style={{ padding: '8px', whiteSpace: 'nowrap' }}
               >
                 <Globe size={18} />
                 <span className="current-lang">{lang.toUpperCase()}</span>
-                <ChevronDown size={16} className="dropdown-arrow" />
+                <ChevronDown size={14} className="dropdown-arrow" />
               </button>
               <div className={`dropdown-menu ${isLangDropdownOpen ? 'show' : ''}`}>
                 <button 
@@ -167,30 +165,30 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             
             {/* Dynamic Sign In / User Profile */}
             {currentUser ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'nowrap' }}>
                 <button 
                   className="btn-ghost" 
                   onClick={() => setShowUploadModal(true)} 
                   title={t('upload')} 
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: '8px' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', whiteSpace: 'nowrap', flexShrink: 0 }}
                 >
-                  <Upload size={16} /> <span style={{ fontSize: '14px', fontWeight: 500 }}>{t('upload')}</span>
+                  <Upload size={16} /> <span style={{ fontSize: '14px', fontWeight: 500, whiteSpace: 'nowrap' }}>{t('upload')}</span>
                 </button>
                 <div style={{ 
-                  width: '32px', height: '32px', borderRadius: '50%', 
+                  width: '28px', height: '28px', borderRadius: '50%', 
                   background: 'var(--primary)', color: 'white', 
                   display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                  fontWeight: 'bold', fontSize: '14px', flexShrink: 0
+                  fontWeight: 'bold', fontSize: '13px', flexShrink: 0
                 }}>
                   {currentUser.username[0].toUpperCase()}
                 </div>
-                <span style={{ fontWeight: 500, fontSize: '14px' }}>{currentUser.username}</span>
-                <button className="btn-ghost" onClick={handleLogout} title={t('logout')} style={{ padding: '8px' }}>
+                <span style={{ fontWeight: 500, fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '60px' }}>{currentUser.username}</span>
+                <button className="btn-ghost" onClick={handleLogout} title={t('logout')} style={{ padding: '6px', flexShrink: 0 }}>
                   <LogOut size={16} />
                 </button>
               </div>
             ) : (
-              <button className="btn-primary sign-in-btn" onClick={() => setAuthModal('login')}>
+              <button className="btn-primary sign-in-btn" onClick={() => setAuthModal('login')} style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
                 <User size={16} />
                 <span>{t('signIn')}</span>
               </button>
