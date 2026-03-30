@@ -211,6 +211,25 @@ const TheoremCard = ({ searchQuery = "" }) => {
 
 const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
   const categoryLabel = [video.category_l1, video.category_l2].filter(Boolean).join(' › ');
+  
+  const [showCode, setShowCode] = useState(false);
+  const [codeContent, setCodeContent] = useState('');
+  const [codeLoading, setCodeLoading] = useState(false);
+
+  const handleViewSourceCode = async (url) => {
+    setShowCode(true);
+    if (codeContent) return;
+    setCodeLoading(true);
+    try {
+      const res = await fetch(url);
+      const text = await res.text();
+      setCodeContent(text);
+    } catch(e) {
+      setCodeContent('Error loading code: ' + e.message);
+    } finally {
+      setCodeLoading(false);
+    }
+  };
 
   return (
     <section className="hero-section" style={{ minHeight: 'auto', padding: '32px', gap: '32px' }}>
@@ -262,7 +281,7 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
           {video.manim_source_url && (
             <button 
               className="btn-ghost" 
-              onClick={() => window.open(video.manim_source_url, '_blank')}
+              onClick={() => handleViewSourceCode(video.manim_source_url)}
               style={{ 
                 display: 'flex', gap: '8px', alignItems: 'center', 
                 padding: '8px 16px', border: '1px solid var(--border-color)', 
@@ -302,6 +321,28 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
           </video>
         </div>
       </div>
+      
+      {showCode && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ background: 'var(--bg-primary)', width: '90%', maxWidth: '800px', height: '80vh', borderRadius: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+            <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px' }}>
+                <Code size={20} /> {video.title} - 代码查看
+              </h3>
+              <button onClick={() => setShowCode(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '28px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%' }}>&times;</button>
+            </div>
+            <div style={{ padding: '24px', overflowY: 'auto', flex: 1, backgroundColor: '#1e1e1e', color: '#d4d4d4' }}>
+              {codeLoading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                  <Loader2 className="spinning" size={32} color="var(--primary)" />
+                </div>
+              ) : (
+                <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: '14px', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{codeContent}</pre>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
