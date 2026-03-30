@@ -21,12 +21,8 @@ const Layout = () => {
         <div className="page-content" style={{ marginTop: '24px', animation: 'fadeIn 0.3s ease' }}>
           <Routes>
             <Route path="/" element={<TheoremCard searchQuery={searchQuery} />} />
-            <Route path="/calculus" element={<PlaceholderPage title={t("Calculus")} description={t("descCalculus")} />} />
-            <Route path="/geometry" element={<PlaceholderPage title={t("Geometry")} description={t("descGeometry")} />} />
-            <Route path="/linear-algebra" element={<PlaceholderPage title={t("Linear Algebra")} description={t("descLinear")} />} />
-            <Route path="/number-theory" element={<PlaceholderPage title={t("Number Theory")} description={t("descNumber")} />} />
-            <Route path="/topology" element={<PlaceholderPage title={t("Topology")} description={t("descTopology")} />} />
-            <Route path="/probability" element={<PlaceholderPage title={t("Probability")} description={t("descProbability")} />} />
+            <Route path="/c/:categoryL1" element={<TheoremCard searchQuery={searchQuery} />} />
+            <Route path="/c/:categoryL1/:categoryL2" element={<TheoremCard searchQuery={searchQuery} />} />
             <Route path="*" element={<PlaceholderPage title={t("titleNotFound")} description={t("descNotFound")} />} />
           </Routes>
         </div>

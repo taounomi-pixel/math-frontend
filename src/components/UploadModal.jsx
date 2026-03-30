@@ -1,16 +1,26 @@
 import React, { useState, useRef } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { CATEGORIES } from '../constants/categories';
 
 const UploadModal = ({ onClose, onSuccess }) => {
   const { t } = useLanguage();
   const [title, setTitle] = useState('');
+  const [categoryL1, setCategoryL1] = useState('');
+  const [categoryL2, setCategoryL2] = useState('');
+  const [selectedTags, setSelectedTags] = useState([]);
   const [file, setFile] = useState(null);
   const [sourceFile, setSourceFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
+
+  const toggleTag = (tag) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
+  };
 
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
@@ -55,6 +65,9 @@ const UploadModal = ({ onClose, onSuccess }) => {
 
     const formData = new FormData();
     formData.append('title', title);
+    if (categoryL1) formData.append('category_l1', categoryL1);
+    if (categoryL2) formData.append('category_l2', categoryL2);
+    if (selectedTags.length > 0) formData.append('tags', selectedTags.join(','));
     formData.append('file', file);
     if (sourceFile) {
       console.log("Appending source_file:", sourceFile.name, sourceFile.size);
@@ -137,6 +150,73 @@ const UploadModal = ({ onClose, onSuccess }) => {
             />
           </div>
           
+          <div className="form-group" style={{ marginBottom: '20px', display: 'flex', gap: '16px' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>主分类 (可选)</label>
+              <select 
+                className="form-input" 
+                value={categoryL1}
+                onChange={(e) => {
+                  setCategoryL1(e.target.value);
+                  setCategoryL2(''); // Reset subcategory when main category changes
+                }}
+                disabled={isUploading}
+                style={{ width: '100%', appearance: 'auto', WebkitAppearance: 'auto', backgroundColor: 'var(--bg-primary)' }}
+              >
+                <option value="">选择主分类</option>
+                {Object.keys(CATEGORIES).map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>二级分类 (可选)</label>
+              <select 
+                className="form-input" 
+                value={categoryL2}
+                onChange={(e) => setCategoryL2(e.target.value)}
+                disabled={isUploading || !categoryL1}
+                style={{ width: '100%', appearance: 'auto', WebkitAppearance: 'auto', backgroundColor: 'var(--bg-primary)' }}
+              >
+                <option value="">选择二级分类</option>
+                {categoryL1 && CATEGORIES[categoryL1].map(sub => (
+                  <option key={sub} value={sub}>{sub}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          
+          <div className="form-group" style={{ marginBottom: '24px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>标签多选 (可选)</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', maxHeight: '120px', overflowY: 'auto', padding: '8px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              {Object.entries(CATEGORIES).map(([cat, subs]) => (
+                <React.Fragment key={cat}>
+                  {subs.map(sub => (
+                    <button 
+                      key={sub}
+                      type="button"
+                      onClick={() => toggleTag(sub)}
+                      disabled={isUploading}
+                      style={{
+                        padding: '4px 12px',
+                        borderRadius: '16px',
+                        border: selectedTags.includes(sub) ? 'none' : '1px solid var(--border-color)',
+                        background: selectedTags.includes(sub) ? 'var(--primary-color)' : 'transparent',
+                        color: selectedTags.includes(sub) ? '#fff' : 'var(--text-secondary)',
+                        fontSize: '12px',
+                        cursor: isUploading ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      {sub}
+                    </button>
+                  ))}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+
           <div className="form-group" style={{ marginBottom: '32px' }}>
             <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>{t('videoFile')}</label>
             
