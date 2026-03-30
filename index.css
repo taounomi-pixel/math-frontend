@@ -756,3 +756,61 @@ kbd {
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 3px var(--accent-primary-light);
 }
+
+
+/* =========================================
+   Responsive Adjustments
+   ========================================= */
+@media (max-width: 900px) {
+  .hero-section {
+    grid-template-columns: 1fr !important;
+    padding: 24px !important;
+    gap: 24px !important;
+  }
+
+  .hero-title {
+    font-size: 28px !important;
+  }
+
+  .hero-desc {
+    font-size: 15px !important;
+  }
+
+  /* Make actions wrap if needed */
+  .hero-actions {
+    flex-wrap: wrap;
+    gap: 12px !important;
+  }
+
+  /* Reduce background grid visibility */
+  .hero-section::before {
+    opacity: 0.15 !important;
+  }
+
+  /* Hide huge mathematical symbols to avoid clutter */
+  .symbol-infinity, .symbol-integral, .symbol-sigma, .shape-triangle {
+    display: none !important;
+  }
+
+  .bg-vectors {
+    opacity: 0.4;
+  }
+
+  /* Header adjustments */
+  .header-search {
+    flex: 0 1 200px;
+  }
+}
+
+@media (max-width: 600px) {
+  .header-search {
+    display: none; /* Might need to hide full search or show icon */
+  }
+  .header-actions {
+    gap: 8px;
+  }
+  .btn-primary {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
