@@ -272,6 +272,13 @@ const UploadModal = ({ onClose, onSuccess }) => {
           cursor: pointer;
           transition: all 0.2s;
           border: 1.5px solid var(--border-color);
+          background: white;
+          color: var(--text-secondary);
+        }
+        .tag-item:hover {
+          background: var(--accent-primary-light);
+          border-color: var(--accent-primary);
+          color: var(--accent-primary);
         }
 
         .dropzone-refined {
