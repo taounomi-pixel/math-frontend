@@ -4,6 +4,8 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { CATEGORIES } from '../constants/categories';
 import { API_BASE } from '../utils/api';
 
+const allPossibleTags = Object.values(CATEGORIES).flat();
+
 const UploadModal = ({ onClose, onSuccess }) => {
   const { t } = useLanguage();
   const [title, setTitle] = useState('');

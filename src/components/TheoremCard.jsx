@@ -210,11 +210,9 @@ const TheoremCard = ({ searchQuery = "" }) => {
 };
 
 const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
-  const categoryLabel = [t(video.category_l1), t(video.category_l2)].filter(cat => cat && cat !== video.category_l1 && cat !== video.category_l2 ? true : (cat ? true : false)).join(' › ');
-  // Better way to handle the join since t(key) fallback is key
   const finalCategoryLabel = [
-    video.category_l1 ? (t(video.category_l1) || video.category_l1) : null,
-    video.category_l2 ? (t(video.category_l2) || video.category_l2) : null
+    video.category_l1 ? t(video.category_l1) : null,
+    video.category_l2 ? t(video.category_l2) : null
   ].filter(Boolean).join(' › ');
   
   const [showCode, setShowCode] = useState(false);

@@ -105,6 +105,7 @@ const translations = {
     errLoginRequired: "You must be logged in to upload.",
     errUploadFail: "Upload failed",
     errFileTooLarge: "File size exceeds 30MB limit",
+    uploadCancelled: "Upload cancelled",
     
     // Upload Modal Labels
     labelL1: "Major Category (Optional)",
@@ -230,6 +231,7 @@ const translations = {
     errLoginRequired: "你需要登录后才能上传视频。",
     errUploadFail: "上传失败",
     errFileTooLarge: "文件大小超过30MB限制",
+    uploadCancelled: "上传已取消",
     
     // Upload Modal Labels
     labelL1: "主分类 (可选)",
