@@ -15,7 +15,9 @@ const UploadModal = ({ onClose, onSuccess }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState('');
+  const [fileSizeError, setFileSizeError] = useState(false);
   const fileInputRef = useRef(null);
+  const xhrRef = useRef(null);
 
   const toggleTag = (tag) => {
     // Bidirectional binding: if we deselect the current L2 category tag, clear the dropdown
@@ -37,10 +39,18 @@ const UploadModal = ({ onClose, onSuccess }) => {
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     if (selected && selected.type === 'video/mp4') {
+      const isTooLarge = selected.size > 30 * 1024 * 1024; // 30MB
       setFile(selected);
-      setError('');
-    } else {
+      if (isTooLarge) {
+        setFileSizeError(true);
+        setError(t('errFileTooLarge') || '文件大小超过30MB限制');
+      } else {
+        setFileSizeError(false);
+        setError('');
+      }
+    } else if (selected) {
       setFile(null);
+      setFileSizeError(false);
       setError(t('errInvalidFile'));
     }
   };
@@ -58,10 +68,19 @@ const UploadModal = ({ onClose, onSuccess }) => {
     }
   };
 
+  const handleCancelUpload = () => {
+    if (xhrRef.current) {
+      xhrRef.current.abort();
+      xhrRef.current = null;
+      setIsUploading(false);
+      setUploadProgress(0);
+      setError('上传已取消');
+    }
+  };
+
   const handleUpload = (e) => {
     e.preventDefault();
-    if (!title.trim() || !file) {
-      setError(t('errFieldsRequired'));
+    if (!title.trim() || !file || fileSizeError) {
       return;
     }
 
@@ -97,6 +116,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
     
     // Using XMLHttpRequest for progress tracking
     const xhr = new XMLHttpRequest();
+    xhrRef.current = xhr;
     
     xhr.open('POST', `${apiUrl}/videos`, true);
     xhr.setRequestHeader('Authorization', `Bearer ${token}`);
@@ -110,6 +130,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
     };
 
     xhr.onload = () => {
+      xhrRef.current = null;
       if (xhr.status >= 200 && xhr.status < 300) {
         onSuccess && onSuccess();
         onClose();
@@ -126,8 +147,14 @@ const UploadModal = ({ onClose, onSuccess }) => {
     };
 
     xhr.onerror = () => {
+      xhrRef.current = null;
       setError(t('errUploadFail'));
       setIsUploading(false);
+    };
+
+    xhr.onabort = () => {
+      xhrRef.current = null;
+      console.log('Upload aborted by user');
     };
 
     xhr.send(formData);
@@ -292,47 +319,71 @@ const UploadModal = ({ onClose, onSuccess }) => {
             </div>
           </div>
           
-          <button 
-            type="submit" 
-            className="btn-primary" 
-            style={{ 
-              width: '100%', 
-              padding: '12px', 
-              fontSize: '16px', 
-              display: 'flex', 
-              justifyContent: 'center', 
-              alignItems: 'center', 
-              gap: '8px',
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-            disabled={isUploading}
-          >
-            {isUploading ? (
-              <span style={{ display: 'flex', alignItems: 'center', zIndex: 2 }}>
-                <Loader2 size={20} className="spinning" style={{ marginRight: '8px' }} /> 
-                {uploadProgress}% {t('btnUploading')}
-              </span>
-            ) : (
-              t('btnUpload')
-            )}
-            
-            {/* Background progress fill */}
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button 
+              type="submit" 
+              className="btn-primary" 
+              style={{ 
+                flex: isUploading ? '2' : '1', 
+                padding: '12px', 
+                fontSize: '16px', 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                gap: '8px',
+                position: 'relative',
+                overflow: 'hidden',
+                opacity: (fileSizeError || !title || !file) ? 0.6 : 1,
+                cursor: (fileSizeError || !title || !file) ? 'not-allowed' : 'pointer'
+              }}
+              disabled={isUploading || fileSizeError || !title || !file}
+            >
+              {isUploading ? (
+                <span style={{ display: 'flex', alignItems: 'center', zIndex: 2 }}>
+                  <Loader2 size={20} className="spinning" style={{ marginRight: '8px' }} /> 
+                  {uploadProgress}% {t('btnUploading')}
+                </span>
+              ) : (
+                t('btnUpload')
+              )}
+              
+              {/* Background progress fill */}
+              {isUploading && (
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    height: '100%',
+                    width: `${uploadProgress}%`,
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    transition: 'width 0.3s ease-out',
+                    zIndex: 1
+                  }}
+                />
+              )}
+            </button>
+
             {isUploading && (
-              <div 
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  height: '100%',
-                  width: `${uploadProgress}%`,
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  transition: 'width 0.3s ease-out',
-                  zIndex: 1
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={handleCancelUpload}
+                style={{ 
+                  flex: '1', 
+                  padding: '12px', 
+                  color: 'var(--error-color)',
+                  borderColor: 'var(--error-color)',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '8px'
                 }}
-              />
+              >
+                <X size={18} /> 取消
+              </button>
             )}
-          </button>
+          </div>
 
           {/* Detailed progress bar below button */}
           {isUploading && (
