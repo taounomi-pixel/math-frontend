@@ -22,8 +22,12 @@ const TheoremCard = ({ searchQuery = "" }) => {
       setShowWakingMessage(true);
     }, 3000);
 
+    const token = localStorage.getItem('access_token');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     try {
-      const response = await fetch(`${API_BASE}/videos`);
+      const response = await fetch(`${API_BASE}/videos`, { headers });
       if (!response.ok) throw new Error('Failed to fetch videos');
       const data = await response.json();
       setVideos(data);
