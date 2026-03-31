@@ -1,8 +1,16 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutGrid } from 'lucide-react';
+import { LayoutGrid, Variable, Shapes, Activity, Hash, Dice3 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { CATEGORIES } from '../constants/categories';
+
+const CATEGORY_ICONS = {
+  '代数': Variable,
+  '几何': Shapes,
+  '分析': Activity,
+  '数论': Hash,
+  '概率': Dice3,
+};
 
 const Sidebar = () => {
   const { t } = useLanguage();
@@ -12,20 +20,25 @@ const Sidebar = () => {
     return location.pathname.startsWith(`/c/${encodeURIComponent(cat)}`);
   };
 
+  const CategoryIcon = ({ name, size = 16 }) => {
+    const IconComponent = CATEGORY_ICONS[name];
+    if (!IconComponent) return null;
+    return <IconComponent size={size} />;
+  };
+
   return (
     <div className="sidebar-container" style={{ width: '100%', marginBottom: '24px' }}>
       <div className="topics-filter" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
         <NavLink 
           to="/"
           className={({ isActive }) => `topic-btn ${isActive ? 'active' : ''}`}
-          style={{ 
-            background: 'var(--bg-tertiary)', 
-            border: '1px solid var(--border-color)', 
+          style={({ isActive }) => ({ 
+            ...(isActive ? {} : { background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)' }),
             fontWeight: 'bold', 
             display: 'flex', 
             alignItems: 'center', 
             gap: '6px' 
-          }}
+          })}
           end
         >
           <LayoutGrid size={16} />
@@ -39,8 +52,10 @@ const Sidebar = () => {
               key={cat}
               to={`/c/${encodeURIComponent(cat)}`}
               className={`topic-btn ${isActive ? 'active' : ''}`}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              {cat}
+              <CategoryIcon name={cat} />
+              {t(cat) || cat}
             </NavLink>
           );
         })}
@@ -73,7 +88,7 @@ const Sidebar = () => {
                 style={{ fontSize: '13px', padding: '6px 14px' }}
                 end
               >
-                {sub}
+                {t(sub) || sub}
               </NavLink>
             ))}
           </div>
