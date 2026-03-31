@@ -1,8 +1,16 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutGrid } from 'lucide-react';
+import { LayoutGrid, Variable, Shapes, Activity, Hash, Dice3 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { CATEGORIES } from '../constants/categories';
+
+const CATEGORY_ICONS = {
+  '代数': Variable,
+  '几何': Shapes,
+  '分析': Activity,
+  '数论': Hash,
+  '概率': Dice3,
+};
 
 const Sidebar = () => {
   const { t } = useLanguage();
@@ -10,6 +18,12 @@ const Sidebar = () => {
 
   const isCategoryActive = (cat) => {
     return location.pathname.startsWith(`/c/${encodeURIComponent(cat)}`);
+  };
+
+  const CategoryIcon = ({ name, size = 16 }) => {
+    const IconComponent = CATEGORY_ICONS[name];
+    if (!IconComponent) return null;
+    return <IconComponent size={size} />;
   };
 
   return (
@@ -38,7 +52,9 @@ const Sidebar = () => {
               key={cat}
               to={`/c/${encodeURIComponent(cat)}`}
               className={`topic-btn ${isActive ? 'active' : ''}`}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
+              <CategoryIcon name={cat} />
               {t(cat) || cat}
             </NavLink>
           );
