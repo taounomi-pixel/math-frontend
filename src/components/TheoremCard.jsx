@@ -297,7 +297,7 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
             }}
           >
             <Heart size={20} fill={video._liked ? "currentColor" : "none"} /> 
-            {video.like_count} {t('likes')}
+            {video.like_count}
           </button>
           
           {video.manim_source_url && (
