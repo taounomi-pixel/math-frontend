@@ -201,7 +201,11 @@ const TheoremCard = ({ searchQuery = "" }) => {
           video={video} 
           handleLike={handleLike} 
           handleDelete={handleDelete}
-          isOwner={currentUserId === video.uploader_id || (currentUsername && currentUsername === video.uploader_username)}
+          isOwner={
+            currentUserId === video.uploader_id || 
+            (currentUsername && currentUsername === video.uploader_username) ||
+            localStorage.getItem('is_admin') === 'true'
+          }
           t={t} 
         />
       ))}

@@ -20,10 +20,12 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     const token = localStorage.getItem('access_token');
     const storedUsername = localStorage.getItem('username');
     const storedUserId = localStorage.getItem('user_id');
+    const storedIsAdmin = localStorage.getItem('is_admin') === 'true';
     if (token && storedUsername) {
       setCurrentUser({ 
         username: storedUsername, 
-        id: storedUserId ? parseInt(storedUserId, 10) : null 
+        id: storedUserId ? parseInt(storedUserId, 10) : null,
+        is_admin: storedIsAdmin
       });
     }
   }, []);
@@ -85,7 +87,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('username', authForm.username);
         localStorage.setItem('user_id', data.user_id);
-        setCurrentUser({ username: authForm.username, id: data.user_id });
+        localStorage.setItem('is_admin', data.is_admin ? 'true' : 'false');
+        setCurrentUser({ username: authForm.username, id: data.user_id, is_admin: !!data.is_admin });
         setAuthModal(null);
         setAuthForm({ username: '', password: '' });
       }
@@ -104,6 +107,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('username');
     localStorage.removeItem('user_id');
+    localStorage.removeItem('is_admin');
     setCurrentUser(null);
   };
 
