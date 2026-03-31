@@ -31,6 +31,26 @@ const translations = {
     regFail: "Registration failed",
     regSuccess: "Registration successful! Please sign in.",
     
+    // OAuth
+    loginWithGithub: "Sign in with GitHub",
+    loginWithGoogle: "Sign in with Google",
+    registerWithGithub: "Verify with GitHub",
+    registerWithGoogle: "Verify with Google",
+    orUsePassword: "or use username & password",
+    orRegisterDirect: "or register directly",
+    registerStep1Desc: "First verify your identity with GitHub or Google, then set your username and password.",
+    completeRegTitle: "Complete Registration",
+    completeRegDesc: "Please set your username and password to complete account creation.",
+    verifiedSuccess: "verified!",
+    usernamePlaceholder: "Choose a username",
+    passwordPlaceholder: "Set a password (min 6 chars)",
+    finishRegistration: "Complete Registration",
+    bindAccount: "Bind Account",
+    bindAccountTitle: "Bind OAuth Account",
+    bindAccountDesc: "Link your GitHub or Google account for easier login next time.",
+    bindGithub: "Bind GitHub",
+    bindGoogle: "Bind Google",
+    
     // Sidebar & Topics
     "allVideos": "All",
     "All Topics": "All Topics",
@@ -158,6 +178,26 @@ const translations = {
     loginFail: "登入失败",
     regFail: "注册失败",
     regSuccess: "注册成功！请登入。",
+    
+    // OAuth
+    loginWithGithub: "使用 GitHub 登录",
+    loginWithGoogle: "使用 Google 登录",
+    registerWithGithub: "通过 GitHub 验证",
+    registerWithGoogle: "通过 Google 验证",
+    orUsePassword: "或使用用户名密码",
+    orRegisterDirect: "或直接注册",
+    registerStep1Desc: "先通过 GitHub 或 Google 验证身份，然后设置用户名和密码。",
+    completeRegTitle: "完善账户信息",
+    completeRegDesc: "请设置您的用户名和密码来完成账户创建。",
+    verifiedSuccess: "验证成功！",
+    usernamePlaceholder: "请输入用户名",
+    passwordPlaceholder: "设置密码（至少6位）",
+    finishRegistration: "完成注册",
+    bindAccount: "绑定账号",
+    bindAccountTitle: "绑定第三方账号",
+    bindAccountDesc: "绑定 GitHub 或 Google 账号，下次登录更方便。",
+    bindGithub: "绑定 GitHub",
+    bindGoogle: "绑定 Google",
     
     // Sidebar & Topics
     "allVideos": "所有",
