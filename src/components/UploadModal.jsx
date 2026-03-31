@@ -39,18 +39,17 @@ const UploadModal = ({ onClose, onSuccess }) => {
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     if (selected && selected.type === 'video/mp4') {
-      const isTooLarge = selected.size > 30 * 1024 * 1024; // 30MB
-      setFile(selected);
-      if (isTooLarge) {
-        setFileSizeError(true);
-        setError(t('errFileTooLarge') || '文件大小超过30MB限制');
-      } else {
-        setFileSizeError(false);
-        setError('');
+      if (selected.size > 30 * 1024 * 1024) {
+        setFileSizeError(t('errFileTooLarge'));
+        setFile(null);
+        return;
       }
+      setFile(selected);
+      setFileSizeError('');
+      setError('');
     } else if (selected) {
       setFile(null);
-      setFileSizeError(false);
+      setFileSizeError('');
       setError(t('errInvalidFile'));
     }
   };
@@ -74,7 +73,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
       xhrRef.current = null;
       setIsUploading(false);
       setUploadProgress(0);
-      setError('上传已取消');
+      setError(t('uploadCancelled'));
     }
   };
 
@@ -101,27 +100,15 @@ const UploadModal = ({ onClose, onSuccess }) => {
     if (selectedTags.length > 0) formData.append('tags', selectedTags.join(','));
     formData.append('file', file);
     if (sourceFile) {
-      console.log("Appending source_file:", sourceFile.name, sourceFile.size);
       formData.append('source_file', sourceFile);
-    } else {
-      console.log("No source_file selected.");
-    }
-    
-    // Log all keys in FormData for debugging
-    for (var pair of formData.entries()) {
-      console.log('FormData:', pair[0], pair[1]);
     }
 
-    const apiUrl = API_BASE;
-    
-    // Using XMLHttpRequest for progress tracking
     const xhr = new XMLHttpRequest();
     xhrRef.current = xhr;
     
-    xhr.open('POST', `${apiUrl}/videos`, true);
+    xhr.open('POST', `${API_BASE}/videos`, true);
     xhr.setRequestHeader('Authorization', `Bearer ${token}`);
 
-    // Track upload progress
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) {
         const percent = Math.round((event.loaded / event.total) * 100);
@@ -152,17 +139,11 @@ const UploadModal = ({ onClose, onSuccess }) => {
       setIsUploading(false);
     };
 
-    xhr.onabort = () => {
-      xhrRef.current = null;
-      console.log('Upload aborted by user');
-    };
-
     xhr.send(formData);
   };
 
   return (
     <div className="modal-overlay" onClick={onClose} style={{ zIndex: 1100 }}>
-      {/* Set a high z-index to ensure it sits above the header */}
       <div 
         className="modal-content" 
         onClick={e => e.stopPropagation()}
@@ -174,7 +155,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
         
         <h2 style={{ marginBottom: '24px', color: 'var(--text-primary)' }}>{t('uploadVideo')}</h2>
         
-        {error && <div className="error-message" style={{ marginBottom: '16px', color: '#EF4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '12px', borderRadius: '8px', fontSize: '14px' }}>{error}</div>}
+        {(error || fileSizeError) && <div className="error-message" style={{ marginBottom: '16px', color: '#EF4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '12px', borderRadius: '8px', fontSize: '14px' }}>{error || fileSizeError}</div>}
         
         <form onSubmit={handleUpload}>
           <div className="form-group" style={{ marginBottom: '20px' }}>
@@ -191,26 +172,26 @@ const UploadModal = ({ onClose, onSuccess }) => {
           
           <div className="form-group" style={{ marginBottom: '20px', display: 'flex', gap: '16px' }}>
             <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>主分类 (可选)</label>
+              <label className="form-label" style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>{t('labelL1')}</label>
               <select 
                 className="form-input" 
                 value={categoryL1}
                 onChange={(e) => {
                   setCategoryL1(e.target.value);
-                  setCategoryL2(''); // Reset subcategory when main category changes
+                  setCategoryL2('');
                 }}
                 disabled={isUploading}
                 style={{ width: '100%', appearance: 'auto', WebkitAppearance: 'auto', backgroundColor: 'var(--bg-primary)' }}
               >
-                <option value="">选择主分类</option>
+                <option value="">{t('placeholderL1')}</option>
                 {Object.keys(CATEGORIES).map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
+                  <option key={cat} value={cat}>{t(cat) || cat}</option>
                 ))}
               </select>
             </div>
             
             <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>二级分类 (可选)</label>
+              <label className="form-label" style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>{t('labelL2')}</label>
               <select 
                 className="form-input" 
                 value={categoryL2}
@@ -218,48 +199,43 @@ const UploadModal = ({ onClose, onSuccess }) => {
                 disabled={isUploading || !categoryL1}
                 style={{ width: '100%', appearance: 'auto', WebkitAppearance: 'auto', backgroundColor: 'var(--bg-primary)' }}
               >
-                <option value="">选择二级分类</option>
+                <option value="">{t('placeholderL2')}</option>
                 {categoryL1 && CATEGORIES[categoryL1].map(sub => (
-                  <option key={sub} value={sub}>{sub}</option>
+                  <option key={sub} value={sub}>{t(sub) || sub}</option>
                 ))}
               </select>
             </div>
           </div>
           
           <div className="form-group" style={{ marginBottom: '24px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>标签多选 (可选)</label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', maxHeight: '120px', overflowY: 'auto', padding: '8px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-              {Object.entries(CATEGORIES).map(([cat, subs]) => (
-                <React.Fragment key={cat}>
-                  {subs.map(sub => (
-                    <button 
-                      key={sub}
-                      type="button"
-                      onClick={() => toggleTag(sub)}
-                      disabled={isUploading}
-                      style={{
-                        padding: '4px 12px',
-                        borderRadius: '16px',
-                        border: selectedTags.includes(sub) ? '1px solid #cbd5e1' : '1px solid var(--border-color)',
-                        background: selectedTags.includes(sub) ? '#e2e8f0' : 'transparent',
-                        color: selectedTags.includes(sub) ? 'var(--text-primary)' : 'var(--text-secondary)',
-                        fontSize: '12px',
-                        cursor: isUploading ? 'not-allowed' : 'pointer',
-                        transition: 'all 0.2s ease',
-                        fontWeight: selectedTags.includes(sub) ? '500' : '400'
-                      }}
-                    >
-                      {sub}
-                    </button>
-                  ))}
-                </React.Fragment>
+            <label className="form-label" style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>{t('labelTags')}</label>
+            <div className="tag-cloud" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', maxHeight: '120px', overflowY: 'auto', padding: '8px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              {allPossibleTags.map(tag => (
+                <button 
+                  key={tag}
+                  type="button"
+                  onClick={() => toggleTag(tag)}
+                  disabled={isUploading}
+                  style={{
+                    padding: '4px 12px',
+                    borderRadius: '16px',
+                    border: selectedTags.includes(tag) ? '1px solid #cbd5e1' : '1px solid var(--border-color)',
+                    background: selectedTags.includes(tag) ? '#e2e8f0' : 'transparent',
+                    color: selectedTags.includes(tag) ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    fontSize: '12px',
+                    cursor: isUploading ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s ease',
+                    fontWeight: selectedTags.includes(tag) ? '500' : '400'
+                  }}
+                >
+                  {t(tag) || tag}
+                </button>
               ))}
             </div>
           </div>
 
           <div className="form-group" style={{ marginBottom: '32px' }}>
             <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>{t('videoFile')}</label>
-            
             <div 
               className="dropzone" 
               onClick={() => fileInputRef.current?.click()}
@@ -347,7 +323,6 @@ const UploadModal = ({ onClose, onSuccess }) => {
                 t('btnUpload')
               )}
               
-              {/* Background progress fill */}
               {isUploading && (
                 <div 
                   style={{
@@ -365,22 +340,19 @@ const UploadModal = ({ onClose, onSuccess }) => {
             </button>
 
             {isUploading && (
-              <button
-                type="button"
-                className="btn-outline"
+              <button 
+                type="button" 
+                className="btn-ghost" 
                 onClick={handleCancelUpload}
                 style={{ 
-                  flex: '1', 
-                  padding: '12px', 
-                  color: 'var(--error-color)',
-                  borderColor: 'var(--error-color)',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  gap: '8px'
+                  color: '#ef4444', 
+                  borderColor: '#fecaca',
+                  padding: '12px 24px',
+                  borderRadius: '12px',
+                  border: '1px solid #fecaca'
                 }}
               >
-                <X size={18} /> 取消
+                {t('btnCancel')}
               </button>
             )}
           </div>

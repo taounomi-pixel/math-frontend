@@ -160,7 +160,7 @@ const TheoremCard = ({ searchQuery = "" }) => {
       <div style={{ textAlign: 'center', margin: '32px 0', padding: '64px', background: 'var(--bg-secondary)', borderRadius: '16px' }}>
         {categoryHeader && (
           <p style={{ color: 'var(--text-secondary)', marginBottom: '12px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            <Tag size={16} /> {categoryHeader}
+            <Tag size={16} /> {t(decodedL1)} {decodedL2 ? ` › ${t(decodedL2)}` : ''}
           </p>
         )}
         <h3 style={{ color: 'var(--text-primary)' }}>
@@ -189,9 +189,9 @@ const TheoremCard = ({ searchQuery = "" }) => {
           alignItems: 'center',
           gap: '8px'
         }}>
-          <FolderOpen size={18} /> {categoryHeader}
+          <FolderOpen size={18} /> {t(decodedL1)} {decodedL2 ? ` › ${t(decodedL2)}` : ''}
           <span style={{ fontSize: '13px', fontWeight: '400', color: 'var(--text-secondary)', marginLeft: 'auto' }}>
-            {filteredVideos.length} 个结果
+            {filteredVideos.length} {t('resultsCount')}
           </span>
         </div>
       )}
@@ -210,7 +210,12 @@ const TheoremCard = ({ searchQuery = "" }) => {
 };
 
 const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
-  const categoryLabel = [video.category_l1, video.category_l2].filter(Boolean).join(' › ');
+  const categoryLabel = [t(video.category_l1), t(video.category_l2)].filter(cat => cat && cat !== video.category_l1 && cat !== video.category_l2 ? true : (cat ? true : false)).join(' › ');
+  // Better way to handle the join since t(key) fallback is key
+  const finalCategoryLabel = [
+    video.category_l1 ? (t(video.category_l1) || video.category_l1) : null,
+    video.category_l2 ? (t(video.category_l2) || video.category_l2) : null
+  ].filter(Boolean).join(' › ');
   
   const [showCode, setShowCode] = useState(false);
   const [codeContent, setCodeContent] = useState('');
@@ -247,14 +252,14 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
                 color: 'var(--text-secondary)',
                 border: '1px solid var(--border-color)'
               }}>
-                #{tag}
+                #{t(tag) || tag}
               </span>
             ))}
           </div>
         )}
-        {categoryLabel && (
+        {finalCategoryLabel && (
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Tag size={14} /> {categoryLabel}
+            <Tag size={14} /> {finalCategoryLabel}
           </p>
         )}
         <p className="hero-desc" style={{ fontSize: '15px' }}>
@@ -327,7 +332,7 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
           <div style={{ background: 'var(--bg-primary)', width: '90%', maxWidth: '800px', height: '80vh', borderRadius: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
             <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px' }}>
-                <Code size={20} /> {video.title} - 代码查看
+                <Code size={20} /> {video.title} - {t('viewCode')}
               </h3>
               <button onClick={() => setShowCode(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '28px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%' }}>&times;</button>
             </div>

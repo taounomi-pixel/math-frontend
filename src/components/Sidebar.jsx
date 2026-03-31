@@ -39,7 +39,7 @@ const Sidebar = () => {
               to={`/c/${encodeURIComponent(cat)}`}
               className={`topic-btn ${isActive ? 'active' : ''}`}
             >
-              {cat}
+              {t(cat) || cat}
             </NavLink>
           );
         })}
@@ -72,7 +72,7 @@ const Sidebar = () => {
                 style={{ fontSize: '13px', padding: '6px 14px' }}
                 end
               >
-                {sub}
+                {t(sub) || sub}
               </NavLink>
             ))}
           </div>

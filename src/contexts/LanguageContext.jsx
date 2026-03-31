@@ -5,11 +5,13 @@ const translations = {
     // Header
     searchPlaceholder: "Search theorems, topics, or creators...",
     langEN: "English (EN)",
-    langZH: "简体中文 (ZH)",
+    langZH: "简体中文 (CN)",
     langFR: "Français (FR)",
     upload: "Upload",
     signIn: "Sign In",
     logout: "Logout",
+    resultsCount: "results",
+    language: "Language",
     
     // Auth Modal
     loginTitle: "Sign In",
@@ -36,6 +38,38 @@ const translations = {
     "Number Theory": "Number Theory",
     "Topology": "Topology",
     "Probability": "Probability",
+    
+    // Categories & Tags
+    "代数": "Algebra",
+    "初等代数": "Elementary Algebra",
+    "高等代数": "Advanced Algebra",
+    "抽象代数": "Abstract Algebra",
+    "几何": "Geometry",
+    "欧几里得几何": "Euclidean Geometry",
+    "罗巴切夫斯基几何": "Lobachevskian Geometry",
+    "黎曼几何": "Riemannian Geometry",
+    "射影几何": "Projective Geometry",
+    "解析几何": "Analytic Geometry",
+    "分形几何": "Fractal Geometry",
+    "微分几何": "Differential Geometry",
+    "代数几何": "Algebraic Geometry",
+    "拓扑学": "Topology",
+    "分析": "Analysis",
+    "微积分": "Calculus",
+    "实分析": "Real Analysis",
+    "复分析": "Complex Analysis",
+    "泛函分析": "Functional Analysis",
+    "调和分析": "Harmonic Analysis",
+    "数论": "Number Theory",
+    "初等数论": "Elementary Number Theory",
+    "解析数论": "Analytic Number Theory",
+    "代数数论": "Algebraic Number Theory",
+    "几何数论": "Geometric Number Theory",
+    "概率": "Probability",
+    "概率论": "Probability Theory",
+    "随机过程": "Stochastic Process",
+    "随机分析": "Stochastic Analysis",
+    "统计学": "Statistics",
     
     // Home Page Descriptions
     descWait: "The main video grid will be rendered here.",
@@ -70,6 +104,15 @@ const translations = {
     errFieldsRequired: "Both title and MP4 file are required.",
     errLoginRequired: "You must be logged in to upload.",
     errUploadFail: "Upload failed",
+    errFileTooLarge: "File size exceeds 30MB limit",
+    
+    // Upload Modal Labels
+    labelL1: "Major Category (Optional)",
+    labelL2: "Secondary Category (Optional)",
+    labelTags: "Tags (Optional)",
+    placeholderL1: "Select major category",
+    placeholderL2: "Select secondary category",
+    btnCancel: "Cancel",
     
     // Delete
     btnDelete: "Delete",
@@ -87,11 +130,13 @@ const translations = {
     // Header
     searchPlaceholder: "搜索定理、主题或创作者...",
     langEN: "English (EN)",
-    langZH: "简体中文 (ZH)",
+    langZH: "简体中文 (CN)",
     langFR: "Français (FR)",
     upload: "上传",
     signIn: "登入",
     logout: "注销",
+    resultsCount: "个结果",
+    language: "语言",
     
     // Auth Modal
     loginTitle: "登入",
@@ -118,6 +163,38 @@ const translations = {
     "Number Theory": "数论",
     "Topology": "拓扑学",
     "Probability": "概率统计",
+
+    // Categories & Tags
+    "代数": "代数",
+    "初等代数": "初等代数",
+    "高等代数": "高等代数",
+    "抽象代数": "抽象代数",
+    "几何": "几何",
+    "欧几里得几何": "欧几里得几何",
+    "罗巴切夫斯基几何": "罗巴切夫斯基几何",
+    "黎曼几何": "黎曼几何",
+    "射影几何": "射影几何",
+    "解析几何": "解析几何",
+    "分形几何": "分形几何",
+    "微分几何": "微分几何",
+    "代数几何": "代数几何",
+    "拓扑学": "拓扑学",
+    "分析": "分析",
+    "微积分": "微积分",
+    "实分析": "实分析",
+    "复分析": "复分析",
+    "泛函分析": "泛函分析",
+    "调和分析": "调和分析",
+    "数论": "数论",
+    "初等数论": "初等数论",
+    "解析数论": "解析数论",
+    "代数数论": "代数数论",
+    "几何数论": "几何数论",
+    "概率": "概率",
+    "概率论": "概率论",
+    "随机过程": "随机过程",
+    "随机分析": "随机分析",
+    "统计学": "统计学",
     
     // Home Page Descriptions
     descWait: "主要的视频网格将渲染在此处。",
@@ -152,6 +229,15 @@ const translations = {
     errFieldsRequired: "标题和视频文件均为必填项。",
     errLoginRequired: "你需要登录后才能上传视频。",
     errUploadFail: "上传失败",
+    errFileTooLarge: "文件大小超过30MB限制",
+    
+    // Upload Modal Labels
+    labelL1: "主分类 (可选)",
+    labelL2: "二级分类 (可选)",
+    labelTags: "标签多选 (可选)",
+    placeholderL1: "选择主分类",
+    placeholderL2: "选择二级分类",
+    btnCancel: "取消",
     
     // 删除
     btnDelete: "删除",

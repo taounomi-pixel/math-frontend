@@ -144,7 +144,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 style={{ padding: '8px', whiteSpace: 'nowrap' }}
               >
                 <Globe size={18} />
-                <span className="current-lang">{lang.toUpperCase()}</span>
+                <span className="current-lang">{lang === 'zh' ? 'CN' : lang.toUpperCase()}</span>
                 <ChevronDown size={14} className="dropdown-arrow" />
               </button>
               <div className={`dropdown-menu ${isLangDropdownOpen ? 'show' : ''}`}>
@@ -231,7 +231,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 </button>
               )}
               <button className="btn-outline mobile-nav-btn" onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}>
-                <Globe size={16} /> {t('language')}: {lang.toUpperCase()}
+                <Globe size={16} /> {t('language')}: {lang === 'zh' ? 'CN' : 'EN'}
               </button>
               {currentUser ? (
                 <button className="btn-outline mobile-nav-btn" onClick={handleLogout} style={{ color: 'var(--error-color)' }}>
