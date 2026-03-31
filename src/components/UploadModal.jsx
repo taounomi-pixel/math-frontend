@@ -280,6 +280,12 @@ const UploadModal = ({ onClose, onSuccess }) => {
           border-color: var(--accent-primary);
           color: var(--accent-primary);
         }
+        .tag-item.active {
+          background: var(--accent-primary) !important;
+          color: white !important;
+          border-color: var(--accent-primary) !important;
+          box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.3);
+        }
 
         .dropzone-refined {
           border: 2px dashed var(--border-color);
@@ -392,13 +398,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
                       type="button"
                       onClick={() => toggleTag(tag)}
                       disabled={isUploading}
-                      className="tag-item"
-                      style={{
-                        background: isActive ? 'var(--accent-primary)' : 'white',
-                        color: isActive ? 'white' : 'var(--text-secondary)',
-                        borderColor: isActive ? 'var(--accent-primary)' : 'var(--border-color)',
-                        boxShadow: isActive ? '0 4px 6px -1px rgba(2, 132, 199, 0.3)' : 'none'
-                      }}
+                      className={`tag-item ${isActive ? 'active' : ''}`}
                     >
                       {t(tag) || tag}
                     </button>
