@@ -122,7 +122,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 <path d="M4 20 Q12 16 12 12 T20 4"></path>
               </svg>
             </div>
-            <span className="logo-text">MathVis</span>
+            <span className="logo-text">{t('logoText')}</span>
           </a>
 
           <div className="header-search">

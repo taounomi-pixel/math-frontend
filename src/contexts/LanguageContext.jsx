@@ -12,6 +12,7 @@ const translations = {
     logout: "Logout",
     resultsCount: "results",
     language: "Language",
+    logoText: "MathVis - Theorem Visualization",
     
     // Auth Modal
     loginTitle: "Sign In",
@@ -138,6 +139,7 @@ const translations = {
     logout: "注销",
     resultsCount: "个结果",
     language: "语言",
+    logoText: "MathVis - 定理可视化",
     
     // Auth Modal
     loginTitle: "登入",
