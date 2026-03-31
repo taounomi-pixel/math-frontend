@@ -21,6 +21,17 @@ const UploadModal = ({ onClose, onSuccess }) => {
   const fileInputRef = useRef(null);
   const xhrRef = useRef(null);
 
+  React.useEffect(() => {
+    // Lock body scroll when modal opens
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+    
+    return () => {
+      // Restore body scroll when modal closes
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
   const toggleTag = (tag) => {
     if (tag === categoryL2) {
       setCategoryL2('');
@@ -176,6 +187,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
           overflow-y: auto;
           padding: 40px;
           flex: 1;
+          overscroll-behavior: contain; /* Prevent scroll chaining */
           background-image: 
             radial-gradient(var(--border-color) 1px, transparent 1px);
           background-size: 32px 32px;
