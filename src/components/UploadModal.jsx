@@ -161,36 +161,49 @@ const UploadModal = ({ onClose, onSuccess }) => {
           background: var(--bg-main);
           width: 520px;
           max-width: 95%;
-          max-height: 90vh;
+          max-height: 85vh;
           border-radius: 24px;
-          padding: 40px;
           position: relative;
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+          box-shadow: var(--shadow-glass);
           animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-          overflow-y: auto;
+          overflow: hidden; /* Clip everything to rounded corners */
           border: 1px solid rgba(255, 255, 255, 0.5);
-          /* Subtle Math Grid Background */
+          display: flex;
+          flex-direction: column;
+        }
+
+        .modal-scroll-area {
+          overflow-y: auto;
+          padding: 40px;
+          flex: 1;
           background-image: 
             radial-gradient(var(--border-color) 1px, transparent 1px);
           background-size: 32px 32px;
           background-position: center;
         }
 
-        .modal-card::-webkit-scrollbar {
-          width: 6px;
+        .modal-scroll-area::-webkit-scrollbar {
+          width: 8px;
         }
-        .modal-card::-webkit-scrollbar-thumb {
+        .modal-scroll-area::-webkit-scrollbar-thumb {
           background: var(--border-color);
-          border-radius: 3px;
+          border-radius: 4px;
+          border: 2px solid var(--bg-main);
+        }
+        .modal-scroll-area::-webkit-scrollbar-track {
+          background: transparent;
         }
 
         .close-btn {
           position: absolute;
-          top: 24px; right: 24px;
+          top: 16px; right: 16px;
           color: var(--text-tertiary);
           transition: all 0.2s;
           padding: 8px;
           border-radius: 12px;
+          z-index: 10;
+          background: rgba(255,255,255,0.8);
+          backdrop-filter: blur(4px);
         }
         .close-btn:hover {
           background: var(--bg-tertiary);
@@ -217,6 +230,9 @@ const UploadModal = ({ onClose, onSuccess }) => {
           color: var(--text-primary);
           transition: all 0.2s;
           outline: none;
+          appearance: none;
+          -webkit-appearance: none;
+          -moz-appearance: none;
         }
         .form-input:focus, .form-select:focus {
           border-color: var(--accent-primary);
@@ -234,6 +250,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
           transform: translateY(-50%);
           pointer-events: none;
           color: var(--text-tertiary);
+          z-index: 1;
         }
 
         .tag-cloud {
@@ -254,6 +271,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
           font-weight: 500;
           cursor: pointer;
           transition: all 0.2s;
+          border: 1.5px solid var(--border-color);
         }
 
         .dropzone-refined {
@@ -279,172 +297,174 @@ const UploadModal = ({ onClose, onSuccess }) => {
 
       <div className="modal-card" onClick={e => e.stopPropagation()}>
         <button className="close-btn" onClick={onClose} disabled={isUploading}>
-          <X size={20} />
+          <X size={18} />
         </button>
 
-        <div style={{ marginBottom: '32px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '8px' }}>
-            {t('uploadVideo')}
-          </h2>
-          <p style={{ fontSize: '14px', color: 'var(--text-tertiary)' }}>
-            Share your mathematical visualization with the community
-          </p>
-        </div>
-
-        {(error || fileSizeError) && (
-          <div style={{ 
-            marginBottom: '24px', padding: '12px 16px', 
-            borderRadius: '12px', background: '#FEF2F2', 
-            color: '#B91C1C', fontSize: '14px', fontWeight: '500',
-            border: '1px solid #FECACA', display: 'flex', gap: '8px', alignItems: 'center'
-          }}>
-            <X size={16} /> {error || fileSizeError}
-          </div>
-        )}
-
-        <form onSubmit={handleUpload}>
-          <div style={{ marginBottom: '24px' }}>
-            <label className="form-label">{t('title')}</label>
-            <input 
-              type="text" 
-              className="form-input" 
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={t('titlePlaceholder')}
-              disabled={isUploading}
-            />
+        <div className="modal-scroll-area">
+          <div style={{ marginBottom: '32px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '8px' }}>
+              {t('uploadVideo')}
+            </h2>
+            <p style={{ fontSize: '14px', color: 'var(--text-tertiary)' }}>
+              Share your mathematical visualization with the community
+            </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
-            <div style={{ flex: 1 }}>
-              <label className="form-label">{t('labelL1')}</label>
-              <div className="select-wrapper">
-                <select 
-                  className="form-select"
-                  value={categoryL1}
-                  onChange={(e) => {
-                    setCategoryL1(e.target.value);
-                    setCategoryL2('');
-                  }}
-                  disabled={isUploading}
-                >
-                  <option value="">{t('placeholderL1')}</option>
-                  {Object.keys(CATEGORIES).map(cat => (
-                    <option key={cat} value={cat}>{t(cat) || cat}</option>
-                  ))}
-                </select>
-                <ChevronDown className="select-arrow" size={16} />
-              </div>
+          {(error || fileSizeError) && (
+            <div style={{ 
+              marginBottom: '24px', padding: '12px 16px', 
+              borderRadius: '12px', background: '#FEF2F2', 
+              color: '#B91C1C', fontSize: '14px', fontWeight: '500',
+              border: '1px solid #FECACA', display: 'flex', gap: '8px', alignItems: 'center'
+            }}>
+              <X size={16} /> {error || fileSizeError}
             </div>
-            <div style={{ flex: 1 }}>
-              <label className="form-label">{t('labelL2')}</label>
-              <div className="select-wrapper">
-                <select 
-                  className="form-select"
-                  value={categoryL2}
-                  onChange={(e) => setCategoryL2(e.target.value)}
-                  disabled={isUploading || !categoryL1}
-                >
-                  <option value="">{t('placeholderL2')}</option>
-                  {categoryL1 && CATEGORIES[categoryL1].map(sub => (
-                    <option key={sub} value={sub}>{t(sub) || sub}</option>
-                  ))}
-                </select>
-                <ChevronDown className="select-arrow" size={16} />
-              </div>
-            </div>
-          </div>
+          )}
 
-          <div style={{ marginBottom: '24px' }}>
-            <label className="form-label">{t('labelTags')}</label>
-            <div className="tag-cloud">
-              {allPossibleTags.map(tag => {
-                const isActive = selectedTags.includes(tag);
-                return (
-                  <button 
-                    key={tag}
-                    type="button"
-                    onClick={() => toggleTag(tag)}
-                    disabled={isUploading}
-                    className="tag-item"
-                    style={{
-                      background: isActive ? 'var(--accent-primary)' : 'white',
-                      color: isActive ? 'white' : 'var(--text-secondary)',
-                      border: `1.5px solid ${isActive ? 'var(--accent-primary)' : 'var(--border-color)'}`,
-                      boxShadow: isActive ? '0 4px 6px -1px rgba(2, 132, 199, 0.3)' : 'none'
+          <form onSubmit={handleUpload}>
+            <div style={{ marginBottom: '24px' }}>
+              <label className="form-label">{t('title')}</label>
+              <input 
+                type="text" 
+                className="form-input" 
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={t('titlePlaceholder')}
+                disabled={isUploading}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+              <div style={{ flex: 1 }}>
+                <label className="form-label">{t('labelL1')}</label>
+                <div className="select-wrapper">
+                  <select 
+                    className="form-select"
+                    value={categoryL1}
+                    onChange={(e) => {
+                      setCategoryL1(e.target.value);
+                      setCategoryL2('');
                     }}
+                    disabled={isUploading}
                   >
-                    {t(tag) || tag}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '20px', marginBottom: '32px' }}>
-            <div style={{ flex: 1 }}>
-              <label className="form-label">{t('videoFile')}</label>
-              <div className="dropzone-refined" onClick={() => fileInputRef.current?.click()}>
-                <input 
-                  type="file" accept="video/mp4" ref={fileInputRef} 
-                  onChange={handleFileChange} style={{ display: 'none' }} disabled={isUploading}
-                />
-                <Upload size={24} style={{ color: 'var(--accent-primary)', margin: '0 auto 12px' }} />
-                <div style={{ fontSize: '13px', fontWeight: '600', color: file ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
-                  {file ? file.name : t("selectFileHint")}
+                    <option value="">{t('placeholderL1')}</option>
+                    {Object.keys(CATEGORIES).map(cat => (
+                      <option key={cat} value={cat}>{t(cat) || cat}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="select-arrow" size={16} />
+                </div>
+              </div>
+              <div style={{ flex: 1 }}>
+                <label className="form-label">{t('labelL2')}</label>
+                <div className="select-wrapper">
+                  <select 
+                    className="form-select"
+                    value={categoryL2}
+                    onChange={(e) => setCategoryL2(e.target.value)}
+                    disabled={isUploading || !categoryL1}
+                  >
+                    <option value="">{t('placeholderL2')}</option>
+                    {categoryL1 && CATEGORIES[categoryL1].map(sub => (
+                      <option key={sub} value={sub}>{t(sub) || sub}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="select-arrow" size={16} />
                 </div>
               </div>
             </div>
-            <div style={{ flex: 1 }}>
-              <label className="form-label">{t('manimSource')}</label>
-              <input type="file" accept=".py" onChange={handleSourceChange} style={{ display: 'none' }} id="src-upload" disabled={isUploading} />
-              <label 
-                htmlFor="src-upload" 
-                className="dropzone-refined" 
-                style={{ display: 'block', padding: '32px 16px' }}
-              >
-                <FileText size={24} style={{ color: sourceFile ? 'var(--accent-primary)' : 'var(--text-tertiary)', margin: '0 auto 12px' }} />
-                <div style={{ fontSize: '13px', fontWeight: '600', color: sourceFile ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>
-                  {sourceFile ? sourceFile.name : t('sourceFileHint')}
-                </div>
-              </label>
-            </div>
-          </div>
 
-          <div className="btn-row">
-            <button 
-              type="button" 
-              className="btn-outline" 
-              onClick={onClose}
-              disabled={isUploading}
-              style={{ flex: 1, padding: '14px', borderRadius: '14px' }}
-            >
-              {t('btnCancel')}
-            </button>
-            <button 
-              type="submit" 
-              className="btn-primary" 
-              disabled={isUploading || fileSizeError || !title || !file}
-              style={{ 
-                flex: 1.5, padding: '14px', borderRadius: '14px',
-                opacity: (fileSizeError || !title || !file) ? 0.6 : 1,
-                cursor: (fileSizeError || !title || !file) ? 'not-allowed' : 'pointer'
-              }}
-            >
-              {isUploading ? (
-                <span style={{ display: 'flex', alignItems: 'center' }}>
-                  <Loader2 size={18} className="spinning" style={{ marginRight: '8px' }} /> 
-                  {uploadProgress}%
-                </span>
-              ) : (
-                <span style={{ display: 'flex', alignItems: 'center' }}>
-                  <CheckCircle size={18} style={{ marginRight: '8px' }} />
-                  {t('btnUpload')}
-                </span>
-              )}
-            </button>
-          </div>
-        </form>
+            <div style={{ marginBottom: '24px' }}>
+              <label className="form-label">{t('labelTags')}</label>
+              <div className="tag-cloud">
+                {allPossibleTags.map(tag => {
+                  const isActive = selectedTags.includes(tag);
+                  return (
+                    <button 
+                      key={tag}
+                      type="button"
+                      onClick={() => toggleTag(tag)}
+                      disabled={isUploading}
+                      className="tag-item"
+                      style={{
+                        background: isActive ? 'var(--accent-primary)' : 'white',
+                        color: isActive ? 'white' : 'var(--text-secondary)',
+                        borderColor: isActive ? 'var(--accent-primary)' : 'var(--border-color)',
+                        boxShadow: isActive ? '0 4px 6px -1px rgba(2, 132, 199, 0.3)' : 'none'
+                      }}
+                    >
+                      {t(tag) || tag}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '20px', marginBottom: '32px' }}>
+              <div style={{ flex: 1 }}>
+                <label className="form-label">{t('videoFile')}</label>
+                <div className="dropzone-refined" onClick={() => fileInputRef.current?.click()}>
+                  <input 
+                    type="file" accept="video/mp4" ref={fileInputRef} 
+                    onChange={handleFileChange} style={{ display: 'none' }} disabled={isUploading}
+                  />
+                  <Upload size={24} style={{ color: 'var(--accent-primary)', margin: '0 auto 12px' }} />
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: file ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                    {file ? file.name : t("selectFileHint")}
+                  </div>
+                </div>
+              </div>
+              <div style={{ flex: 1 }}>
+                <label className="form-label">{t('manimSource')}</label>
+                <input type="file" accept=".py" onChange={handleSourceChange} style={{ display: 'none' }} id="src-upload" disabled={isUploading} />
+                <label 
+                  htmlFor="src-upload" 
+                  className="dropzone-refined" 
+                  style={{ display: 'block', padding: '32px 16px' }}
+                >
+                  <FileText size={24} style={{ color: sourceFile ? 'var(--accent-primary)' : 'var(--text-tertiary)', margin: '0 auto 12px' }} />
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: sourceFile ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>
+                    {sourceFile ? sourceFile.name : t('sourceFileHint')}
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div className="btn-row">
+              <button 
+                type="button" 
+                className="btn-outline" 
+                onClick={onClose}
+                disabled={isUploading}
+                style={{ flex: 1, padding: '14px', borderRadius: '14px' }}
+              >
+                {t('btnCancel')}
+              </button>
+              <button 
+                type="submit" 
+                className="btn-primary" 
+                disabled={isUploading || fileSizeError || !title || !file}
+                style={{ 
+                  flex: 1.5, padding: '14px', borderRadius: '14px',
+                  opacity: (fileSizeError || !title || !file) ? 0.6 : 1,
+                  cursor: (fileSizeError || !title || !file) ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {isUploading ? (
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    <Loader2 size={18} className="spinning" style={{ marginRight: '8px' }} /> 
+                    {uploadProgress}%
+                  </span>
+                ) : (
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    <CheckCircle size={18} style={{ marginRight: '8px' }} />
+                    {t('btnUpload')}
+                  </span>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
