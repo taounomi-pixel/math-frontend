@@ -13,6 +13,7 @@ const translations = {
     resultsCount: "results",
     language: "Language",
     logoText: "MathVis-Theorem Visualization",
+    wakingUp: "Server is waking up, please wait a moment...",
     
     // Auth Modal
     loginTitle: "Sign In",
@@ -140,6 +141,7 @@ const translations = {
     resultsCount: "个结果",
     language: "语言",
     logoText: "MathVis-定理可视化",
+    wakingUp: "正在唤醒服务器，请稍候...",
     
     // Auth Modal
     loginTitle: "登入",

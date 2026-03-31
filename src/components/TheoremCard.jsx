@@ -11,8 +11,17 @@ const TheoremCard = ({ searchQuery = "" }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const [showWakingMessage, setShowWakingMessage] = useState(false);
+  
   const fetchVideos = async () => {
     setIsLoading(true);
+    setShowWakingMessage(false);
+    
+    // Timer to show "Waking up..." message after 3 seconds
+    const timer = setTimeout(() => {
+      setShowWakingMessage(true);
+    }, 3000);
+
     try {
       const response = await fetch(`${API_BASE}/videos`);
       if (!response.ok) throw new Error('Failed to fetch videos');
@@ -21,6 +30,7 @@ const TheoremCard = ({ searchQuery = "" }) => {
     } catch (err) {
       setError(err.message);
     } finally {
+      clearTimeout(timer);
       setIsLoading(false);
     }
   };
@@ -101,8 +111,13 @@ const TheoremCard = ({ searchQuery = "" }) => {
 
   if (isLoading && videos.length === 0) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '64px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px', gap: '16px' }}>
         <Loader2 className="spinning" size={32} color="var(--primary)" />
+        {showWakingMessage && (
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', animation: 'fadeIn 0.5s ease' }}>
+            {t('wakingUp')}
+          </p>
+        )}
       </div>
     );
   }
