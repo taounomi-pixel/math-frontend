@@ -18,10 +18,21 @@ const UploadModal = ({ onClose, onSuccess }) => {
   const fileInputRef = useRef(null);
 
   const toggleTag = (tag) => {
+    // Bidirectional binding: if we deselect the current L2 category tag, clear the dropdown
+    if (tag === categoryL2) {
+      setCategoryL2('');
+    }
     setSelectedTags(prev => 
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
     );
   };
+
+  // Sync categoryL2 with tags (The "Binding" state)
+  React.useEffect(() => {
+    if (categoryL2 && !selectedTags.includes(categoryL2)) {
+      setSelectedTags(prev => [...prev, categoryL2]);
+    }
+  }, [categoryL2]);
 
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
@@ -202,12 +213,13 @@ const UploadModal = ({ onClose, onSuccess }) => {
                       style={{
                         padding: '4px 12px',
                         borderRadius: '16px',
-                        border: selectedTags.includes(sub) ? 'none' : '1px solid var(--border-color)',
-                        background: selectedTags.includes(sub) ? 'var(--primary-color)' : 'transparent',
-                        color: selectedTags.includes(sub) ? '#fff' : 'var(--text-secondary)',
+                        border: selectedTags.includes(sub) ? '1px solid #cbd5e1' : '1px solid var(--border-color)',
+                        background: selectedTags.includes(sub) ? '#e2e8f0' : 'transparent',
+                        color: selectedTags.includes(sub) ? 'var(--text-primary)' : 'var(--text-secondary)',
                         fontSize: '12px',
                         cursor: isUploading ? 'not-allowed' : 'pointer',
-                        transition: 'all 0.2s ease'
+                        transition: 'all 0.2s ease',
+                        fontWeight: selectedTags.includes(sub) ? '500' : '400'
                       }}
                     >
                       {sub}
