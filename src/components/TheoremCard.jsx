@@ -1,24 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { PlayCircle, Bookmark, Play, Heart, Loader2, Trash2, Code } from 'lucide-react';
+import { PlayCircle, Bookmark, Play, Heart, Loader2, Trash2, Code, Tag, FolderOpen } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import { API_BASE } from '../utils/api';
 
 const TheoremCard = ({ searchQuery = "" }) => {
   const { t } = useLanguage();
+  const { categoryL1, categoryL2 } = useParams();
   const [videos, setVideos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const [showWakingMessage, setShowWakingMessage] = useState(false);
+  
   const fetchVideos = async () => {
     setIsLoading(true);
+    setShowWakingMessage(false);
+    
+    // Timer to show "Waking up..." message after 3 seconds
+    const timer = setTimeout(() => {
+      setShowWakingMessage(true);
+    }, 3000);
+
+    const token = localStorage.getItem('access_token');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000/api`;
-      const response = await fetch(`${apiUrl}/videos`);
+      const response = await fetch(`${API_BASE}/videos`, { headers });
       if (!response.ok) throw new Error('Failed to fetch videos');
       const data = await response.json();
       setVideos(data);
     } catch (err) {
       setError(err.message);
     } finally {
+      clearTimeout(timer);
       setIsLoading(false);
     }
   };
@@ -41,8 +57,7 @@ const TheoremCard = ({ searchQuery = "" }) => {
 
     const token = localStorage.getItem('access_token');
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000/api`;
-      const fullUrl = `${apiUrl}/videos/${videoId}`;
+      const fullUrl = `${API_BASE}/videos/${videoId}`;
       console.log(`[DEBUG] Attempting DELETE at: ${fullUrl}`);
       const response = await fetch(fullUrl, {
         method: 'DELETE',
@@ -78,8 +93,7 @@ const TheoremCard = ({ searchQuery = "" }) => {
     }
     
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000/api`;
-      const res = await fetch(`${apiUrl}/videos/${videoId}/like`, {
+      const res = await fetch(`${API_BASE}/videos/${videoId}/like`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -101,8 +115,13 @@ const TheoremCard = ({ searchQuery = "" }) => {
 
   if (isLoading && videos.length === 0) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '64px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px', gap: '16px' }}>
         <Loader2 className="spinning" size={32} color="var(--primary)" />
+        {showWakingMessage && (
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', animation: 'fadeIn 0.5s ease' }}>
+            {t('wakingUp')}
+          </p>
+        )}
       </div>
     );
   }
@@ -124,38 +143,88 @@ const TheoremCard = ({ searchQuery = "" }) => {
     );
   }
 
-  // Define Filter Logic: title, uploader_username, and tags
+  // --- Filter by category from URL params ---
+  const decodedL1 = categoryL1 ? decodeURIComponent(categoryL1) : null;
+  const decodedL2 = categoryL2 ? decodeURIComponent(categoryL2) : null;
+
+  let filteredVideos = videos;
+
+  // Apply category filter
+  if (decodedL1) {
+    filteredVideos = filteredVideos.filter(v => v.category_l1 === decodedL1);
+  }
+  if (decodedL2) {
+    filteredVideos = filteredVideos.filter(v => v.category_l2 === decodedL2);
+  }
+
+  // Apply search text filter
   const lowerQuery = searchQuery.toLowerCase().trim();
-  const filteredVideos = videos.filter(video => {
-    if (!lowerQuery) return true;
-    
-    const titleMatch = (video.title || "").toLowerCase().includes(lowerQuery);
-    const uploaderMatch = (video.uploader_username || "").toLowerCase().includes(lowerQuery);
-    
-    // Check tags if they exist. (Simulating backend tags support for flexibility)
-    const tags = video.tags || [];
-    const tagsMatch = tags.some(tag => tag.toLowerCase().includes(lowerQuery));
+  if (lowerQuery) {
+    filteredVideos = filteredVideos.filter(video => {
+      const titleMatch = (video.title || "").toLowerCase().includes(lowerQuery);
+      const uploaderMatch = (video.uploader_username || "").toLowerCase().includes(lowerQuery);
+      const tags = video.tags || [];
+      const tagsMatch = tags.some(tag => tag.toLowerCase().includes(lowerQuery));
+      return titleMatch || uploaderMatch || tagsMatch;
+    });
+  }
 
-    return titleMatch || uploaderMatch || tagsMatch;
-  });
+  // Category header
+  const categoryHeader = decodedL2 
+    ? `${decodedL1} › ${decodedL2}` 
+    : decodedL1 || null;
 
-  if (filteredVideos.length === 0 && videos.length > 0) {
+  if (filteredVideos.length === 0) {
     return (
       <div style={{ textAlign: 'center', margin: '32px 0', padding: '64px', background: 'var(--bg-secondary)', borderRadius: '16px' }}>
-        <h3 style={{ color: 'var(--text-primary)' }}>{t('noResultsFor')} "{searchQuery}"</h3>
+        {categoryHeader && (
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '12px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <Tag size={16} /> {t(decodedL1)} {decodedL2 ? ` › ${t(decodedL2)}` : ''}
+          </p>
+        )}
+        <h3 style={{ color: 'var(--text-primary)' }}>
+          {searchQuery 
+            ? `${t('noResultsFor')} "${searchQuery}"` 
+            : t('noRecords')
+          }
+        </h3>
+        <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>{t('loginToUploadDesc')}</p>
       </div>
     );
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '48px', margin: '24px 0' }}>
+      {categoryHeader && (
+        <div style={{ 
+          padding: '12px 20px', 
+          background: 'linear-gradient(135deg, var(--bg-secondary), var(--bg-primary))',
+          borderRadius: '12px', 
+          border: '1px solid var(--border-color)',
+          fontSize: '16px',
+          fontWeight: '600',
+          color: 'var(--text-primary)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <FolderOpen size={18} /> {t(decodedL1)} {decodedL2 ? ` › ${t(decodedL2)}` : ''}
+          <span style={{ fontSize: '13px', fontWeight: '400', color: 'var(--text-secondary)', marginLeft: 'auto' }}>
+            {filteredVideos.length} {t('resultsCount')}
+          </span>
+        </div>
+      )}
       {filteredVideos.map(video => (
         <VideoItem 
           key={video.id} 
           video={video} 
           handleLike={handleLike} 
           handleDelete={handleDelete}
-          isOwner={currentUserId === video.uploader_id || (currentUsername && currentUsername === video.uploader_username)}
+          isOwner={
+            currentUserId === video.uploader_id || 
+            (currentUsername && currentUsername === video.uploader_username) ||
+            localStorage.getItem('is_admin') === 'true'
+          }
           t={t} 
         />
       ))}
@@ -164,11 +233,56 @@ const TheoremCard = ({ searchQuery = "" }) => {
 };
 
 const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
+  const finalCategoryLabel = [
+    video.category_l1 ? t(video.category_l1) : null,
+    video.category_l2 ? t(video.category_l2) : null
+  ].filter(Boolean).join(' › ');
+  
+  const [showCode, setShowCode] = useState(false);
+  const [codeContent, setCodeContent] = useState('');
+  const [codeLoading, setCodeLoading] = useState(false);
+
+  const handleViewSourceCode = async (url) => {
+    setShowCode(true);
+    if (codeContent) return;
+    setCodeLoading(true);
+    try {
+      const res = await fetch(url);
+      const text = await res.text();
+      setCodeContent(text);
+    } catch(e) {
+      setCodeContent('Error loading code: ' + e.message);
+    } finally {
+      setCodeLoading(false);
+    }
+  };
+
   return (
     <section className="hero-section" style={{ minHeight: 'auto', padding: '32px', gap: '32px' }}>
       <div className="hero-content">
         <span className="badge">{t('uploadedBy')} @{video.uploader_username}</span>
         <h2 className="hero-title" style={{ fontSize: '32px', margin: '16px 0' }}>{video.title}</h2>
+        {video.tags && video.tags.length > 0 && (
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+            {video.tags.map(tag => (
+              <span key={tag} style={{ 
+                padding: '4px 10px', 
+                borderRadius: '16px', 
+                background: 'var(--bg-tertiary)', 
+                fontSize: '13px', 
+                color: 'var(--text-secondary)',
+                border: '1px solid var(--border-color)'
+              }}>
+                #{t(tag) || tag}
+              </span>
+            ))}
+          </div>
+        )}
+        {finalCategoryLabel && (
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Tag size={14} /> {finalCategoryLabel}
+          </p>
+        )}
         <p className="hero-desc" style={{ fontSize: '15px' }}>
           {t('uploadedOn')} {new Date(video.upload_time).toLocaleDateString()}
         </p>
@@ -187,13 +301,13 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
             }}
           >
             <Heart size={20} fill={video._liked ? "currentColor" : "none"} /> 
-            {video.like_count} {t('likes')}
+            {video.like_count}
           </button>
           
           {video.manim_source_url && (
             <button 
               className="btn-ghost" 
-              onClick={() => window.open(video.manim_source_url, '_blank')}
+              onClick={() => handleViewSourceCode(video.manim_source_url)}
               style={{ 
                 display: 'flex', gap: '8px', alignItems: 'center', 
                 padding: '8px 16px', border: '1px solid var(--border-color)', 
@@ -224,7 +338,7 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
       <div className="hero-visual" style={{ flex: '1 1 50%' }}>
         <div style={{ borderRadius: '16px', overflow: 'hidden', background: '#000', width: '100%', aspectRatio: '16/9', boxShadow: 'var(--shadow-md)' }}>
           <video 
-            src={video.video_url.startsWith('http') ? video.video_url : `${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : `http://${window.location.hostname}:8000`}${video.video_url}`}
+            src={video.video_url.startsWith('http') ? video.video_url : `${API_BASE.replace('/api', '')}${video.video_url}`}
             controls 
             style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             preload="metadata"
@@ -233,6 +347,56 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
           </video>
         </div>
       </div>
+      
+      {showCode && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ background: 'var(--bg-primary)', width: '90%', maxWidth: '800px', height: '80vh', borderRadius: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+            <div style={{ 
+              padding: '16px 24px', 
+              borderBottom: '1px solid var(--border-color)', 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              backgroundColor: 'var(--bg-secondary)',
+              borderTopLeftRadius: '16px',
+              borderTopRightRadius: '16px'
+            }}>
+              <h3 style={{ margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', fontWeight: '600' }}>
+                <Code size={20} color="var(--primary)" /> {video.title} - {t('viewCode')}
+              </h3>
+              <button 
+                onClick={() => setShowCode(false)} 
+                className="close-button-p"
+                style={{ 
+                  background: 'rgba(0, 0, 0, 0.05)', 
+                  border: 'none', 
+                  cursor: 'pointer', 
+                  fontSize: '24px', 
+                  color: 'var(--text-primary)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  width: '36px', 
+                  height: '36px', 
+                  borderRadius: '50%',
+                  transition: 'all 0.2s'
+                }}
+              >
+                &times;
+              </button>
+            </div>
+            <div style={{ padding: '24px', overflowY: 'auto', flex: 1, backgroundColor: '#1e1e1e', color: '#d4d4d4' }}>
+              {codeLoading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                  <Loader2 className="spinning" size={32} color="var(--primary)" />
+                </div>
+              ) : (
+                <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: '14px', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{codeContent}</pre>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
