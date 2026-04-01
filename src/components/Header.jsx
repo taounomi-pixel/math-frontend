@@ -20,7 +20,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   // Auth States
   const [currentUser, setCurrentUser] = useState(null);
   const [authModal, setAuthModal] = useState(null); // 'login' | 'register' | 'complete-registration' | null
-  const [authForm, setAuthForm] = useState({ username: '', password: '' });
+  const [authForm, setAuthForm] = useState({ username: '', password: '', email: '' });
   const [authError, setAuthError] = useState('');
   const [authSuccess, setAuthSuccess] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -31,6 +31,12 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const [oauthProvider, setOauthProvider] = useState('');
   const [oauthEmail, setOauthEmail] = useState('');
   const [showBindModal, setShowBindModal] = useState(false);
+
+  // Verification flow (2FA)
+  const [verificationRequired, setVerificationRequired] = useState(false);
+  const [verificationProvider, setVerificationProvider] = useState('');
+  const [verificationEmail, setVerificationEmail] = useState('');
+  const [isVerifyingLogin, setIsVerifyingLogin] = useState(false);
 
   // Auto-login check on mount
   useEffect(() => {
@@ -57,8 +63,36 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        // User just completed OAuth - check if they have a linked local account
         const token = session.access_token;
+        
+        // CASE 1: Mandatory login verification
+        if (isVerifyingLogin) {
+          try {
+            setAuthLoading(true);
+            const res = await fetch(`${API_BASE}/auth/verify-login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                username: authForm.username,
+                supabase_token: token 
+              })
+            });
+            const data = await res.json();
+            if (data.status === 'ok') {
+              loginWithLocalData(data);
+              resetVerificationStates();
+            } else {
+              throw new Error(data.detail || 'Verification failed');
+            }
+          } catch (err) {
+            setAuthError(err.message);
+          } finally {
+            setAuthLoading(false);
+          }
+          return;
+        }
+
+        // CASE 2: Standard OAuth login or registration
         try {
           const res = await fetch(`${API_BASE}/auth/oauth-login`, {
             method: 'POST',
@@ -68,23 +102,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           const data = await res.json();
           
           if (data.status === 'ok') {
-            // Existing linked account - log them in
-            localStorage.setItem('access_token', data.access_token);
-            localStorage.setItem('username', data.username);
-            localStorage.setItem('user_id', data.user_id);
-            localStorage.setItem('is_admin', data.is_admin ? 'true' : 'false');
-            localStorage.setItem('auth_provider', data.auth_provider || '');
-            localStorage.setItem('user_email', data.email || '');
-            setCurrentUser({
-              username: data.username,
-              id: data.user_id,
-              is_admin: !!data.is_admin,
-              auth_provider: data.auth_provider,
-              email: data.email
-            });
-            setAuthModal(null);
+            loginWithLocalData(data);
           } else if (data.status === 'needs_registration') {
-            // New OAuth user - show complete registration form
             setPendingSupabaseToken(token);
             setOauthProvider(data.provider || '');
             setOauthEmail(data.email || '');
@@ -121,6 +140,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     setAuthLoading(true);
     setAuthError('');
     
+    // Determine if this is a login verification or a new login
+    if (verificationRequired) {
+      setIsVerifyingLogin(true);
+    }
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -131,8 +155,34 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     if (error) {
       setAuthError(error.message);
       setAuthLoading(false);
+      setIsVerifyingLogin(false);
     }
-    // If successful, the page will redirect. onAuthStateChange handles the callback.
+  };
+
+  // Helper to persist local login data
+  const loginWithLocalData = (data) => {
+    localStorage.setItem('access_token', data.access_token);
+    localStorage.setItem('username', data.username);
+    localStorage.setItem('user_id', data.user_id);
+    localStorage.setItem('is_admin', data.is_admin ? 'true' : 'false');
+    localStorage.setItem('auth_provider', data.auth_provider || '');
+    localStorage.setItem('user_email', data.email || '');
+    setCurrentUser({
+      username: data.username,
+      id: data.user_id,
+      is_admin: !!data.is_admin,
+      auth_provider: data.auth_provider,
+      email: data.email
+    });
+    setAuthModal(null);
+    setAuthForm({ username: '', password: '', email: '' });
+  };
+
+  const resetVerificationStates = () => {
+    setVerificationRequired(false);
+    setVerificationProvider('');
+    setVerificationEmail('');
+    setIsVerifyingLogin(false);
   };
 
   // Complete OAuth Registration (set username + password)
@@ -160,21 +210,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       }
       
       const data = await res.json();
-      localStorage.setItem('access_token', data.access_token);
-      localStorage.setItem('username', data.username);
-      localStorage.setItem('user_id', data.user_id);
-      localStorage.setItem('is_admin', data.is_admin ? 'true' : 'false');
-      localStorage.setItem('auth_provider', data.auth_provider || '');
-      localStorage.setItem('user_email', data.email || '');
-      setCurrentUser({
-        username: data.username,
-        id: data.user_id,
-        is_admin: !!data.is_admin,
-        auth_provider: data.auth_provider,
-        email: data.email
-      });
-      setAuthModal(null);
-      setAuthForm({ username: '', password: '' });
+      loginWithLocalData(data);
       setPendingSupabaseToken(null);
     } catch (err) {
       setAuthError(err.message);
@@ -197,7 +233,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             username: authForm.username,
-            password: authForm.password
+            password: authForm.password,
+            email: authForm.email || null
           })
         });
 
@@ -222,21 +259,15 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           throw new Error(err.detail || t('loginFail'));
         }
         const data = await res.json();
-        localStorage.setItem('access_token', data.access_token);
-        localStorage.setItem('username', authForm.username);
-        localStorage.setItem('user_id', data.user_id);
-        localStorage.setItem('is_admin', data.is_admin ? 'true' : 'false');
-        localStorage.setItem('auth_provider', data.auth_provider || '');
-        localStorage.setItem('user_email', data.email || '');
-        setCurrentUser({ 
-          username: authForm.username, 
-          id: data.user_id, 
-          is_admin: !!data.is_admin,
-          auth_provider: data.auth_provider || null,
-          email: data.email || null
-        });
-        setAuthModal(null);
-        setAuthForm({ username: '', password: '' });
+
+        if (data.status === 'needs_verification') {
+          setVerificationRequired(true);
+          setVerificationProvider(data.auth_provider);
+          setVerificationEmail(data.email);
+          return;
+        }
+
+        loginWithLocalData(data);
       }
     } catch (err) {
       if (err.message === 'Failed to fetch' || err.message.includes('Load failed') || err.message.includes('NetworkError')) {
@@ -325,7 +356,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     setAuthModal(mode);
     setAuthError('');
     setAuthSuccess('');
-    setAuthForm({ username: '', password: '' });
+    setAuthForm({ username: '', password: '', email: '' });
+    resetVerificationStates();
   };
 
   // ---- OAuth Button Style ----
@@ -529,65 +561,111 @@ const Header = ({ searchQuery, setSearchQuery }) => {
               </div>
             )}
             
-            {/* OAuth Buttons */}
-            {supabase && (
-              <>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+            {verificationRequired ? (
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ 
+                  padding: '16px', background: 'rgba(59, 130, 246, 0.1)', 
+                  borderRadius: '12px', color: 'var(--primary)', border: '1px solid var(--primary)',
+                  marginBottom: '16px', fontSize: '14px', lineHeight: 1.5,
+                  display: 'flex', alignItems: 'center', gap: '12px'
+                }}>
+                  <div style={{ fontSize: '24px' }}>🛡️</div>
+                  <div>
+                    <div style={{ fontWeight: 600 }}>{lang === 'zh' ? '需要身份验证' : 'Verification Required'}</div>
+                    {lang === 'zh' 
+                      ? `此账号已绑定到 ${verificationProvider || '邮箱'}。请点击下方按钮验证。`
+                      : `This account is bound to ${verificationProvider || 'email'}. Please verify below.`}
+                  </div>
+                </div>
+                
+                {verificationProvider === 'github' ? (
                   <button 
                     onClick={() => handleOAuthLogin('github')} 
                     style={oauthBtnStyle('#24292e')}
-                    onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
-                    onMouseOut={e => e.currentTarget.style.opacity = '1'}
                   >
                     <GithubIcon size={20} />
-                    {t('loginWithGithub')}
+                    {lang === 'zh' ? '验证 GitHub 身份' : 'Verify with GitHub'}
                   </button>
+                ) : (
                   <button 
                     onClick={() => handleOAuthLogin('google')}
-                    style={{ ...oauthBtnStyle('#4285f4'), }}
-                    onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
-                    onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                    style={oauthBtnStyle('#4285f4')}
                   >
                     <Mail size={20} />
-                    {t('loginWithGoogle')}
+                    {lang === 'zh' ? '验证 Google 身份' : 'Verify with Google'}
                   </button>
-                </div>
+                )}
                 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
-                  <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
-                  <span style={{ color: 'var(--text-tertiary)', fontSize: '13px', whiteSpace: 'nowrap' }}>{t('orUsePassword')}</span>
-                  <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
-                </div>
+                <button 
+                   onClick={resetVerificationStates}
+                   style={{ width: '100%', marginTop: '12px', background: 'none', border: 'none', color: 'var(--text-tertiary)', fontSize: '13px', cursor: 'pointer' }}
+                >
+                  {lang === 'zh' ? '返回使用其他账号' : 'Back to use another account'}
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* OAuth Buttons */}
+                {supabase && (
+                  <>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+                      <button 
+                        onClick={() => handleOAuthLogin('github')} 
+                        style={oauthBtnStyle('#24292e')}
+                        onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
+                        onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                      >
+                        <GithubIcon size={20} />
+                        {t('loginWithGithub')}
+                      </button>
+                      <button 
+                        onClick={() => handleOAuthLogin('google')}
+                        style={{ ...oauthBtnStyle('#4285f4'), }}
+                        onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
+                        onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                      >
+                        <Mail size={20} />
+                        {t('loginWithGoogle')}
+                      </button>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
+                      <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
+                      <span style={{ color: 'var(--text-tertiary)', fontSize: '13px', whiteSpace: 'nowrap' }}>{t('orUsePassword')}</span>
+                      <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
+                    </div>
+                  </>
+                )}
+                
+                {/* Traditional Login Form */}
+                <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, fontSize: '14px' }}>{t('username')}</label>
+                    <input 
+                      type="text" 
+                      value={authForm.username}
+                      onChange={e => setAuthForm({...authForm, username: e.target.value})}
+                      required
+                      autoFocus
+                      style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, fontSize: '14px' }}>{t('password')}</label>
+                    <input 
+                      type="password" 
+                      value={authForm.password}
+                      onChange={e => setAuthForm({...authForm, password: e.target.value})}
+                      required
+                      style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
+                    />
+                  </div>
+                  <button type="submit" className="btn-primary btn-lg" disabled={authLoading} style={{ marginTop: '8px', width: '100%', justifyContent: 'center', opacity: authLoading ? 0.7 : 1 }}>
+                    {authLoading ? (lang === 'zh' ? '请稍候...' : 'Please wait...') : t('continueBtn')}
+                  </button>
+                </form>
               </>
             )}
-            
-            {/* Traditional Login Form */}
-            <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, fontSize: '14px' }}>{t('username')}</label>
-                <input 
-                  type="text" 
-                  value={authForm.username}
-                  onChange={e => setAuthForm({...authForm, username: e.target.value})}
-                  required
-                  autoFocus
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, fontSize: '14px' }}>{t('password')}</label>
-                <input 
-                  type="password" 
-                  value={authForm.password}
-                  onChange={e => setAuthForm({...authForm, password: e.target.value})}
-                  required
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
-                />
-              </div>
-              <button type="submit" className="btn-primary btn-lg" disabled={authLoading} style={{ marginTop: '8px', width: '100%', justifyContent: 'center', opacity: authLoading ? 0.7 : 1 }}>
-                {authLoading ? (lang === 'zh' ? '请稍候...' : 'Please wait...') : t('continueBtn')}
-              </button>
-            </form>
             
             <div style={{ marginTop: '24px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px' }}>
               {t('noAccount')}
@@ -676,6 +754,17 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   value={authForm.username}
                   onChange={e => setAuthForm({...authForm, username: e.target.value})}
                   required
+                  autoFocus
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, fontSize: '14px' }}>{t('email')} ({lang === 'zh' ? '可选' : 'Optional'})</label>
+                <input 
+                  type="email" 
+                  value={authForm.email}
+                  onChange={e => setAuthForm({...authForm, email: e.target.value})}
+                  placeholder="example@gmail.com"
                   style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
                 />
               </div>
