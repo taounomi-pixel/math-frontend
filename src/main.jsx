@@ -1,3 +1,4 @@
+// MathVis Frontend - Auth Fix Sync v1.0.3
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'

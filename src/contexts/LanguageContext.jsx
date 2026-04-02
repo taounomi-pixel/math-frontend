@@ -31,6 +31,9 @@ const translations = {
     loginFail: "Login failed",
     regFail: "Registration failed",
     regSuccess: "Registration successful! Please sign in.",
+    registrationDisabled: "Traditional registration is disabled. Please use GitHub or Google.",
+    verificationRequiredTitle: "Identity Verification",
+    verificationRequiredDesc: "This account is bound to {provider}. Please verify your identity to continue.",
     
     // OAuth
     loginWithGithub: "Sign in with GitHub",
@@ -51,6 +54,13 @@ const translations = {
     bindAccountDesc: "Link your GitHub or Google account for easier login next time.",
     bindGithub: "Bind GitHub",
     bindGoogle: "Bind Google",
+    unbindGithub: "Unbind GitHub",
+    unbindGoogle: "Unbind Google",
+    unbindConfirm: "Are you sure you want to unbind this account? You will no longer be able to log in using this provider.",
+    notBound: "Not Bound",
+    boundTo: "Bound to",
+    profileCardTitle: "Account Management",
+    accountSecurity: "Security & Identity",
     
     // Sidebar & Topics
     "allVideos": "All",
@@ -180,6 +190,9 @@ const translations = {
     loginFail: "登入失败",
     regFail: "注册失败",
     regSuccess: "注册成功！请登入。",
+    registrationDisabled: "传统注册已禁用。请使用 GitHub 或 Google 注册。",
+    verificationRequiredTitle: "身份验证",
+    verificationRequiredDesc: "此账号已绑定到 {provider}。请验证您的身份以继续。",
     
     // OAuth
     loginWithGithub: "使用 GitHub 登录",
@@ -200,6 +213,13 @@ const translations = {
     bindAccountDesc: "绑定 GitHub 或 Google 账号，下次登录更方便。",
     bindGithub: "绑定 GitHub",
     bindGoogle: "绑定 Google",
+    unbindGithub: "解绑 GitHub",
+    unbindGoogle: "解绑 Google",
+    unbindConfirm: "你确定要解绑该账号吗？解绑后将无法再使用此第三方账号登录。",
+    notBound: "未绑定",
+    boundTo: "已绑定",
+    profileCardTitle: "个人资料与管理",
+    accountSecurity: "账号与安全",
     
     // Sidebar & Topics
     "allVideos": "所有",

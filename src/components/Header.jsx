@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Globe, ChevronDown, User, Menu, X, LogOut, Upload, Link2, Mail } from 'lucide-react';
+// Sync v1.0.4 - Multi-provider UI update
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Search, Globe, ChevronDown, User, Menu, X, LogOut, Upload, Link2, Mail, ShieldCheck, ShieldAlert, Trash2, Loader2, ExternalLink } from 'lucide-react';
 
 // Brand Icon: GitHub (Lucide removed brand icons in v0.400+)
 const GithubIcon = ({ size = 20 }) => (
@@ -31,10 +32,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const [oauthProvider, setOauthProvider] = useState('');
   const [oauthEmail, setOauthEmail] = useState('');
   const [showBindModal, setShowBindModal] = useState(false);
+  const [isUserCardOpen, setIsUserCardOpen] = useState(false);
+  const cardRef = useRef(null);
+  const [unbindLoading, setUnbindLoading] = useState(null); // 'github' | 'google' | null
 
   // Verification flow (2FA)
   const [verificationRequired, setVerificationRequired] = useState(false);
-  const [verificationProvider, setVerificationProvider] = useState('');
+  const [verificationProviders, setVerificationProviders] = useState([]);
   const [verificationEmail, setVerificationEmail] = useState('');
   const [isVerifyingLogin, setIsVerifyingLogin] = useState(false);
 
@@ -57,6 +61,32 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     }
   }, []);
 
+  // Helper to extract display-safe error strings from any error object
+  const extractErrorMessage = useCallback((err) => {
+    if (!err) return '';
+    if (typeof err === 'string') return err;
+    
+    // Handle FastAPI / standard API error structures
+    if (err.detail) {
+      if (Array.isArray(err.detail)) {
+        // Standard FastAPI validation error (422)
+        return err.detail.map(d => `${d.loc.slice(1).join(' ')}: ${d.msg}`).join('; ');
+      }
+      if (typeof err.detail === 'string') return err.detail;
+      return JSON.stringify(err.detail);
+    }
+    
+    // Fallback to standard error message
+    if (err.message) return err.message;
+    
+    // Stringify unknown objects
+    try {
+      return JSON.stringify(err);
+    } catch {
+      return lang === 'zh' ? '发生未知错误' : 'An unknown error occurred';
+    }
+  }, [lang]);
+
   // Listen for Supabase auth state changes (handles OAuth redirect callback)
   useEffect(() => {
     if (!supabase) return;
@@ -65,15 +95,29 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       if (event === 'SIGNED_IN' && session) {
         const token = session.access_token;
         
+        // Recover pending intent state from localStorage
+        const pendingVerification = localStorage.getItem('pending_verification') === 'true';
+        const pendingUsername = localStorage.getItem('pending_username');
+        const pendingBind = localStorage.getItem('pending_bind') === 'true';
+
+        const cleanUpIntents = () => {
+          localStorage.removeItem('pending_verification');
+          localStorage.removeItem('pending_username');
+          localStorage.removeItem('pending_bind');
+        };
+
         // CASE 1: Mandatory login verification
-        if (isVerifyingLogin) {
+        if (pendingVerification || isVerifyingLogin) {
           try {
             setAuthLoading(true);
             const res = await fetch(`${API_BASE}/auth/verify-login`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
               body: JSON.stringify({ 
-                username: authForm.username,
+                username: pendingUsername || authForm.username,
                 supabase_token: token 
               })
             });
@@ -81,44 +125,91 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             if (data.status === 'ok') {
               loginWithLocalData(data);
               resetVerificationStates();
+              cleanUpIntents();
             } else {
-              throw new Error(data.detail || 'Verification failed');
+              setAuthError(extractErrorMessage(data));
+              // Clear sticky state on failure to allow fresh login attempts
+              resetVerificationStates();
+              cleanUpIntents();
             }
           } catch (err) {
-            setAuthError(err.message);
+            setAuthError(extractErrorMessage(err));
+            cleanUpIntents();
           } finally {
             setAuthLoading(false);
           }
           return;
         }
 
-        // CASE 2: Standard OAuth login or registration
+        // CASE 2: Account Binding
+        if (pendingBind) {
+          try {
+            const localToken = localStorage.getItem('access_token');
+            const res = await fetch(`${API_BASE}/auth/bind`, {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localToken}`
+              },
+              body: JSON.stringify({ supabase_token: token })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              localStorage.setItem('auth_provider', data.auth_provider || '');
+              localStorage.setItem('user_email', data.email || '');
+              setCurrentUser(prev => ({
+                ...prev,
+                auth_provider: data.auth_provider,
+                email: data.email
+              }));
+              setShowBindModal(false);
+              cleanUpIntents();
+            } else {
+              const errData = await res.json();
+              setAuthError(extractErrorMessage(errData));
+            }
+          } catch (err) {
+            console.error('Bind error:', err);
+            setAuthError(extractErrorMessage(err));
+            cleanUpIntents();
+          }
+          return;
+        }
+
+        // CASE 3: Standard OAuth login or registration
         try {
           const res = await fetch(`${API_BASE}/auth/oauth-login`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({ supabase_token: token })
           });
           const data = await res.json();
           
           if (data.status === 'ok') {
             loginWithLocalData(data);
+            cleanUpIntents();
           } else if (data.status === 'needs_registration') {
             setPendingSupabaseToken(token);
             setOauthProvider(data.provider || '');
             setOauthEmail(data.email || '');
             setAuthModal('complete-registration');
+          } else {
+            setAuthError(extractErrorMessage(data));
           }
         } catch (err) {
           console.error('OAuth login error:', err);
           setAuthError(lang === 'zh' ? '服务器连接失败，请稍后再试' : 'Server connection failed, please try again');
           setAuthModal('login');
+          cleanUpIntents();
         }
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [lang]);
+  }, [lang, isVerifyingLogin, authForm.username, extractErrorMessage]);
 
   // Auto-close mobile nav on resize
   useEffect(() => {
@@ -141,8 +232,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     setAuthError('');
     
     // Determine if this is a login verification or a new login
+    // Persist intent in localStorage to survive redirect
     if (verificationRequired) {
       setIsVerifyingLogin(true);
+      localStorage.setItem('pending_verification', 'true');
+      localStorage.setItem('pending_username', authForm.username);
     }
 
     const { error } = await supabase.auth.signInWithOAuth({
@@ -156,6 +250,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       setAuthError(error.message);
       setAuthLoading(false);
       setIsVerifyingLogin(false);
+      localStorage.removeItem('pending_verification');
+      localStorage.removeItem('pending_username');
     }
   };
 
@@ -180,7 +276,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
   const resetVerificationStates = () => {
     setVerificationRequired(false);
-    setVerificationProvider('');
+    setVerificationProviders([]);
     setVerificationEmail('');
     setIsVerifyingLogin(false);
   };
@@ -196,7 +292,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     try {
       const res = await fetch(`${API_BASE}/auth/complete-registration`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${pendingSupabaseToken}`
+        },
         body: JSON.stringify({
           supabase_token: pendingSupabaseToken,
           username: authForm.username,
@@ -213,7 +312,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       loginWithLocalData(data);
       setPendingSupabaseToken(null);
     } catch (err) {
-      setAuthError(err.message);
+      setAuthError(extractErrorMessage(err));
     } finally {
       setAuthLoading(false);
     }
@@ -232,37 +331,42 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            username: authForm.username,
+            username: authForm.username.trim(),
             password: authForm.password,
             email: authForm.email || null
           })
         });
 
         if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.detail || t('regFail'));
+          const errData = await res.json();
+          throw errData;
         }
         setAuthModal('login');
         setAuthSuccess(t('regSuccess'));
       } else if (authModal === 'login') {
         const formData = new URLSearchParams();
-        formData.append('username', authForm.username);
+        // Mandatory fields for OAuth2PasswordRequestForm
+        formData.append('username', authForm.username.trim());
         formData.append('password', authForm.password);
         
         const res = await fetch(`${API_BASE}/login`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          headers: { 
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json'
+          },
           body: formData.toString()
         });
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.detail || t('loginFail'));
-        }
+        
         const data = await res.json();
+        
+        if (!res.ok) {
+          throw data;
+        }
 
         if (data.status === 'needs_verification') {
           setVerificationRequired(true);
-          setVerificationProvider(data.auth_provider);
+          setVerificationProviders(data.auth_providers || [data.auth_provider] || []);
           setVerificationEmail(data.email);
           return;
         }
@@ -270,10 +374,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         loginWithLocalData(data);
       }
     } catch (err) {
-      if (err.message === 'Failed to fetch' || err.message.includes('Load failed') || err.message.includes('NetworkError')) {
+      console.error('Auth error:', err);
+      if (err.message === 'Failed to fetch' || (err.message && (err.message.includes('Load failed') || err.message.includes('NetworkError')))) {
         setAuthError(lang === 'zh' ? '服务器正在启动中，请等待约30秒后再试...' : 'Server is waking up, please wait ~30s and try again...');
       } else {
-        setAuthError(err.message);
+        setAuthError(extractErrorMessage(err));
       }
     } finally {
       setAuthLoading(false);
@@ -284,58 +389,24 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const handleBindOAuth = async (provider) => {
     if (!supabase) return;
     
+    // Persist bind intent in localStorage to survive redirect
+    localStorage.setItem('pending_bind', 'true');
+
     // First sign in with OAuth
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: window.location.origin + '?bind=true'
+        redirectTo: window.location.origin
       }
     });
     
     if (error) {
       setAuthError(error.message);
+      localStorage.removeItem('pending_bind');
     }
   };
 
-  // Check URL params for bind flow on mount
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('bind') === 'true' && supabase) {
-      // We're returning from OAuth bind flow
-      const handleBind = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session && currentUser) {
-          try {
-            const localToken = localStorage.getItem('access_token');
-            const res = await fetch(`${API_BASE}/auth/bind`, {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localToken}`
-              },
-              body: JSON.stringify({ supabase_token: session.access_token })
-            });
-            if (res.ok) {
-              const data = await res.json();
-              localStorage.setItem('auth_provider', data.auth_provider || '');
-              localStorage.setItem('user_email', data.email || '');
-              setCurrentUser(prev => ({
-                ...prev,
-                auth_provider: data.auth_provider,
-                email: data.email
-              }));
-              setShowBindModal(false);
-            }
-          } catch (err) {
-            console.error('Bind error:', err);
-          }
-        }
-        // Clean up URL
-        window.history.replaceState({}, '', window.location.pathname);
-      };
-      handleBind();
-    }
-  }, [currentUser]);
+
 
   const handleLogout = async () => {
     localStorage.removeItem('access_token');
@@ -359,6 +430,63 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     setAuthForm({ username: '', password: '', email: '' });
     resetVerificationStates();
   };
+
+  const handleUnbindOAuth = async (provider) => {
+    if (!window.confirm(lang === 'zh' ? `确定要解除与 ${provider} 的绑定吗？` : `Are you sure you want to unbind ${provider}?`)) {
+      return;
+    }
+
+    setUnbindLoading(provider);
+    try {
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_BASE}/auth/unbind`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ provider })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        // Update local state
+        const updatedProviders = data.auth_providers || [];
+        const isStillBound = updatedProviders.length > 0;
+        
+        const newProvider = isStillBound ? updatedProviders[0] : null;
+        localStorage.setItem('auth_provider', newProvider || '');
+        if (!isStillBound) {
+          localStorage.removeItem('user_email'); // Optional: keep or remove
+        }
+        
+        setCurrentUser(prev => ({
+          ...prev,
+          auth_provider: newProvider,
+          email: isStillBound ? prev.email : null
+        }));
+        
+        setAuthSuccess(lang === 'zh' ? '解绑成功' : 'Successfully unlinked');
+      } else {
+        setAuthError(extractErrorMessage(data));
+      }
+    } catch (err) {
+      setAuthError(extractErrorMessage(err));
+    } finally {
+      setUnbindLoading(null);
+    }
+  };
+
+  // Close card when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (cardRef.current && !cardRef.current.contains(event.target)) {
+        setIsUserCardOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // ---- OAuth Button Style ----
   const oauthBtnStyle = (bg, hover) => ({
@@ -427,43 +555,182 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             
             {/* Dynamic Sign In / User Profile */}
             {currentUser ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'nowrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'nowrap', position: 'relative' }}>
                 <button 
                   className="btn-ghost" 
                   onClick={() => setShowUploadModal(true)} 
                   title={t('upload')} 
                   style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', whiteSpace: 'nowrap', flexShrink: 0 }}
                 >
-                  <Upload size={16} /> <span style={{ fontSize: '14px', fontWeight: 500, whiteSpace: 'nowrap' }}>{t('upload')}</span>
+                  <Upload size={16} /> <span style={{ fontSize: '14px', fontWeight: 500 }}>{t('upload')}</span>
                 </button>
-                {/* Bind button - only show if not yet bound */}
-                {!currentUser.auth_provider && supabase && (
-                  <button 
-                    className="btn-ghost" 
-                    onClick={() => setShowBindModal(true)} 
-                    title={t('bindAccount')}
-                    style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', whiteSpace: 'nowrap', flexShrink: 0 }}
-                  >
-                    <Link2 size={16} />
-                  </button>
-                )}
-                <div style={{ 
-                  width: '28px', height: '28px', borderRadius: '50%', 
-                  background: 'var(--primary)', color: 'white', 
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                  fontWeight: 'bold', fontSize: '13px', flexShrink: 0
-                }}>
-                  {currentUser.username[0].toUpperCase()}
+                
+                {/* User Trigger */}
+                <div 
+                  ref={cardRef}
+                  onClick={() => setIsUserCardOpen(!isUserCardOpen)}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    padding: '4px 8px',
+                    paddingRight: '12px',
+                    borderRadius: '10px',
+                    cursor: 'pointer',
+                    background: currentUser.auth_provider ? 'transparent' : '#f3f4f6', // Gray if not linked
+                    transition: 'all 0.2s ease',
+                    border: '1px solid transparent',
+                    maxWidth: '180px'
+                  }}
+                  onMouseOver={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                  onMouseOut={e => e.currentTarget.style.borderColor = 'transparent'}
+                >
+                  <div style={{ 
+                    width: '32px', height: '32px', borderRadius: '50%', 
+                    background: 'var(--primary)', color: 'white', 
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                    fontWeight: 'bold', fontSize: '14px', flexShrink: 0,
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                  }}>
+                    {currentUser.username[0].toUpperCase()}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                    <span style={{ 
+                      fontWeight: 600, fontSize: '14px', whiteSpace: 'nowrap', 
+                      overflow: 'hidden', textOverflow: 'ellipsis',
+                      color: 'var(--text-primary)'
+                    }}>
+                      {currentUser.username}
+                    </span>
+                    {!currentUser.auth_provider && (
+                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                        <ShieldAlert size={10} /> 未绑定
+                      </span>
+                    )}
+                  </div>
+                  <ChevronDown size={14} style={{ 
+                    opacity: 0.5, 
+                    transform: isUserCardOpen ? 'rotate(180deg)' : 'rotate(0)',
+                    transition: 'transform 0.3s'
+                  }} />
+
+                  {/* ================= USER CARD DROPDOWN ================= */}
+                  {isUserCardOpen && (
+                    <div style={{
+                      position: 'absolute', top: 'calc(100% + 12px)', right: 0,
+                      width: '280px', background: 'white', borderRadius: '16px',
+                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
+                      border: '1px solid var(--border-color)',
+                      padding: '20px', zIndex: 10000,
+                      animation: 'fadeInUp 0.2s ease-out',
+                      cursor: 'default'
+                    }} onClick={e => e.stopPropagation()}>
+                      
+                      {/* Card Header */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #f3f4f6' }}>
+                        <div style={{ 
+                          width: '48px', height: '48px', borderRadius: '50%', 
+                          background: 'var(--primary)', color: 'white', 
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                          fontWeight: 'bold', fontSize: '20px'
+                        }}>
+                          {currentUser.username[0].toUpperCase()}
+                        </div>
+                        <div style={{ overflow: 'hidden' }}>
+                          <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {currentUser.username}
+                          </div>
+                          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {currentUser.email || 'No email bound'}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Binding Section */}
+                      <div style={{ marginBottom: '16px' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          账号绑定
+                        </div>
+                        
+                        {/* GitHub Row */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                            <GithubIcon size={18} />
+                            <span>GitHub</span>
+                            {currentUser.auth_provider === 'github' ? (
+                              <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
+                            ) : (
+                              <span style={{ fontSize: '10px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
+                            )}
+                          </div>
+                          {currentUser.auth_provider === 'github' ? (
+                            <button 
+                              onClick={() => handleUnbindOAuth('github')}
+                              disabled={unbindLoading === 'github'}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }}
+                              title="解除绑定"
+                            >
+                              {unbindLoading === 'github' ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={() => { setShowBindModal(true); setIsUserCardOpen(false); }}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, fontSize: '13px' }}
+                            >
+                              绑定
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Google Row */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                            <Mail size={18} />
+                            <span>Google</span>
+                            {currentUser.auth_provider === 'google' ? (
+                              <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
+                            ) : (
+                              <span style={{ fontSize: '10px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
+                            )}
+                          </div>
+                          {currentUser.auth_provider === 'google' ? (
+                            <button 
+                              onClick={() => handleUnbindOAuth('google')}
+                              disabled={unbindLoading === 'google'}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }}
+                              title="解除绑定"
+                            >
+                              {unbindLoading === 'google' ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={() => { setShowBindModal(true); setIsUserCardOpen(false); }}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, fontSize: '13px' }}
+                            >
+                              绑定
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Card Footer */}
+                      <button 
+                        onClick={handleLogout}
+                        style={{ 
+                          width: '100%', padding: '10px', borderRadius: '10px',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                          background: '#fff1f2', color: '#e11d48', border: 'none',
+                          fontWeight: 600, fontSize: '14px', cursor: 'pointer',
+                          transition: 'background 0.2s'
+                        }}
+                        onMouseOver={e => e.currentTarget.style.background = '#ffe4e6'}
+                        onMouseOut={e => e.currentTarget.style.background = '#fff1f2'}
+                      >
+                        <LogOut size={16} /> 退出登录
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <span style={{ fontWeight: 500, fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '60px' }}>{currentUser.username}</span>
-                {currentUser.auth_provider && (
-                  <span style={{ fontSize: '11px', color: 'var(--text-tertiary)', background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: '4px', textTransform: 'capitalize' }}>
-                    {currentUser.auth_provider === 'github' ? '🐙' : '📧'} {currentUser.auth_provider}
-                  </span>
-                )}
-                <button className="btn-ghost" onClick={handleLogout} title={t('logout')} style={{ padding: '6px', flexShrink: 0 }}>
-                  <LogOut size={16} />
-                </button>
               </div>
             ) : (
               <button className="btn-primary sign-in-btn" onClick={() => openAuthModal('login')} style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
@@ -564,43 +831,42 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             {verificationRequired ? (
               <div style={{ marginBottom: '20px' }}>
                 <div style={{ 
-                  padding: '16px', background: 'rgba(59, 130, 246, 0.1)', 
-                  borderRadius: '12px', color: 'var(--primary)', border: '1px solid var(--primary)',
-                  marginBottom: '16px', fontSize: '14px', lineHeight: 1.5,
-                  display: 'flex', alignItems: 'center', gap: '12px'
+                   padding: '16px', background: 'rgba(59, 130, 246, 0.1)', 
+                   borderRadius: '12px', color: 'var(--primary)', border: '1px solid var(--primary)',
+                   marginBottom: '16px', fontSize: '14px', lineHeight: 1.5,
+                   display: 'flex', alignItems: 'center', gap: '12px'
                 }}>
                   <div style={{ fontSize: '24px' }}>🛡️</div>
                   <div>
-                    <div style={{ fontWeight: 600 }}>{lang === 'zh' ? '需要身份验证' : 'Verification Required'}</div>
-                    {lang === 'zh' 
-                      ? `此账号已绑定到 ${verificationProvider || '邮箱'}。请点击下方按钮验证。`
-                      : `This account is bound to ${verificationProvider || 'email'}. Please verify below.`}
+                    <div style={{ fontWeight: 600 }}>{t('verificationRequiredTitle')}</div>
+                    <div style={{ marginTop: '4px' }}>
+                      {lang === 'zh' 
+                        ? `请使用您已绑定的账号进行身份验证 (${verificationProviders.join(', ')})`
+                        : `Please verify your identity using one of your linked accounts (${verificationProviders.join(', ')})`}
+                    </div>
                   </div>
                 </div>
                 
-                {verificationProvider === 'github' ? (
-                  <button 
-                    onClick={() => handleOAuthLogin('github')} 
-                    style={oauthBtnStyle('#24292e')}
-                  >
-                    <GithubIcon size={20} />
-                    {lang === 'zh' ? '验证 GitHub 身份' : 'Verify with GitHub'}
-                  </button>
-                ) : (
-                  <button 
-                    onClick={() => handleOAuthLogin('google')}
-                    style={oauthBtnStyle('#4285f4')}
-                  >
-                    <Mail size={20} />
-                    {lang === 'zh' ? '验证 Google 身份' : 'Verify with Google'}
-                  </button>
-                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {verificationProviders.map(prov => (
+                    <button 
+                      key={prov}
+                      onClick={() => handleOAuthLogin(prov)} 
+                      style={oauthBtnStyle(prov === 'github' ? '#24292e' : '#4285f4')}
+                    >
+                      {prov === 'github' ? <GithubIcon size={20} /> : <Mail size={20} />}
+                      {lang === 'zh' 
+                        ? `通过 ${prov.charAt(0).toUpperCase() + prov.slice(1)} 验证身份` 
+                        : `Verify with ${prov.charAt(0).toUpperCase() + prov.slice(1)}`}
+                    </button>
+                  ))}
+                </div>
                 
                 <button 
                    onClick={resetVerificationStates}
-                   style={{ width: '100%', marginTop: '12px', background: 'none', border: 'none', color: 'var(--text-tertiary)', fontSize: '13px', cursor: 'pointer' }}
+                   style={{ width: '100%', marginTop: '16px', background: 'none', border: 'none', color: 'var(--text-tertiary)', fontSize: '13px', cursor: 'pointer', textDecoration: 'underline' }}
                 >
-                  {lang === 'zh' ? '返回使用其他账号' : 'Back to use another account'}
+                  {lang === 'zh' ? '使用其他账号登录' : 'Login with another account'}
                 </button>
               </div>
             ) : (
@@ -737,58 +1003,22 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   </button>
                 </div>
                 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
-                  <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
-                  <span style={{ color: 'var(--text-tertiary)', fontSize: '13px', whiteSpace: 'nowrap' }}>{t('orRegisterDirect')}</span>
-                  <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
+                <div style={{ 
+                  padding: '16px', background: 'var(--bg-secondary)', 
+                  borderRadius: '12px', color: 'var(--text-secondary)',
+                  marginTop: '10px', fontSize: '13px', lineHeight: 1.6, border: '1px dashed var(--border-color)'
+                }}>
+                  💡 {t('registrationDisabled')}
                 </div>
               </>
             )}
-
-            {/* Fallback: Traditional registration form */}
-            <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, fontSize: '14px' }}>{t('username')}</label>
-                <input 
-                  type="text" 
-                  value={authForm.username}
-                  onChange={e => setAuthForm({...authForm, username: e.target.value})}
-                  required
-                  autoFocus
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, fontSize: '14px' }}>{t('email')} ({lang === 'zh' ? '可选' : 'Optional'})</label>
-                <input 
-                  type="email" 
-                  value={authForm.email}
-                  onChange={e => setAuthForm({...authForm, email: e.target.value})}
-                  placeholder="example@gmail.com"
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, fontSize: '14px' }}>{t('password')}</label>
-                <input 
-                  type="password" 
-                  value={authForm.password}
-                  onChange={e => setAuthForm({...authForm, password: e.target.value})}
-                  required
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
-                />
-              </div>
-              <button type="submit" className="btn-primary btn-lg" disabled={authLoading} style={{ marginTop: '8px', width: '100%', justifyContent: 'center', opacity: authLoading ? 0.7 : 1 }}>
-                {authLoading ? (lang === 'zh' ? '请稍候...' : 'Please wait...') : t('createAccountBtn')}
-              </button>
-            </form>
             
-            <div style={{ marginTop: '24px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px' }}>
+            <div style={{ marginTop: '32px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px', borderTop: '1px solid var(--border-color)', paddingTop: '24px' }}>
               {t('hasAccount')}
               <button 
                 type="button"
                 onClick={() => openAuthModal('login')}
-                style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontWeight: 500, padding: 0 }}
+                style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600, padding: 0, marginLeft: '4px' }}
               >
                 {t('signInLink')}
               </button>
@@ -913,7 +1143,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
                 onMouseOut={e => e.currentTarget.style.opacity = '1'}
               >
-                <Github size={20} />
+                <GithubIcon size={20} />
                 {t('bindGithub')}
               </button>
               <button 
