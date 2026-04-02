@@ -739,72 +739,30 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         </div>
                       </div>
 
-                      {/* Binding Section */}
-                      <div style={{ marginBottom: '16px' }}>
-                        <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                          账号绑定
-                        </div>
-                        
-                        {/* GitHub Row */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-                            <GithubIcon size={18} />
-                            <span>GitHub</span>
-                            {isBoundTo('github') ? (
-                              <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
-                            ) : (
-                              <span style={{ fontSize: '10px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
-                            )}
-                          </div>
-                          {isBoundTo('github') ? (
-                            <button 
-                              onClick={() => handleUnbindOAuth('github')}
-                              disabled={unbindLoading === 'github'}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }}
-                              title="解除绑定"
-                            >
-                              {unbindLoading === 'github' ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                            </button>
+                      {/* Account Settings Entry */}
+                      <button
+                        onClick={() => { setShowBindModal(true); setIsUserCardOpen(false); }}
+                        style={{
+                          width: '100%', display: 'flex', alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '10px 12px', borderRadius: '10px', marginBottom: '10px',
+                          background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
+                          cursor: 'pointer', transition: 'background 0.15s'
+                        }}
+                        onMouseOver={e => e.currentTarget.style.background = '#f1f5f9'}
+                        onMouseOut={e => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <ShieldCheck size={16} style={{ color: hasAnyBinding ? '#10b981' : 'var(--text-secondary)' }} />
+                          <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>账号设置</span>
+                          {hasAnyBinding ? (
+                            <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
                           ) : (
-                            <button 
-                              onClick={() => { setShowBindModal(true); setIsUserCardOpen(false); }}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, fontSize: '13px' }}
-                            >
-                              绑定
-                            </button>
+                            <span style={{ fontSize: '10px', color: '#f59e0b', background: '#fffbeb', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
                           )}
                         </div>
-
-                        {/* Google Row */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-                            <Mail size={18} />
-                            <span>Google</span>
-                            {isBoundTo('google') ? (
-                              <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
-                            ) : (
-                              <span style={{ fontSize: '10px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
-                            )}
-                          </div>
-                          {isBoundTo('google') ? (
-                            <button 
-                              onClick={() => handleUnbindOAuth('google')}
-                              disabled={unbindLoading === 'google'}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }}
-                              title="解除绑定"
-                            >
-                              {unbindLoading === 'google' ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                            </button>
-                          ) : (
-                            <button 
-                              onClick={() => { setShowBindModal(true); setIsUserCardOpen(false); }}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, fontSize: '13px' }}
-                            >
-                              绑定
-                            </button>
-                          )}
-                        </div>
-                      </div>
+                        <ExternalLink size={14} style={{ color: 'var(--text-secondary)', opacity: 0.6 }} />
+                      </button>
 
                       {/* Card Footer */}
                       <button 
@@ -1202,52 +1160,147 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         </div>
       )}
 
-      {/* Bind OAuth Modal */}
+      {/* Account Settings Modal */}
       {showBindModal && (
         <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-          background: 'rgba(0,0,0,0.5)', zIndex: 9999,
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.45)', zIndex: 9999, backdropFilter: 'blur(4px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
+        }} onClick={() => setShowBindModal(false)}>
           <div style={{
-            background: 'white', padding: '32px', borderRadius: '16px', 
-            width: '90%', maxWidth: '400px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <h2 style={{ fontSize: '22px', margin: 0, color: 'var(--text-primary)' }}>
-                {t('bindAccountTitle')}
-              </h2>
-              <button 
-                onClick={() => setShowBindModal(false)} 
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
+            background: 'white', borderRadius: '20px',
+            width: '90%', maxWidth: '440px',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.18)',
+            overflow: 'hidden'
+          }} onClick={e => e.stopPropagation()}>
+
+            {/* Modal Header */}
+            <div style={{
+              padding: '24px 28px 20px',
+              borderBottom: '1px solid #f1f5f9',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+            }}>
+              <div>
+                <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>账号设置</h2>
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>管理您的第三方登录绑定</p>
+              </div>
+              <button
+                onClick={() => setShowBindModal(false)}
+                style={{
+                  background: '#f1f5f9', border: 'none', cursor: 'pointer',
+                  width: '32px', height: '32px', borderRadius: '8px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'var(--text-secondary)', transition: 'background 0.15s'
+                }}
+                onMouseOver={e => e.currentTarget.style.background = '#e2e8f0'}
+                onMouseOut={e => e.currentTarget.style.background = '#f1f5f9'}
               >
-                <X size={24} />
+                <X size={18} />
               </button>
             </div>
-            
-            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '20px', lineHeight: 1.5 }}>
-              {t('bindAccountDesc')}
-            </p>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <button 
-                onClick={() => handleBindOAuth('github')} 
-                style={oauthBtnStyle('#24292e')}
-                onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
-                onMouseOut={e => e.currentTarget.style.opacity = '1'}
-              >
-                <GithubIcon size={20} />
-                {t('bindGithub')}
-              </button>
-              <button 
-                onClick={() => handleBindOAuth('google')}
-                style={oauthBtnStyle('#4285f4')}
-                onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
-                onMouseOut={e => e.currentTarget.style.opacity = '1'}
-              >
-                <Mail size={20} />
-                {t('bindGoogle')}
-              </button>
+
+            {/* Provider List */}
+            <div style={{ padding: '20px 28px' }}>
+
+              {/* Error / Success banners */}
+              {authError && (
+                <div style={{ padding: '10px 14px', background: '#fee2e2', color: '#dc2626', borderRadius: '10px', marginBottom: '16px', fontSize: '13px' }}>
+                  {authError}
+                </div>
+              )}
+              {authSuccess && (
+                <div style={{ padding: '10px 14px', background: '#dcfce7', color: '#16a34a', borderRadius: '10px', marginBottom: '16px', fontSize: '13px' }}>
+                  {authSuccess}
+                </div>
+              )}
+
+              {/* Providers section label */}
+              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px' }}>
+                已支持的第三方账号
+              </div>
+
+              {/* GitHub Row */}
+              {[{ key: 'github', label: 'GitHub', icon: <GithubIcon size={20} />, color: '#24292e' },
+                { key: 'google', label: 'Google', icon: <Mail size={20} />, color: '#4285f4' }]
+                .map(({ key, label, icon, color }) => (
+                  <div key={key} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '14px 16px', borderRadius: '12px', marginBottom: '10px',
+                    background: isBoundTo(key) ? '#f0fdf4' : '#f8fafc',
+                    border: `1px solid ${isBoundTo(key) ? '#bbf7d0' : '#e2e8f0'}`,
+                    transition: 'all 0.2s'
+                  }}>
+                    {/* Left: icon + name + badge */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{
+                        width: '38px', height: '38px', borderRadius: '10px',
+                        background: isBoundTo(key) ? color : '#e2e8f0',
+                        color: isBoundTo(key) ? 'white' : '#94a3b8',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'all 0.2s'
+                      }}>
+                        {icon}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)' }}>{label}</div>
+                        {isBoundTo(key) ? (
+                          <span style={{ fontSize: '11px', color: '#16a34a', fontWeight: 500 }}>已绑定</span>
+                        ) : (
+                          <span style={{ fontSize: '11px', color: '#94a3b8' }}>未绑定</span>
+                        )}
+                      </div>
+                    </div>
+                    {/* Right: action button */}
+                    {isBoundTo(key) ? (
+                      <button
+                        onClick={() => handleUnbindOAuth(key)}
+                        disabled={unbindLoading === key}
+                        title="解除绑定"
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '6px',
+                          padding: '7px 14px', borderRadius: '8px',
+                          background: 'white', border: '1px solid #fca5a5',
+                          color: '#ef4444', fontSize: '13px', fontWeight: 500,
+                          cursor: unbindLoading === key ? 'not-allowed' : 'pointer',
+                          opacity: unbindLoading === key ? 0.6 : 1,
+                          transition: 'all 0.15s'
+                        }}
+                        onMouseOver={e => { if (unbindLoading !== key) e.currentTarget.style.background = '#fee2e2'; }}
+                        onMouseOut={e => e.currentTarget.style.background = 'white'}
+                      >
+                        {unbindLoading === key ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                        解绑
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleBindOAuth(key)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '6px',
+                          padding: '7px 14px', borderRadius: '8px',
+                          background: color, color: 'white',
+                          border: 'none', fontSize: '13px', fontWeight: 500,
+                          cursor: 'pointer', transition: 'opacity 0.15s'
+                        }}
+                        onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
+                        onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                      >
+                        <Link2 size={14} />
+                        绑定
+                      </button>
+                    )}
+                  </div>
+              ))}
+
+              {/* Security note */}
+              <div style={{
+                marginTop: '16px', padding: '12px 14px',
+                background: '#f8fafc', borderRadius: '10px',
+                border: '1px solid #e2e8f0',
+                fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6
+              }}>
+                <ShieldCheck size={13} style={{ display: 'inline', marginRight: '5px', color: '#10b981', verticalAlign: 'middle' }} />
+                绑定第三方账号后，您可以使用该账号快捷登录，并享受双重身份验证保护。
+              </div>
             </div>
           </div>
         </div>
