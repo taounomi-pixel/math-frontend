@@ -464,14 +464,28 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       }
 
       // 3. Call Supabase API to unlink (Official unbind)
-      const { error: unlinkError } = await supabase.auth.unlinkIdentity(identity.identity_id);
+      // Note: Use 'identity.id', not 'identity.identity_id' in newer SDK versions.
+      const targetIdentityId = identity.id || identity.identity_id;
+      if (!targetIdentityId) {
+        throw new Error(lang === 'zh' ? '未找到绑定标识符，请刷新后再试' : 'Identity ID not found, please refresh and try again');
+      }
+
+      const { error: unlinkError } = await supabase.auth.unlinkIdentity(targetIdentityId);
       
       if (unlinkError) {
         // Special case: Supabase error for unbinding last identity
-        if (unlinkError.message?.toLowerCase().includes('identity') && 
-            (unlinkError.message?.toLowerCase().includes('last') || unlinkError.message?.toLowerCase().includes('only'))) {
+        const msg = unlinkError.message?.toLowerCase() || '';
+        if (msg.includes('identity') && (msg.includes('last') || msg.includes('only'))) {
           throw new Error(lang === 'zh' ? '无法解绑唯一的登录方式' : 'Cannot unbind the only login method');
         }
+        
+        // Special case: Manual linking disabled in Supabase dashboard
+        if (msg.includes('manual linking is disabled')) {
+          throw new Error(lang === 'zh' 
+            ? '解绑功能未开启。请在 Supabase 控制台的 Authentication -> Providers 中开启 "Manual Linking"。' 
+            : 'Manual Linking is disabled. Please enable it in Supabase Auth settings.');
+        }
+
         throw unlinkError;
       }
 
