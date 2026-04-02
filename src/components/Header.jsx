@@ -98,13 +98,62 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         // Recover pending intent state from localStorage
         const pendingVerification = localStorage.getItem('pending_verification') === 'true';
         const pendingUsername = localStorage.getItem('pending_username');
-        const pendingBind = localStorage.getItem('pending_bind') === 'true';
+        const isBindingOAuth = localStorage.getItem('isBindingOAuth') === 'true';
 
         const cleanUpIntents = () => {
           localStorage.removeItem('pending_verification');
           localStorage.removeItem('pending_username');
-          localStorage.removeItem('pending_bind');
+          localStorage.removeItem('isBindingOAuth');
         };
+
+        // ── CASE 0: Account Binding (checked FIRST) ──
+        // The isBindingOAuth flag is the definitive signal set by handleBindOAuth().
+        // We intentionally skip the URL-param check here because linkIdentity's
+        // PKCE flow auto-clears hash/query params before onAuthStateChange fires,
+        // causing isReturningFromRedirect to be false. The localStorage flag alone
+        // is sufficient proof that we are returning from a binding redirect.
+        if (isBindingOAuth) {
+          localStorage.removeItem('isBindingOAuth'); // Immediate cleanup prevents re-entry loops
+          try {
+            console.log('[Auth] Detected OAuth binding return. Syncing with backend...');
+            const localToken = localStorage.getItem('access_token');
+            const res = await fetch(`${API_BASE}/auth/bind`, {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localToken}`
+              },
+              body: JSON.stringify({ supabase_token: token })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              console.log('[Auth] Bind successful. Refreshing user state...', data);
+              // Update localStorage with latest provider info from backend
+              localStorage.setItem('auth_provider', data.auth_provider || '');
+              localStorage.setItem('user_email', data.email || '');
+              // Drive UI update by updating Context state
+              setCurrentUser(prev => ({
+                ...prev,
+                auth_provider: data.auth_provider,
+                email: data.email
+              }));
+              setShowBindModal(false);
+              cleanUpIntents();
+              // Clean up the redirect URL (remove access_token hash, code params, etc.)
+              cleanUpRedirectUrl();
+            } else {
+              const errData = await res.json();
+              console.error('[Auth] Bind failed:', extractErrorMessage(errData));
+              setAuthError(extractErrorMessage(errData));
+              cleanUpIntents();
+            }
+          } catch (err) {
+            console.error('[Auth] Bind exception:', err);
+            setAuthError(extractErrorMessage(err));
+            cleanUpIntents();
+          }
+          return;
+        }
 
         // CHECK: Are we actually returning from a redirect? 
         // This prevents the "immediate POST" bug when linkIdentity is triggered.
@@ -160,41 +209,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           return;
         }
 
-        // CASE 2: Account Binding
-        if (pendingBind && isReturningFromRedirect) {
-          try {
-            console.log('[Auth] Returning from OAuth callback. Initiating account bind...');
-            const localToken = localStorage.getItem('access_token');
-            const res = await fetch(`${API_BASE}/auth/bind`, {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localToken}`
-              },
-              body: JSON.stringify({ supabase_token: token })
-            });
-            if (res.ok) {
-              const data = await res.json();
-              localStorage.setItem('auth_provider', data.auth_provider || '');
-              localStorage.setItem('user_email', data.email || '');
-              setCurrentUser(prev => ({
-                ...prev,
-                auth_provider: data.auth_provider,
-                email: data.email
-              }));
-              setShowBindModal(false);
-              cleanUpIntents();
-            } else {
-              const errData = await res.json();
-              setAuthError(extractErrorMessage(errData));
-            }
-          } catch (err) {
-            console.error('Bind error:', err);
-            setAuthError(extractErrorMessage(err));
-            cleanUpIntents();
-          }
-          return;
-        }
+        // (CASE 2 moved to CASE 0 above — binding is now checked before URL params)
 
         // CASE 3: Standard OAuth login or registration
         if (isReturningFromRedirect) {
@@ -303,6 +318,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     
     setAuthModal(null);
     setAuthForm({ username: '', password: '', email: '' });
+  };
+
+  // Clean up OAuth redirect URL parameters (hash fragments, query params)
+  // Prevents the ugly access_token/code params from lingering in the address bar
+  const cleanUpRedirectUrl = () => {
+    const cleanUrl = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
   };
 
   const resetVerificationStates = () => {
@@ -420,8 +442,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const handleBindOAuth = async (provider) => {
     if (!supabase) return;
     
-    // 1. Set intent in localStorage to survive redirect
-    localStorage.setItem('pending_bind', 'true');
+    // 1. Set binding intent flag in localStorage to survive redirect
+    localStorage.setItem('isBindingOAuth', 'true');
     console.log(`[Auth] Initiating ${provider} account link...`);
 
     // 2. Redirect to OAuth provider using linkIdentity (Standard for account binding)
@@ -436,7 +458,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     if (error) {
       console.error('[Auth] linkIdentity Error:', error.message);
       setAuthError(error.message);
-      localStorage.removeItem('pending_bind');
+      localStorage.removeItem('isBindingOAuth');
     }
     // Note: If successful, the page will redirect, so no further code here will run.
   };
