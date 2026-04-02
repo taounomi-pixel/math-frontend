@@ -472,12 +472,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       }
 
       // 3. Call Supabase API to unlink (Official unbind)
-      // Note: Supabase SDK 2.45+ requires the ENTIRE identity object, not just the ID string.
-      console.log('[Unbind Debug] Calling supabase.auth.unlinkIdentity with full object...');
       const { error: unlinkError } = await supabase.auth.unlinkIdentity(identity);
       
       if (unlinkError) {
-        console.error('[Unbind Debug] unlinkIdentity failed:', unlinkError);
         const msg = unlinkError.message?.toLowerCase() || '';
         
         if (msg.includes('manual linking is disabled')) {
@@ -493,9 +490,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         throw unlinkError;
       }
 
-      console.log('[Unbind Debug] Supabase unlink success, syncing with backend...');
+      // 4. Update session to get latest identities
+      await supabase.auth.refreshSession();
 
-      // 4. Sync with Backend Database
+      // 5. Sync with Backend Database
       const localToken = localStorage.getItem('access_token');
       const res = await fetch(`${API_BASE}/auth/unbind`, {
         method: 'POST',
@@ -512,17 +510,15 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       }
 
       const data = await res.json();
-      console.log('[Unbind Debug] Backend sync success:', data);
       
-      // 5. Update UI state locally
+      // 6. Update UI state locally
       loginWithLocalData(data);
-      setAuthSuccess(lang === 'zh' ? '解绑成功' : 'Successfully unlinked');
       
-      // Auto-clear success message after 30s
-      setTimeout(() => setAuthSuccess(''), 30000);
+      // 7. Force reload to ensure fresh application state
+      window.location.reload();
       
     } catch (err) {
-      console.error('[Unbind Debug] Final Catch Error:', err);
+      console.error('Unbind error:', err);
       const msg = extractErrorMessage(err);
       if (msg.toLowerCase().includes('last identity') || msg.toLowerCase().includes('only identity')) {
         setAuthError(lang === 'zh' ? '无法解绑唯一的登录方式' : 'Cannot unbind the only login method');
@@ -531,7 +527,6 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       }
     } finally {
       setUnbindLoading(null);
-      console.log('[Unbind Debug] Operation finished');
     }
   };
 
@@ -707,12 +702,12 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       {/* Dropdown-level Feedbacks (Toasts) */}
                       {authError && (
                         <div style={{ padding: '10px 12px', background: '#fee2e2', color: '#dc2626', borderRadius: '10px', marginBottom: '16px', fontSize: '13px', border: '1px solid #fecaca', animation: 'shake 0.4s ease-in-out' }}>
-                          ⚠️ {authError}
+                          {authError}
                         </div>
                       )}
                       {authSuccess && (
                         <div style={{ padding: '10px 12px', background: '#dcfce7', color: '#16a34a', borderRadius: '10px', marginBottom: '16px', fontSize: '13px', border: '1px solid #bbf7d0', animation: 'fadeInDown 0.3s' }}>
-                          ✅ {authSuccess}
+                          {authSuccess}
                         </div>
                       )}
 
