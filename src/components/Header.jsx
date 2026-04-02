@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Search, Menu, X, User, LogOut, ChevronDown, 
   Globe, Github, Trash2, Loader2,
-  Settings, ExternalLink
+  Settings, ExternalLink, Upload, ShieldAlert, Link2, Mail
 } from 'lucide-react';
 // Brand Icon: GitHub
 const GithubIcon = ({ size = 20 }) => (
