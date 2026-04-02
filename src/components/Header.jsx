@@ -386,8 +386,19 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         const data = await res.json();
         
         if (!res.ok) {
+          // New check for 403 oauth_verification_required (MFA Interception)
+          if (res.status === 403 && data.detail?.error === 'oauth_verification_required') {
+            setAuthError(null); // Clear previous errors
+            setVerificationRequired(true);
+            setVerificationProviders(data.detail.providers || []);
+            setVerificationEmail(data.detail.email);
+            setIsVerifyingLogin(true); // Flag for "Verification Mode"
+            return;
+          }
           throw data;
         }
+
+        loginWithLocalData(data);
 
         if (data.status === 'needs_verification') {
           setVerificationRequired(true);
@@ -464,59 +475,76 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   };
 
   const handleUnbindOAuth = async (provider) => {
-    console.log(`[Unbind Debug] Starting unbind for provider: ${provider}`);
+    // Determine if this is the last bound identity from the frontend's current user state
+    const identities = currentUser?.identities || [];
+    const isLastIdentity = identities.length <= 1;
     
-    if (!window.confirm(lang === 'zh' ? `确定要解除与 ${provider} 的绑定吗？` : `Are you sure you want to unbind ${provider}?`)) {
-      console.log('[Unbind Debug] User canceled confirmation');
-      return;
+    // 1. Initial Confirmation with escalating severity
+    let confirmMsg = lang === 'zh' 
+      ? `确定要解除与 ${provider} 的绑定吗？` 
+      : `Are you sure you want to unbind ${provider}?`;
+    
+    if (isLastIdentity) {
+      confirmMsg = lang === 'zh'
+        ? `🚨 警告：这是您唯一的登录方式。\n\n解绑后，您的第三方身份将被彻底从系统中删除（释放），您后续只能通过用户名/密码登录。此操作执行后将强制您重新登录以使安全变更生效。\n\n确定要继续这步危险操作吗？`
+        : `🚨 WARNING: This is your ONLY login method.\n\nUnbinding will permanently DELETE your Supabase identity. You will only be able to use your username/password after this. You will be forced to LOG OUT to apply these security changes.\n\nAre you sure you want to proceed with this high-risk action?`;
     }
+
+    if (!window.confirm(confirmMsg)) return;
 
     setUnbindLoading(provider);
     setAuthError('');
     setAuthSuccess('');
 
     try {
-      // 1. Get current session
-      console.log('[Unbind Debug] Fetching user session from Supabase...');
+      const localToken = localStorage.getItem('access_token');
+      
+      if (isLastIdentity) {
+        // --- FORCED UNBIND FLOW (The new Admin-powered backend route) ---
+        console.log('[Unbind Debug] Performing critical forced unbind for last identity...');
+        const res = await fetch(`${API_BASE}/auth/force-unbind`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localToken}`
+          }
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(extractErrorMessage(errData));
+        }
+
+        // Success: Inform user and trigger cleanup
+        setAuthSuccess(lang === 'zh' ? '账号已彻底解绑且身份已释放，正在注销登录...' : 'Account successfully unbound and identity released. Logging out...');
+        
+        // Wait a bit so they can see the success message
+        setTimeout(() => {
+          handleLogout();
+          setShowAccountModal(false);
+          // Redirect to home or force refresh to clear all states
+          window.location.href = '/'; 
+        }, 1500);
+        return;
+      }
+
+      // --- NORMAL UNBIND FLOW (Standard Supabase Unlink) ---
+      console.log('[Unbind Debug] Performing standard unlink (multiple identities exist)...');
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
-      if (!user) throw new Error(lang === 'zh' ? '未登录或会话已过期' : 'Not logged in or session expired');
+      if (!user) throw new Error(lang === 'zh' ? '会话已过期，请重新登录' : 'Session expired, please login again');
 
-      // 2. Safety Check: Cannot unbind if only one identity remains
-      if (user.identities && user.identities.length <= 1) {
-        throw new Error(lang === 'zh' ? '这是您唯一的登录方式，无法解绑' : 'This is your only login method and cannot be unlinked');
-      }
-
-      // 3. Find the identity matching the provider
       const identity = user.identities?.find(id => id.provider === provider);
-      if (!identity) {
-        throw new Error(lang === 'zh' ? `未找到 ${provider} 的绑定记录，请尝试重新登录` : `No binding record found for ${provider}. Try relogging.`);
-      }
+      if (!identity) throw new Error(lang === 'zh' ? `未找到 ${provider} 的绑定记录` : `No binding record for ${provider}`);
 
-      // 4. Call Supabase API to unlink (Official unbind)
+      // Official Supabase unlink
       const { error: unlinkError } = await supabase.auth.unlinkIdentity(identity);
-      
-      if (unlinkError) {
-        const msg = unlinkError.message?.toLowerCase() || '';
-        
-        if (msg.includes('manual linking is disabled')) {
-          throw new Error(lang === 'zh' 
-            ? '解绑失败：请确保在 Supabase 控制台开启了 "Manual Linking"。' 
-            : 'Unbind failed: Manual Linking is disabled in Supabase.');
-        }
+      if (unlinkError) throw unlinkError;
 
-        if (msg.includes('identity') && (msg.includes('last') || msg.includes('only'))) {
-          throw new Error(lang === 'zh' ? '无法解绑唯一的登录方式' : 'Cannot unbind the only login method');
-        }
-        
-        throw unlinkError;
-      }
-
-      // 4. Update session to get latest identities
+      // Ensure Supabase state is updated locally
       await supabase.auth.refreshSession();
 
-      // 5. Sync with Backend Database
-      const localToken = localStorage.getItem('access_token');
+      // Sync the change to our backend
       const res = await fetch(`${API_BASE}/auth/unbind`, {
         method: 'POST',
         headers: { 
@@ -533,20 +561,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
       const data = await res.json();
       
-      // 6. Update UI state locally
+      // Update local state with the backend's returned user data (which has updated identities)
       loginWithLocalData(data);
-      
-      // 7. Force reload to ensure fresh application state
-      window.location.reload();
+      setAuthSuccess(lang === 'zh' ? `成功解除 ${provider} 绑定` : `Successfully unbound ${provider}`);
       
     } catch (err) {
       console.error('Unbind error:', err);
-      const msg = extractErrorMessage(err);
-      if (msg.toLowerCase().includes('last identity') || msg.toLowerCase().includes('only identity')) {
-        setAuthError(lang === 'zh' ? '无法解绑唯一的登录方式' : 'Cannot unbind the only login method');
-      } else {
-        setAuthError(msg);
-      }
+      setAuthError(extractErrorMessage(err));
     } finally {
       setUnbindLoading(null);
     }
@@ -1283,21 +1304,16 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         {isGithubBound ? (
                           <button 
-                            onClick={() => {
-                              if (!canUnbind) {
-                                setAuthError(lang === 'zh' ? '这是您唯一的登录方式，无法解绑' : 'This is your only login method and cannot be unlinked');
-                                return;
-                              }
-                              handleUnbindOAuth('github');
-                            }}
-                            disabled={unbindLoading === 'github' || !canUnbind}
+                            onClick={() => handleUnbindOAuth('github')}
+                            disabled={unbindLoading === 'github'}
                             style={{ 
-                              background: canUnbind ? '#fef2f2' : '#f8fafc', 
-                              border: canUnbind ? '1px solid #fee2e2' : '1px solid #e2e8f0', 
-                              cursor: canUnbind ? 'pointer' : 'not-allowed', 
-                              color: canUnbind ? '#ef4444' : '#94a3b8', 
+                              background: '#fef2f2', 
+                              border: '1px solid #fee2e2', 
+                              cursor: 'pointer', 
+                              color: '#ef4444', 
                               padding: '8px 12px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
-                              display: 'flex', alignItems: 'center', gap: '6px'
+                              display: 'flex', alignItems: 'center', gap: '6px',
+                              boxShadow: !canUnbind ? '0 0 0 1px #ef4444' : 'none' # Highlight last identity
                             }}
                           >
                             {unbindLoading === 'github' ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
@@ -1308,15 +1324,18 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                             onClick={() => handleBindOAuth('github')}
                             disabled={unbindLoading === 'github'}
                             style={{ 
-                              background: 'var(--text-primary)', color: 'white', border: 'none',
+                              background: 'var(--primary-color, #3b82f6)', color: 'white', border: 'none',
                               cursor: 'pointer', padding: '8px 16px', borderRadius: '10px',
-                              fontSize: '13px', fontWeight: 600,
+                              fontSize: '13px', fontWeight: 700,
                               display: 'flex', alignItems: 'center', gap: '6px',
-                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                              boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3), 0 2px 4px -2px rgba(59, 130, 246, 0.3)',
+                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
                             }}
+                            onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+                            onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                           >
                             {unbindLoading === 'github' ? <Loader2 size={14} className="animate-spin" /> : <Link2 size={14} />}
-                            {lang === 'zh' ? '绑定' : 'Connect'}
+                            {lang === 'zh' ? '绑定账号' : 'Connect Account'}
                           </button>
                         )}
                       </div>
@@ -1342,21 +1361,16 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         {isGoogleBound ? (
                           <button 
-                            onClick={() => {
-                              if (!canUnbind) {
-                                setAuthError(lang === 'zh' ? '这是您唯一的登录方式，无法解绑' : 'This is your only login method and cannot be unlinked');
-                                return;
-                              }
-                              handleUnbindOAuth('google');
-                            }}
-                            disabled={unbindLoading === 'google' || !canUnbind}
+                            onClick={() => handleUnbindOAuth('google')}
+                            disabled={unbindLoading === 'google'}
                             style={{ 
-                              background: canUnbind ? '#fef2f2' : '#f8fafc', 
-                              border: canUnbind ? '1px solid #fee2e2' : '1px solid #e2e8f0', 
-                              cursor: canUnbind ? 'pointer' : 'not-allowed', 
-                              color: canUnbind ? '#ef4444' : '#94a3b8', 
+                              background: '#fef2f2', 
+                              border: '1px solid #fee2e2', 
+                              cursor: 'pointer', 
+                              color: '#ef4444', 
                               padding: '8px 12px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
-                              display: 'flex', alignItems: 'center', gap: '6px'
+                              display: 'flex', alignItems: 'center', gap: '6px',
+                              boxShadow: !canUnbind ? '0 0 0 1px #ef4444' : 'none'
                             }}
                           >
                             {unbindLoading === 'google' ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
@@ -1367,15 +1381,18 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                             onClick={() => handleBindOAuth('google')}
                             disabled={unbindLoading === 'google'}
                             style={{ 
-                              background: 'var(--text-primary)', color: 'white', border: 'none',
+                              background: 'var(--primary-color, #3b82f6)', color: 'white', border: 'none',
                               cursor: 'pointer', padding: '8px 16px', borderRadius: '10px',
-                              fontSize: '13px', fontWeight: 600,
+                              fontSize: '13px', fontWeight: 700,
                               display: 'flex', alignItems: 'center', gap: '6px',
-                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                              boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3), 0 2px 4px -2px rgba(59, 130, 246, 0.3)',
+                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
                             }}
+                            onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+                            onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                           >
                             {unbindLoading === 'google' ? <Loader2 size={14} className="animate-spin" /> : <Link2 size={14} />}
-                            {lang === 'zh' ? '绑定' : 'Connect'}
+                            {lang === 'zh' ? '绑定账号' : 'Connect Account'}
                           </button>
                         )}
                       </div>
