@@ -1,23 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { 
-  Search, Menu, X, User, LogOut, ChevronDown, 
-  Globe, Github, Trash2, Loader2,
-  Settings, ExternalLink, Upload, ShieldAlert, Link2
-} from 'lucide-react';
-// Brand Icon: GitHub
+// Sync v1.0.4 - Multi-provider UI update
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Search, Globe, ChevronDown, User, Menu, X, LogOut, Upload, Link2, Mail, ShieldCheck, ShieldAlert, Trash2, Loader2, ExternalLink } from 'lucide-react';
+
+// Brand Icon: GitHub (Lucide removed brand icons in v0.400+)
 const GithubIcon = ({ size = 20 }) => (
   <svg height={size} width={size} viewBox="0 0 24 24" fill="currentColor">
     <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
-  </svg>
-);
-
-// Brand Icon: Google (Standard multi-color SVG)
-const GoogleIcon = ({ size = 20 }) => (
-  <svg height={size} width={size} viewBox="0 0 24 24">
-    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
   </svg>
 );
 import UploadModal from './UploadModal';
@@ -44,7 +32,6 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const [oauthProvider, setOauthProvider] = useState('');
   const [oauthEmail, setOauthEmail] = useState('');
   const [showBindModal, setShowBindModal] = useState(false);
-  const [showAccountModal, setShowAccountModal] = useState(false);
   const [isUserCardOpen, setIsUserCardOpen] = useState(false);
   const cardRef = useRef(null);
   const [unbindLoading, setUnbindLoading] = useState(null); // 'github' | 'google' | null
@@ -63,44 +50,14 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     const storedIsAdmin = localStorage.getItem('is_admin') === 'true';
     const storedProvider = localStorage.getItem('auth_provider');
     const storedEmail = localStorage.getItem('user_email');
-    const storedIdentities = localStorage.getItem('user_identities');
     if (token && storedUsername) {
-      let identities = [];
-      try {
-        identities = storedIdentities ? JSON.parse(storedIdentities) : [];
-      } catch (e) { identities = []; }
-
-      const initialUser = { 
+      setCurrentUser({ 
         username: storedUsername, 
         id: storedUserId ? parseInt(storedUserId, 10) : null,
         is_admin: storedIsAdmin,
         auth_provider: storedProvider || null,
-        email: storedEmail || null,
-        identities: identities
-      };
-      setCurrentUser(initialUser);
-
-      // ASYNC REFRESH: Get actual metadata from Supabase
-      if (supabase) {
-        supabase.auth.getUser().then(({ data: { user } }) => {
-          if (user) {
-            const realIdentities = user.identities?.map(id => id.provider) || [];
-            const realEmail = user.email || initialUser.email;
-            
-            const updatedUser = {
-              ...initialUser,
-              email: realEmail,
-              identities: realIdentities,
-              auth_provider: realIdentities[0] || null
-            };
-            
-            setCurrentUser(updatedUser);
-            localStorage.setItem('user_identities', JSON.stringify(realIdentities));
-            localStorage.setItem('user_email', realEmail || '');
-            localStorage.setItem('auth_provider', realIdentities[0] || '');
-          }
-        });
-      }
+        email: storedEmail || null
+      });
     }
   }, []);
 
@@ -153,6 +110,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         if (pendingVerification || isVerifyingLogin) {
           try {
             setAuthLoading(true);
+            const targetUsername = pendingUsername || authForm.username;
+            console.log(`[Auth] Starting MFA verification for user: ${targetUsername || 'anonymous'}`);
+            
             const res = await fetch(`${API_BASE}/auth/verify-login`, {
               method: 'POST',
               headers: { 
@@ -160,22 +120,27 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 'Authorization': `Bearer ${token}`
               },
               body: JSON.stringify({ 
-                username: pendingUsername || authForm.username,
+                username: targetUsername || null,
                 supabase_token: token 
               })
             });
+            
             const data = await res.json();
-              if (data.status === 'ok') {
-                await loginWithLocalData(data);
-                resetVerificationStates();
+            if (res.ok && data.status === 'ok') {
+              console.log('[Auth] MFA Verification successful.');
+              loginWithLocalData(data);
+              resetVerificationStates();
               cleanUpIntents();
             } else {
-              setAuthError(extractErrorMessage(data));
+              const errMsg = extractErrorMessage(data);
+              console.error('[Auth] MFA Verification failed:', errMsg);
+              setAuthError(errMsg);
               // Clear sticky state on failure to allow fresh login attempts
               resetVerificationStates();
               cleanUpIntents();
             }
           } catch (err) {
+            console.error('[Auth] MFA Handshake Exception:', err);
             setAuthError(extractErrorMessage(err));
             cleanUpIntents();
           } finally {
@@ -200,12 +165,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
               const data = await res.json();
               localStorage.setItem('auth_provider', data.auth_provider || '');
               localStorage.setItem('user_email', data.email || '');
-              localStorage.setItem('user_identities', JSON.stringify(data.identities || []));
               setCurrentUser(prev => ({
                 ...prev,
                 auth_provider: data.auth_provider,
-                email: data.email,
-                identities: data.identities || []
+                email: data.email
               }));
               setShowBindModal(false);
               cleanUpIntents();
@@ -234,7 +197,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           const data = await res.json();
           
           if (data.status === 'ok') {
-            await loginWithLocalData(data);
+            loginWithLocalData(data);
             cleanUpIntents();
           } else if (data.status === 'needs_registration') {
             setPendingSupabaseToken(token);
@@ -301,35 +264,19 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   };
 
   // Helper to persist local login data
-  const loginWithLocalData = async (data) => {
+  const loginWithLocalData = (data) => {
     localStorage.setItem('access_token', data.access_token);
     localStorage.setItem('username', data.username);
     localStorage.setItem('user_id', data.user_id);
     localStorage.setItem('is_admin', data.is_admin ? 'true' : 'false');
-    
-    let identities = data.identities || [];
-    let email = data.email || '';
-
-    // Enrich with real Supabase data if possible
-    if (supabase) {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        identities = user.identities?.map(id => id.provider) || identities;
-        email = user.email || email;
-      }
-    }
-
-    localStorage.setItem('auth_provider', identities[0] || '');
-    localStorage.setItem('user_email', email);
-    localStorage.setItem('user_identities', JSON.stringify(identities));
-    
+    localStorage.setItem('auth_provider', data.auth_provider || '');
+    localStorage.setItem('user_email', data.email || '');
     setCurrentUser({
       username: data.username,
       id: data.user_id,
       is_admin: !!data.is_admin,
-      auth_provider: identities[0] || null,
-      email: email,
-      identities: identities
+      auth_provider: data.auth_provider,
+      email: data.email
     });
     setAuthModal(null);
     setAuthForm({ username: '', password: '', email: '' });
@@ -370,7 +317,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       }
       
       const data = await res.json();
-      await loginWithLocalData(data);
+      loginWithLocalData(data);
       setPendingSupabaseToken(null);
     } catch (err) {
       setAuthError(extractErrorMessage(err));
@@ -406,6 +353,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         setAuthSuccess(t('regSuccess'));
       } else if (authModal === 'login') {
         const formData = new URLSearchParams();
+        // Mandatory fields for OAuth2PasswordRequestForm
         formData.append('username', authForm.username.trim());
         formData.append('password', authForm.password);
         
@@ -417,23 +365,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           },
           body: formData.toString()
         });
-
+        
         const data = await res.json();
-
+        
         if (!res.ok) {
-          // New check for 403 oauth_verification_required (MFA Interception)
-          if (res.status === 403 && data.detail?.error_code === 'oauth_verification_required') {
-            setAuthError(null); 
-            setVerificationRequired(true);
-            setVerificationProviders(data.detail.bound_providers || []);
-            setVerificationEmail(data.detail.email);
-            setIsVerifyingLogin(true);
-            return;
-          }
           throw data;
         }
 
-        // Standard 2FA check (if any)
         if (data.status === 'needs_verification') {
           setVerificationRequired(true);
           setVerificationProviders(data.auth_providers || [data.auth_provider] || []);
@@ -441,7 +379,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           return;
         }
 
-        await loginWithLocalData(data);
+        loginWithLocalData(data);
       }
     } catch (err) {
       console.error('Auth error:', err);
@@ -459,27 +397,20 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const handleBindOAuth = async (provider) => {
     if (!supabase) return;
     
-    setAuthError(null);
-    setAuthSuccess(null);
-    setUnbindLoading(provider); // Reuse same loading state variable
+    // Persist bind intent in localStorage to survive redirect
+    localStorage.setItem('pending_bind', 'true');
 
-    try {
-      // Use linkIdentity for adding a provider to an existing account
-      // This is the correct method for authenticated users to add logins
-      const { error } = await supabase.auth.linkIdentity({
-        provider,
-        options: {
-          redirectTo: window.location.origin
-        }
-      });
-      
-      if (error) {
-        setAuthError(error.message);
+    // First sign in with OAuth
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: window.location.origin
       }
-    } catch (err) {
-      setAuthError(err.message);
-    } finally {
-      setUnbindLoading(null);
+    });
+    
+    if (error) {
+      setAuthError(error.message);
+      localStorage.removeItem('pending_bind');
     }
   };
 
@@ -509,98 +440,45 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   };
 
   const handleUnbindOAuth = async (provider) => {
-    // Determine if this is the last bound identity from the frontend's current user state
-    const identities = currentUser?.identities || [];
-    const isLastIdentity = identities.length <= 1;
-    
-    // 1. Initial Confirmation with escalating severity
-    let confirmMsg = lang === 'zh' 
-      ? `确定要解除与 ${provider} 的绑定吗？` 
-      : `Are you sure you want to unbind ${provider}?`;
-    
-    if (isLastIdentity) {
-      confirmMsg = lang === 'zh'
-        ? `🚨 警告：这是您唯一的登录方式。\n\n解绑后，您的第三方身份将被彻底从系统中删除（释放），您后续只能通过用户名/密码登录。此操作执行后将强制您重新登录以使安全变更生效。\n\n确定要继续这步危险操作吗？`
-        : `🚨 WARNING: This is your ONLY login method.\n\nUnbinding will permanently DELETE your Supabase identity. You will only be able to use your username/password after this. You will be forced to LOG OUT to apply these security changes.\n\nAre you sure you want to proceed with this high-risk action?`;
+    if (!window.confirm(lang === 'zh' ? `确定要解除与 ${provider} 的绑定吗？` : `Are you sure you want to unbind ${provider}?`)) {
+      return;
     }
 
-    if (!window.confirm(confirmMsg)) return;
-
     setUnbindLoading(provider);
-    setAuthError('');
-    setAuthSuccess('');
-
     try {
-      const localToken = localStorage.getItem('access_token');
-      
-      if (isLastIdentity) {
-        // --- FORCED UNBIND FLOW (The new Admin-powered backend route) ---
-        console.log('[Unbind Debug] Performing critical forced unbind for last identity...');
-        const res = await fetch(`${API_BASE}/auth/force-unbind`, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localToken}`
-          }
-        });
-
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(extractErrorMessage(errData));
-        }
-
-        // Success: Inform user and trigger cleanup
-        setAuthSuccess(lang === 'zh' ? '账号已彻底解绑且身份已释放，正在注销登录...' : 'Account successfully unbound and identity released. Logging out...');
-        
-        // Wait a bit so they can see the success message
-        setTimeout(() => {
-          handleLogout();
-          setShowAccountModal(false);
-          // Redirect to home or force refresh to clear all states
-          window.location.href = '/'; 
-        }, 1500);
-        return;
-      }
-
-      // --- NORMAL UNBIND FLOW (Standard Supabase Unlink) ---
-      console.log('[Unbind Debug] Performing standard unlink (multiple identities exist)...');
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      if (!user) throw new Error(lang === 'zh' ? '会话已过期，请重新登录' : 'Session expired, please login again');
-
-      const identity = user.identities?.find(id => id.provider === provider);
-      if (!identity) throw new Error(lang === 'zh' ? `未找到 ${provider} 的绑定记录` : `No binding record for ${provider}`);
-
-      // Official Supabase unlink
-      const { error: unlinkError } = await supabase.auth.unlinkIdentity(identity);
-      if (unlinkError) throw unlinkError;
-
-      // Ensure Supabase state is updated locally
-      await supabase.auth.refreshSession();
-
-      // Sync the change to our backend
+      const token = localStorage.getItem('access_token');
       const res = await fetch(`${API_BASE}/auth/unbind`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localToken}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ provider })
       });
 
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(extractErrorMessage(errData));
-      }
-
       const data = await res.json();
-      
-      // Update local state with the backend's returned user data (which has updated identities)
-      loginWithLocalData(data);
-      setAuthSuccess(lang === 'zh' ? `成功解除 ${provider} 绑定` : `Successfully unbound ${provider}`);
-      
+      if (res.ok) {
+        // Update local state
+        const updatedProviders = data.auth_providers || [];
+        const isStillBound = updatedProviders.length > 0;
+        
+        const newProvider = isStillBound ? updatedProviders[0] : null;
+        localStorage.setItem('auth_provider', newProvider || '');
+        if (!isStillBound) {
+          localStorage.removeItem('user_email'); // Optional: keep or remove
+        }
+        
+        setCurrentUser(prev => ({
+          ...prev,
+          auth_provider: newProvider,
+          email: isStillBound ? prev.email : null
+        }));
+        
+        setAuthSuccess(lang === 'zh' ? '解绑成功' : 'Successfully unlinked');
+      } else {
+        setAuthError(extractErrorMessage(data));
+      }
     } catch (err) {
-      console.error('Unbind error:', err);
       setAuthError(extractErrorMessage(err));
     } finally {
       setUnbindLoading(null);
@@ -771,47 +649,76 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                             {currentUser.username}
                           </div>
                           <div style={{ fontSize: '12px', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {currentUser.email || (lang === 'zh' ? '暂未绑定邮箱' : 'No email bound')}
+                            {currentUser.email || 'No email bound'}
                           </div>
                         </div>
                       </div>
 
-                      {/* Dropdown-level Feedbacks (Toasts) */}
-                      {authError && (
-                        <div style={{ padding: '10px 12px', background: '#fee2e2', color: '#dc2626', borderRadius: '10px', marginBottom: '16px', fontSize: '13px', border: '1px solid #fecaca', animation: 'shake 0.4s ease-in-out' }}>
-                          {authError}
-                        </div>
-                      )}
-                      {authSuccess && (
-                        <div style={{ padding: '10px 12px', background: '#dcfce7', color: '#16a34a', borderRadius: '10px', marginBottom: '16px', fontSize: '13px', border: '1px solid #bbf7d0', animation: 'fadeInDown 0.3s' }}>
-                          {authSuccess}
-                        </div>
-                      )}
-
-                      {/* New Settings Item */}
+                      {/* Binding Section */}
                       <div style={{ marginBottom: '16px' }}>
-                        <button 
-                          onClick={() => { setShowAccountModal(true); setIsUserCardOpen(false); }}
-                          style={{ 
-                            width: '100%', padding: '12px', borderRadius: '10px',
-                            display: 'flex', alignItems: 'center', gap: '10px',
-                            background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
-                            color: 'var(--text-primary)', fontWeight: 600, fontSize: '14px', cursor: 'pointer',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseOver={e => {
-                            e.currentTarget.style.borderColor = 'var(--primary)';
-                            e.currentTarget.style.background = 'white';
-                          }}
-                          onMouseOut={e => {
-                            e.currentTarget.style.borderColor = 'var(--border-color)';
-                            e.currentTarget.style.background = 'var(--bg-secondary)';
-                          }}
-                        >
-                          <Link2 size={18} color="var(--primary)" />
-                          <span>第三方账号绑定</span>
-                          <ChevronDown size={14} style={{ marginLeft: 'auto', transform: 'rotate(-90deg)', opacity: 0.5 }} />
-                        </button>
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          账号绑定
+                        </div>
+                        
+                        {/* GitHub Row */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                            <GithubIcon size={18} />
+                            <span>GitHub</span>
+                            {currentUser.auth_provider === 'github' ? (
+                              <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
+                            ) : (
+                              <span style={{ fontSize: '10px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
+                            )}
+                          </div>
+                          {currentUser.auth_provider === 'github' ? (
+                            <button 
+                              onClick={() => handleUnbindOAuth('github')}
+                              disabled={unbindLoading === 'github'}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }}
+                              title="解除绑定"
+                            >
+                              {unbindLoading === 'github' ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={() => { setShowBindModal(true); setIsUserCardOpen(false); }}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, fontSize: '13px' }}
+                            >
+                              绑定
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Google Row */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                            <Mail size={18} />
+                            <span>Google</span>
+                            {currentUser.auth_provider === 'google' ? (
+                              <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
+                            ) : (
+                              <span style={{ fontSize: '10px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
+                            )}
+                          </div>
+                          {currentUser.auth_provider === 'google' ? (
+                            <button 
+                              onClick={() => handleUnbindOAuth('google')}
+                              disabled={unbindLoading === 'google'}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }}
+                              title="解除绑定"
+                            >
+                              {unbindLoading === 'google' ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={() => { setShowBindModal(true); setIsUserCardOpen(false); }}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, fontSize: '13px' }}
+                            >
+                              绑定
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       {/* Card Footer */}
@@ -939,35 +846,26 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 }}>
                   <div style={{ fontSize: '24px' }}>🛡️</div>
                   <div>
-                    <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '16px' }}>
-                      {lang === 'zh' ? '密码验证成功！' : 'Password verified!'}
-                    </div>
-                    <div style={{ marginTop: '4px', fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                    <div style={{ fontWeight: 600 }}>{t('verificationRequiredTitle')}</div>
+                    <div style={{ marginTop: '4px' }}>
                       {lang === 'zh' 
-                        ? '为确保安全，请选择您已绑定的账号完成二次验证'
-                        : 'For security, please select your linked account for MFA verification'}
+                        ? `请使用您已绑定的账号进行身份验证 (${verificationProviders.join(', ')})`
+                        : `Please verify your identity using one of your linked accounts (${verificationProviders.join(', ')})`}
                     </div>
                   </div>
                 </div>
                 
-                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {verificationProviders.map(prov => (
                     <button 
                       key={prov}
                       onClick={() => handleOAuthLogin(prov)} 
-                      style={{
-                        ...oauthBtnStyle(prov === 'github' ? '#24292e' : '#4285f4'),
-                        padding: '12px 16px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '10px'
-                      }}
+                      style={oauthBtnStyle(prov === 'github' ? '#24292e' : '#4285f4')}
                     >
-                      {prov === 'github' ? <GithubIcon size={20} /> : <GoogleIcon size={20} />}
+                      {prov === 'github' ? <GithubIcon size={20} /> : <Mail size={20} />}
                       {lang === 'zh' 
-                        ? `通过 ${prov === 'github' ? 'GitHub' : 'Google'} 账号验证` 
-                        : `Verify with ${prov === 'github' ? 'GitHub' : 'Google'} Account`}
+                        ? `通过 ${prov.charAt(0).toUpperCase() + prov.slice(1)} 验证身份` 
+                        : `Verify with ${prov.charAt(0).toUpperCase() + prov.slice(1)}`}
                     </button>
                   ))}
                 </div>
@@ -996,11 +894,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       </button>
                       <button 
                         onClick={() => handleOAuthLogin('google')}
-                        style={oauthBtnStyle('#4285f4')}
+                        style={{ ...oauthBtnStyle('#4285f4'), }}
                         onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
                         onMouseOut={e => e.currentTarget.style.opacity = '1'}
                       >
-                        <GoogleIcon size={20} />
+                        <Mail size={20} />
                         {t('loginWithGoogle')}
                       </button>
                     </div>
@@ -1108,7 +1006,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
                     onMouseOut={e => e.currentTarget.style.opacity = '1'}
                   >
-                    <GoogleIcon size={20} />
+                    <Mail size={20} />
                     {t('registerWithGoogle')}
                   </button>
                 </div>
@@ -1262,195 +1160,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
                 onMouseOut={e => e.currentTarget.style.opacity = '1'}
               >
-                <GoogleIcon size={20} />
+                <Mail size={20} />
                 {t('bindGoogle')}
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* New Account Settings Modal */}
-      {showAccountModal && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-          background: 'rgba(0,0,0,0.5)', zIndex: 9999,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          backdropFilter: 'blur(4px)'
-        }}>
-          <div style={{
-            background: 'white', padding: '32px', borderRadius: '24px', 
-            width: '90%', maxWidth: '440px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            animation: 'scaleIn 0.3s ease-out'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px', alignItems: 'center' }}>
-              <h2 style={{ fontSize: '22px', margin: 0, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-                {lang === 'zh' ? '账号设置' : 'Account Settings'}
-              </h2>
-              <button 
-                onClick={() => setShowAccountModal(false)}
-                className="hover-scale"
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '4px' }}
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            <div style={{ marginBottom: '24px' }}>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '20px', lineHeight: 1.6 }}>
-                {lang === 'zh' ? '管理您的第三方账号连接。请确保至少保留一种登录方式。' : 'Manage your third-party account connections. Ensure at least one login method is kept.'}
-              </p>
-
-              {authError && (
-                <div style={{ padding: '12px 16px', background: '#fee2e2', color: '#dc2626', borderRadius: '12px', marginBottom: '16px', fontSize: '14px', border: '1px solid #fecaca' }}>
-                  {authError}
-                </div>
-              )}
-              {authSuccess && (
-                <div style={{ padding: '12px 16px', background: '#dcfce7', color: '#16a34a', borderRadius: '12px', marginBottom: '16px', fontSize: '14px', border: '1px solid #bbf7d0' }}>
-                  {authSuccess}
-                </div>
-              )}
-
-              {(() => {
-                const identities = currentUser?.identities || [];
-                // More robust check for identities
-                const isGithubBound = identities.some(id => {
-                  if (typeof id === 'string') return id === 'github';
-                  return id.provider === 'github' || id.provider_name === 'github';
-                });
-                const isGoogleBound = identities.some(id => {
-                  if (typeof id === 'string') return id === 'google';
-                  return id.provider === 'google' || id.provider_name === 'google';
-                });
-                const canUnbind = identities.length > 1;
-
-                return (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {/* GitHub Row */}
-                    <div style={{ 
-                      padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      background: 'var(--bg-secondary)'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ padding: '8px', background: 'white', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px' }}>
-                          <GithubIcon size={20} />
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: 600, fontSize: '14px' }}>GitHub</div>
-                          <div style={{ fontSize: '12px', color: isGithubBound ? '#10b981' : 'var(--text-secondary)' }}>
-                            {isGithubBound ? (lang === 'zh' ? '已绑定' : 'Connected') : (lang === 'zh' ? '未绑定' : 'Not Connected')}
-                          </div>
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        {isGithubBound ? (
-                          <button 
-                            onClick={() => handleUnbindOAuth('github')}
-                            disabled={unbindLoading === 'github'}
-                            style={{ 
-                              background: '#fef2f2', 
-                              border: '1px solid #fee2e2', 
-                              cursor: 'pointer', 
-                              color: '#ef4444', 
-                              padding: '8px 12px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
-                              display: 'flex', alignItems: 'center', gap: '6px',
-                              boxShadow: !canUnbind ? '0 0 0 1px #ef4444' : 'none'
-                            }}
-                          >
-                            {unbindLoading === 'github' ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                            {lang === 'zh' ? '解绑' : 'Unlink'}
-                          </button>
-                        ) : (
-                          <button 
-                            onClick={() => handleBindOAuth('github')}
-                            disabled={unbindLoading === 'github'}
-                            style={{ 
-                              background: 'var(--primary-color, #3b82f6)', color: 'white', border: 'none',
-                              cursor: 'pointer', padding: '8px 16px', borderRadius: '10px',
-                              fontSize: '13px', fontWeight: 700,
-                              display: 'flex', alignItems: 'center', gap: '6px',
-                              boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3), 0 2px 4px -2px rgba(59, 130, 246, 0.3)',
-                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-                            }}
-                            onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
-                            onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                          >
-                            {unbindLoading === 'github' ? <Loader2 size={14} className="animate-spin" /> : <Link2 size={14} />}
-                            {lang === 'zh' ? '绑定账号' : 'Connect Account'}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Google Row */}
-                    <div style={{ 
-                      padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      background: 'var(--bg-secondary)'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ padding: '8px', background: 'white', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px' }}>
-                          <GoogleIcon size={20} />
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: 600, fontSize: '14px' }}>Google</div>
-                          <div style={{ fontSize: '12px', color: isGoogleBound ? '#10b981' : 'var(--text-secondary)' }}>
-                            {isGoogleBound ? (lang === 'zh' ? '已绑定' : 'Connected') : (lang === 'zh' ? '未绑定' : 'Not Connected')}
-                          </div>
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        {isGoogleBound ? (
-                          <button 
-                            onClick={() => handleUnbindOAuth('google')}
-                            disabled={unbindLoading === 'google'}
-                            style={{ 
-                              background: '#fef2f2', 
-                              border: '1px solid #fee2e2', 
-                              cursor: 'pointer', 
-                              color: '#ef4444', 
-                              padding: '8px 12px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
-                              display: 'flex', alignItems: 'center', gap: '6px',
-                              boxShadow: !canUnbind ? '0 0 0 1px #ef4444' : 'none'
-                            }}
-                          >
-                            {unbindLoading === 'google' ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                            {lang === 'zh' ? '解绑' : 'Unlink'}
-                          </button>
-                        ) : (
-                          <button 
-                            onClick={() => handleBindOAuth('google')}
-                            disabled={unbindLoading === 'google'}
-                            style={{ 
-                              background: 'var(--primary-color, #3b82f6)', color: 'white', border: 'none',
-                              cursor: 'pointer', padding: '8px 16px', borderRadius: '10px',
-                              fontSize: '13px', fontWeight: 700,
-                              display: 'flex', alignItems: 'center', gap: '6px',
-                              boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3), 0 2px 4px -2px rgba(59, 130, 246, 0.3)',
-                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-                            }}
-                            onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
-                            onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                          >
-                            {unbindLoading === 'google' ? <Loader2 size={14} className="animate-spin" /> : <Link2 size={14} />}
-                            {lang === 'zh' ? '绑定账号' : 'Connect Account'}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-
-            <button 
-              onClick={() => setShowAccountModal(false)}
-              style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--text-primary)', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer' }}
-            >
-              {lang === 'zh' ? '确定' : 'Done'}
-            </button>
           </div>
         </div>
       )}
