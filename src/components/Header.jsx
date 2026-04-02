@@ -42,6 +42,27 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const [verificationEmail, setVerificationEmail] = useState('');
   const [isVerifyingLogin, setIsVerifyingLogin] = useState(false);
 
+  /**
+   * Checks whether the current user is bound to a specific OAuth provider.
+   * Handles 3 cases:
+   *   1. Explicit provider in bound_providers array (e.g. ['github'])
+   *   2. TIER4 fallback: bound_providers contains 'oauth' AND supabase_uid is set
+   *      → we know account IS bound but don't have provider detail; show as bound on all rows
+   *   3. No binding data → false
+   */
+  const isBoundTo = useCallback((provider) => {
+    const providers = currentUser?.bound_providers || [];
+    if (providers.includes(provider)) return true;
+    // TIER4 fallback: backend confirmed binding but couldn't determine provider
+    if (providers.includes('oauth') && currentUser?.supabase_uid) return true;
+    return false;
+  }, [currentUser]);
+
+  /** True if the user has ANY bound OAuth provider */
+  const hasAnyBinding = !!(
+    currentUser?.bound_providers?.length > 0 || currentUser?.supabase_uid
+  );
+
   // Auto-login check on mount + hydrate bound_providers from server
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -49,7 +70,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     const storedUserId = localStorage.getItem('user_id');
     const storedIsAdmin = localStorage.getItem('is_admin') === 'true';
     const storedEmail = localStorage.getItem('user_email');
-    // Restore bound_providers from localStorage cache first (instant UI)
+    // Restore bound_providers from localStorage cache first (instant UI, avoids flicker)
     let cachedProviders = [];
     try { cachedProviders = JSON.parse(localStorage.getItem('bound_providers') || '[]'); } catch { cachedProviders = []; }
     
@@ -62,18 +83,23 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         email: storedEmail || null
       });
 
-      // Hydrate real-time bound_providers from server
+      // Hydrate real-time bound_providers from server (authoritative source of truth)
       fetch(`${API_BASE}/users/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
         .then(res => res.ok ? res.json() : null)
         .then(data => {
-          if (data && data.bound_providers) {
-            localStorage.setItem('bound_providers', JSON.stringify(data.bound_providers));
-            setCurrentUser(prev => prev ? ({ ...prev, bound_providers: data.bound_providers }) : prev);
-          }
+          if (!data) return;
+          // BUGFIX: Array.isArray check — empty array [] is falsy in JS but is valid data
+          const providers = Array.isArray(data.bound_providers) ? data.bound_providers : cachedProviders;
+          localStorage.setItem('bound_providers', JSON.stringify(providers));
+          setCurrentUser(prev => prev ? ({ 
+            ...prev, 
+            bound_providers: providers,
+            supabase_uid: data.supabase_uid || null
+          }) : prev);
         })
-        .catch(() => { /* silent — use cached value */ });
+        .catch(() => { /* silent — keep cached value */ });
     }
   }, []);
 
@@ -633,7 +659,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     paddingRight: '12px',
                     borderRadius: '10px',
                     cursor: 'pointer',
-                    background: (currentUser.bound_providers && currentUser.bound_providers.length > 0) ? 'transparent' : '#f3f4f6', // Gray if not linked
+                    background: hasAnyBinding ? 'transparent' : '#f3f4f6',
                     transition: 'all 0.2s ease',
                     border: '1px solid transparent',
                     maxWidth: '180px'
@@ -658,7 +684,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     }}>
                       {currentUser.username}
                     </span>
-                    {(!currentUser.bound_providers || currentUser.bound_providers.length === 0) && (
+                    {!hasAnyBinding && (
                       <span style={{ fontSize: '10px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '2px' }}>
                         <ShieldAlert size={10} /> 未绑定
                       </span>
@@ -713,13 +739,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
                             <GithubIcon size={18} />
                             <span>GitHub</span>
-                            {(currentUser.bound_providers || []).includes('github') ? (
+                            {isBoundTo('github') ? (
                               <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
                             ) : (
                               <span style={{ fontSize: '10px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
                             )}
                           </div>
-                          {(currentUser.bound_providers || []).includes('github') ? (
+                          {isBoundTo('github') ? (
                             <button 
                               onClick={() => handleUnbindOAuth('github')}
                               disabled={unbindLoading === 'github'}
@@ -743,13 +769,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
                             <Mail size={18} />
                             <span>Google</span>
-                            {(currentUser.bound_providers || []).includes('google') ? (
+                            {isBoundTo('google') ? (
                               <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
                             ) : (
                               <span style={{ fontSize: '10px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
                             )}
                           </div>
-                          {(currentUser.bound_providers || []).includes('google') ? (
+                          {isBoundTo('google') ? (
                             <button 
                               onClick={() => handleUnbindOAuth('google')}
                               disabled={unbindLoading === 'google'}
