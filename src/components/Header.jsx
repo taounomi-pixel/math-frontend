@@ -414,20 +414,27 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const handleBindOAuth = async (provider) => {
     if (!supabase) return;
     
-    // Persist bind intent in localStorage to survive redirect
-    localStorage.setItem('pending_bind', 'true');
+    setAuthError(null);
+    setAuthSuccess(null);
+    setUnbindLoading(provider); // Reuse same loading state variable
 
-    // First sign in with OAuth
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: window.location.origin
+    try {
+      // Use linkIdentity for adding a provider to an existing account
+      // This is the correct method for authenticated users to add logins
+      const { error } = await supabase.auth.linkIdentity({
+        provider,
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+      
+      if (error) {
+        setAuthError(error.message);
       }
-    });
-    
-    if (error) {
-      setAuthError(error.message);
-      localStorage.removeItem('pending_bind');
+    } catch (err) {
+      setAuthError(err.message);
+    } finally {
+      setUnbindLoading(null);
     }
   };
 
@@ -1243,8 +1250,15 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
               {(() => {
                 const identities = currentUser?.identities || [];
-                const isGithubBound = identities.some(id => (typeof id === 'string' ? id === 'github' : id.provider === 'github'));
-                const isGoogleBound = identities.some(id => (typeof id === 'string' ? id === 'google' : id.provider === 'google'));
+                // More robust check for identities
+                const isGithubBound = identities.some(id => {
+                  if (typeof id === 'string') return id === 'github';
+                  return id.provider === 'github' || id.provider_name === 'github';
+                });
+                const isGoogleBound = identities.some(id => {
+                  if (typeof id === 'string') return id === 'google';
+                  return id.provider === 'google' || id.provider_name === 'google';
+                });
                 const canUnbind = identities.length > 1;
 
                 return (
@@ -1256,7 +1270,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       background: 'var(--bg-secondary)'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ pading: '8px', background: 'white', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px' }}>
+                        <div style={{ padding: '8px', background: 'white', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px' }}>
                           <GithubIcon size={20} />
                         </div>
                         <div>
@@ -1266,40 +1280,45 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                           </div>
                         </div>
                       </div>
-                      {isGithubBound ? (
-                        <button 
-                          onClick={() => {
-                            if (!canUnbind) {
-                              setAuthError(lang === 'zh' ? '这是您唯一的登录方式，无法解绑' : 'This is your only login method and cannot be unlinked');
-                              return;
-                            }
-                            handleUnbindOAuth('github');
-                          }}
-                          disabled={unbindLoading === 'github' || !canUnbind}
-                          style={{ 
-                            background: canUnbind ? '#fee2e2' : '#f3f4f6', 
-                            border: 'none', 
-                            cursor: canUnbind ? 'pointer' : 'not-allowed', 
-                            color: canUnbind ? '#ef4444' : '#9ca3af', 
-                            padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
-                            display: 'flex', alignItems: 'center', gap: '6px'
-                          }}
-                        >
-                          {unbindLoading === 'github' ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                          {lang === 'zh' ? '解绑' : 'Unlink'}
-                        </button>
-                      ) : (
-                        <button 
-                          onClick={() => handleBindOAuth('github')}
-                          style={{ 
-                            background: 'var(--primary)', color: 'white', border: 'none',
-                            cursor: 'pointer', padding: '8px 16px', borderRadius: '8px',
-                            fontSize: '13px', fontWeight: 600
-                          }}
-                        >
-                          {lang === 'zh' ? '绑定' : 'Connect'}
-                        </button>
-                      )}
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        {isGithubBound ? (
+                          <button 
+                            onClick={() => {
+                              if (!canUnbind) {
+                                setAuthError(lang === 'zh' ? '这是您唯一的登录方式，无法解绑' : 'This is your only login method and cannot be unlinked');
+                                return;
+                              }
+                              handleUnbindOAuth('github');
+                            }}
+                            disabled={unbindLoading === 'github' || !canUnbind}
+                            style={{ 
+                              background: canUnbind ? '#fee2e2' : '#f3f4f6', 
+                              border: 'none', 
+                              cursor: canUnbind ? 'pointer' : 'not-allowed', 
+                              color: canUnbind ? '#ef4444' : '#9ca3af', 
+                              padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
+                              display: 'flex', alignItems: 'center', gap: '6px'
+                            }}
+                          >
+                            {unbindLoading === 'github' ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                            {lang === 'zh' ? '解绑' : 'Unlink'}
+                          </button>
+                        ) : (
+                          <button 
+                            onClick={() => handleBindOAuth('github')}
+                            disabled={unbindLoading === 'github'}
+                            style={{ 
+                              background: 'var(--primary)', color: 'white', border: 'none',
+                              cursor: 'pointer', padding: '8px 16px', borderRadius: '8px',
+                              fontSize: '13px', fontWeight: 600,
+                              display: 'flex', alignItems: 'center', gap: '6px'
+                            }}
+                          >
+                            {unbindLoading === 'github' ? <Loader2 size={14} className="animate-spin" /> : <Link2 size={14} />}
+                            {lang === 'zh' ? '绑定' : 'Connect'}
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Google Row */}
@@ -1309,7 +1328,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       background: 'var(--bg-secondary)'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ pading: '8px', background: 'white', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px' }}>
+                        <div style={{ padding: '8px', background: 'white', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px' }}>
                           <GoogleIcon size={20} />
                         </div>
                         <div>
@@ -1319,40 +1338,45 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                           </div>
                         </div>
                       </div>
-                      {isGoogleBound ? (
-                        <button 
-                          onClick={() => {
-                            if (!canUnbind) {
-                              setAuthError(lang === 'zh' ? '这是您唯一的登录方式，无法解绑' : 'This is your only login method and cannot be unlinked');
-                              return;
-                            }
-                            handleUnbindOAuth('google');
-                          }}
-                          disabled={unbindLoading === 'google' || !canUnbind}
-                          style={{ 
-                            background: canUnbind ? '#fee2e2' : '#f3f4f6', 
-                            border: 'none', 
-                            cursor: canUnbind ? 'pointer' : 'not-allowed', 
-                            color: canUnbind ? '#ef4444' : '#9ca3af', 
-                            padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
-                            display: 'flex', alignItems: 'center', gap: '6px'
-                          }}
-                        >
-                          {unbindLoading === 'google' ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                          {lang === 'zh' ? '解绑' : 'Unlink'}
-                        </button>
-                      ) : (
-                        <button 
-                          onClick={() => handleBindOAuth('google')}
-                          style={{ 
-                            background: 'var(--primary)', color: 'white', border: 'none',
-                            cursor: 'pointer', padding: '8px 16px', borderRadius: '8px',
-                            fontSize: '13px', fontWeight: 600
-                          }}
-                        >
-                          {lang === 'zh' ? '绑定' : 'Connect'}
-                        </button>
-                      )}
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        {isGoogleBound ? (
+                          <button 
+                            onClick={() => {
+                              if (!canUnbind) {
+                                setAuthError(lang === 'zh' ? '这是您唯一的登录方式，无法解绑' : 'This is your only login method and cannot be unlinked');
+                                return;
+                              }
+                              handleUnbindOAuth('google');
+                            }}
+                            disabled={unbindLoading === 'google' || !canUnbind}
+                            style={{ 
+                              background: canUnbind ? '#fee2e2' : '#f3f4f6', 
+                              border: 'none', 
+                              cursor: canUnbind ? 'pointer' : 'not-allowed', 
+                              color: canUnbind ? '#ef4444' : '#9ca3af', 
+                              padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
+                              display: 'flex', alignItems: 'center', gap: '6px'
+                            }}
+                          >
+                            {unbindLoading === 'google' ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                            {lang === 'zh' ? '解绑' : 'Unlink'}
+                          </button>
+                        ) : (
+                          <button 
+                            onClick={() => handleBindOAuth('google')}
+                            disabled={unbindLoading === 'google'}
+                            style={{ 
+                              background: 'var(--primary)', color: 'white', border: 'none',
+                              cursor: 'pointer', padding: '8px 16px', borderRadius: '8px',
+                              fontSize: '13px', fontWeight: 600,
+                              display: 'flex', alignItems: 'center', gap: '6px'
+                            }}
+                          >
+                            {unbindLoading === 'google' ? <Loader2 size={14} className="animate-spin" /> : <Link2 size={14} />}
+                            {lang === 'zh' ? '绑定' : 'Connect'}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
