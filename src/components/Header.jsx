@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Search, Menu, X, User, LogOut, ChevronDown, 
   Globe, Github, Trash2, Loader2,
-  Settings, ExternalLink, Upload, ShieldAlert, Link2, Mail
+  Settings, ExternalLink, Upload, ShieldAlert, Link2
 } from 'lucide-react';
 // Brand Icon: GitHub
 const GithubIcon = ({ size = 20 }) => (
@@ -406,7 +406,6 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         setAuthSuccess(t('regSuccess'));
       } else if (authModal === 'login') {
         const formData = new URLSearchParams();
-        // Mandatory fields for OAuth2PasswordRequestForm
         formData.append('username', authForm.username.trim());
         formData.append('password', authForm.password);
         
@@ -418,22 +417,23 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           },
           body: formData.toString()
         });
-        
+
         const data = await res.json();
-        
+
         if (!res.ok) {
           // New check for 403 oauth_verification_required (MFA Interception)
           if (res.status === 403 && data.detail?.error === 'oauth_verification_required') {
-            setAuthError(null); // Clear previous errors
+            setAuthError(null); 
             setVerificationRequired(true);
-            setVerificationProviders(data.detail.providers || []);
+            setVerificationProviders(data.detail.bound_providers || []);
             setVerificationEmail(data.detail.email);
-            setIsVerifyingLogin(true); // Flag for "Verification Mode"
+            setIsVerifyingLogin(true);
             return;
           }
           throw data;
         }
 
+        // Standard 2FA check (if any)
         if (data.status === 'needs_verification') {
           setVerificationRequired(true);
           setVerificationProviders(data.auth_providers || [data.auth_provider] || []);
@@ -939,28 +939,48 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 }}>
                   <div style={{ fontSize: '24px' }}>🛡️</div>
                   <div>
-                    <div style={{ fontWeight: 600 }}>{t('verificationRequiredTitle')}</div>
-                    <div style={{ marginTop: '4px' }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '16px' }}>
+                      {lang === 'zh' ? '密码验证成功！' : 'Password verified!'}
+                    </div>
+                    <div style={{ marginTop: '4px', fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>
                       {lang === 'zh' 
-                        ? `请使用您已绑定的账号进行身份验证 (${verificationProviders.join(', ')})`
-                        : `Please verify your identity using one of your linked accounts (${verificationProviders.join(', ')})`}
+                        ? '为确保安全，请选择您已绑定的账号完成二次验证'
+                        : 'For security, please select your linked account for MFA verification'}
                     </div>
                   </div>
                 </div>
                 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {verificationProviders.map(prov => (
+                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {verificationProviders.length > 0 ? (
+                    verificationProviders.map(prov => (
+                      <button 
+                        key={prov}
+                        onClick={() => handleOAuthLogin(prov)} 
+                        style={{
+                          ...oauthBtnStyle(prov === 'github' ? '#24292e' : '#4285f4'),
+                          padding: '12px 16px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '10px'
+                        }}
+                      >
+                        {prov === 'github' ? <GithubIcon size={20} /> : <GoogleIcon size={20} />}
+                        {lang === 'zh' 
+                          ? `通过 ${prov.charAt(0).toUpperCase() + prov.slice(1)} 账号验证` 
+                          : `Verify with ${prov.charAt(0).toUpperCase() + prov.slice(1)} Account`}
+                      </button>
+                    ))
+                  ) : (
+                    // Fallback button if no providers were returned or identified
                     <button 
-                      key={prov}
-                      onClick={() => handleOAuthLogin(prov)} 
-                      style={oauthBtnStyle(prov === 'github' ? '#24292e' : '#4285f4')}
+                      onClick={() => handleOAuthLogin('github')} 
+                      style={oauthBtnStyle('#24292e')}
                     >
-                      {prov === 'github' ? <GithubIcon size={20} /> : <Mail size={20} />}
-                      {lang === 'zh' 
-                        ? `通过 ${prov.charAt(0).toUpperCase() + prov.slice(1)} 验证身份` 
-                        : `Verify with ${prov.charAt(0).toUpperCase() + prov.slice(1)}`}
+                      <ShieldAlert size={20} />
+                      {lang === 'zh' ? '点击此处通过 GitHub/Google 验证' : 'Click here to verify'}
                     </button>
-                  ))}
+                  )}
                 </div>
                 
                 <button 
@@ -987,11 +1007,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       </button>
                       <button 
                         onClick={() => handleOAuthLogin('google')}
-                        style={{ ...oauthBtnStyle('#4285f4'), }}
+                        style={oauthBtnStyle('#4285f4')}
                         onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
                         onMouseOut={e => e.currentTarget.style.opacity = '1'}
                       >
-                        <Mail size={20} />
+                        <GoogleIcon size={20} />
                         {t('loginWithGoogle')}
                       </button>
                     </div>
