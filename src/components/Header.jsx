@@ -1292,11 +1292,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                             }}
                             disabled={unbindLoading === 'github' || !canUnbind}
                             style={{ 
-                              background: canUnbind ? '#fee2e2' : '#f3f4f6', 
-                              border: 'none', 
+                              background: canUnbind ? '#fef2f2' : '#f8fafc', 
+                              border: canUnbind ? '1px solid #fee2e2' : '1px solid #e2e8f0', 
                               cursor: canUnbind ? 'pointer' : 'not-allowed', 
-                              color: canUnbind ? '#ef4444' : '#9ca3af', 
-                              padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
+                              color: canUnbind ? '#ef4444' : '#94a3b8', 
+                              padding: '8px 12px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
                               display: 'flex', alignItems: 'center', gap: '6px'
                             }}
                           >
@@ -1308,10 +1308,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                             onClick={() => handleBindOAuth('github')}
                             disabled={unbindLoading === 'github'}
                             style={{ 
-                              background: 'var(--primary)', color: 'white', border: 'none',
-                              cursor: 'pointer', padding: '8px 16px', borderRadius: '8px',
+                              background: 'var(--text-primary)', color: 'white', border: 'none',
+                              cursor: 'pointer', padding: '8px 16px', borderRadius: '10px',
                               fontSize: '13px', fontWeight: 600,
-                              display: 'flex', alignItems: 'center', gap: '6px'
+                              display: 'flex', alignItems: 'center', gap: '6px',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                             }}
                           >
                             {unbindLoading === 'github' ? <Loader2 size={14} className="animate-spin" /> : <Link2 size={14} />}
@@ -1350,11 +1351,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                             }}
                             disabled={unbindLoading === 'google' || !canUnbind}
                             style={{ 
-                              background: canUnbind ? '#fee2e2' : '#f3f4f6', 
-                              border: 'none', 
+                              background: canUnbind ? '#fef2f2' : '#f8fafc', 
+                              border: canUnbind ? '1px solid #fee2e2' : '1px solid #e2e8f0', 
                               cursor: canUnbind ? 'pointer' : 'not-allowed', 
-                              color: canUnbind ? '#ef4444' : '#9ca3af', 
-                              padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
+                              color: canUnbind ? '#ef4444' : '#94a3b8', 
+                              padding: '8px 12px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
                               display: 'flex', alignItems: 'center', gap: '6px'
                             }}
                           >
@@ -1366,10 +1367,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                             onClick={() => handleBindOAuth('google')}
                             disabled={unbindLoading === 'google'}
                             style={{ 
-                              background: 'var(--primary)', color: 'white', border: 'none',
-                              cursor: 'pointer', padding: '8px 16px', borderRadius: '8px',
+                              background: 'var(--text-primary)', color: 'white', border: 'none',
+                              cursor: 'pointer', padding: '8px 16px', borderRadius: '10px',
                               fontSize: '13px', fontWeight: 600,
-                              display: 'flex', alignItems: 'center', gap: '6px'
+                              display: 'flex', alignItems: 'center', gap: '6px',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                             }}
                           >
                             {unbindLoading === 'google' ? <Loader2 size={14} className="animate-spin" /> : <Link2 size={14} />}
