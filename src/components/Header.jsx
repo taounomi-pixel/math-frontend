@@ -471,23 +471,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         throw new Error(lang === 'zh' ? `未找到 ${provider} 的绑定记录，请尝试重新登录` : `No binding record found for ${provider}. Try relogging.`);
       }
 
-      console.log('[Unbind Debug] Found Identity Object:', identity);
-
-      // Robust ID discovery (Supabase uses 'id', but some older versions or custom setups might vary)
-      const targetId = identity.id || identity.identity_id || identity.sub || identity.uid;
-      console.log(`[Unbind Debug] Attempted ID Discovery: ${targetId}`);
-
-      if (!targetId) {
-        const availableKeys = Object.keys(identity).join(', ');
-        console.error(`[Unbind Debug] CRITICAL: No ID field found in identity object. Available keys: ${availableKeys}`);
-        throw new Error(lang === 'zh' 
-          ? `无法获取绑定标识符 (可用字段: ${availableKeys})。请截图控制台并联系开发人员。` 
-          : `Could not retrieve identity identifier (Available keys: ${availableKeys}). Please screenshot console.`);
-      }
-
-      // 3. Call Supabase API to unlink
-      console.log('[Unbind Debug] Calling supabase.auth.unlinkIdentity...');
-      const { error: unlinkError } = await supabase.auth.unlinkIdentity(targetId);
+      // 3. Call Supabase API to unlink (Official unbind)
+      // Note: Supabase SDK 2.45+ requires the ENTIRE identity object, not just the ID string.
+      console.log('[Unbind Debug] Calling supabase.auth.unlinkIdentity with full object...');
+      const { error: unlinkError } = await supabase.auth.unlinkIdentity(identity);
       
       if (unlinkError) {
         console.error('[Unbind Debug] unlinkIdentity failed:', unlinkError);
@@ -495,8 +482,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         
         if (msg.includes('manual linking is disabled')) {
           throw new Error(lang === 'zh' 
-            ? '解绑失败：Manual Linking 尚未生效。请在 Supabase 控制台开启该功能并将设置【保存】。如果已开启，请尝试【退出登录】后再试。' 
-            : 'Unbind failed: Manual Linking is disabled in Supabase. Enable it in Auth settings and click Save.');
+            ? '解绑失败：请确保在 Supabase 控制台开启了 "Manual Linking"。' 
+            : 'Unbind failed: Manual Linking is disabled in Supabase.');
         }
 
         if (msg.includes('identity') && (msg.includes('last') || msg.includes('only'))) {
