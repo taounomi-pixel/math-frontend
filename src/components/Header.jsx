@@ -697,7 +697,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                                   </button>
                                 ) : (
                                   <button 
-                                    onClick={() => { setShowBindOAuthModal(true); setIsUserCardOpen(false); }}
+                                    onClick={() => { setShowBindModal(true); setIsUserCardOpen(false); }}
                                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, fontSize: '13px' }}
                                   >
                                     绑定
