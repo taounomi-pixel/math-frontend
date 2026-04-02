@@ -50,13 +50,20 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     const storedIsAdmin = localStorage.getItem('is_admin') === 'true';
     const storedProvider = localStorage.getItem('auth_provider');
     const storedEmail = localStorage.getItem('user_email');
+    const storedIdentities = localStorage.getItem('user_identities');
     if (token && storedUsername) {
+      let identities = [];
+      try {
+        identities = storedIdentities ? JSON.parse(storedIdentities) : [];
+      } catch (e) { identities = []; }
+
       setCurrentUser({ 
         username: storedUsername, 
         id: storedUserId ? parseInt(storedUserId, 10) : null,
         is_admin: storedIsAdmin,
         auth_provider: storedProvider || null,
-        email: storedEmail || null
+        email: storedEmail || null,
+        identities: identities
       });
     }
   }, []);
@@ -157,10 +164,12 @@ const Header = ({ searchQuery, setSearchQuery }) => {
               const data = await res.json();
               localStorage.setItem('auth_provider', data.auth_provider || '');
               localStorage.setItem('user_email', data.email || '');
+              localStorage.setItem('user_identities', JSON.stringify(data.identities || []));
               setCurrentUser(prev => ({
                 ...prev,
                 auth_provider: data.auth_provider,
-                email: data.email
+                email: data.email,
+                identities: data.identities || []
               }));
               setShowBindModal(false);
               cleanUpIntents();
@@ -263,12 +272,15 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     localStorage.setItem('is_admin', data.is_admin ? 'true' : 'false');
     localStorage.setItem('auth_provider', data.auth_provider || '');
     localStorage.setItem('user_email', data.email || '');
+    localStorage.setItem('user_identities', JSON.stringify(data.identities || []));
+    
     setCurrentUser({
       username: data.username,
       id: data.user_id,
       is_admin: !!data.is_admin,
       auth_provider: data.auth_provider,
-      email: data.email
+      email: data.email,
+      identities: data.identities || []
     });
     setAuthModal(null);
     setAuthForm({ username: '', password: '', email: '' });
@@ -451,18 +463,21 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       const data = await res.json();
       if (res.ok) {
         // Update local state
-        const updatedProviders = data.auth_providers || [];
-        const isStillBound = updatedProviders.length > 0;
+        const updatedIdentities = data.identities || [];
+        const isStillBound = updatedIdentities.length > 0;
         
-        const newProvider = isStillBound ? updatedProviders[0] : null;
+        const newProvider = isStillBound ? updatedIdentities[0] : null;
         localStorage.setItem('auth_provider', newProvider || '');
+        localStorage.setItem('user_identities', JSON.stringify(updatedIdentities));
+        
         if (!isStillBound) {
-          localStorage.removeItem('user_email'); // Optional: keep or remove
+          localStorage.removeItem('user_email');
         }
         
         setCurrentUser(prev => ({
           ...prev,
           auth_provider: newProvider,
+          identities: updatedIdentities,
           email: isStillBound ? prev.email : null
         }));
         
@@ -648,13 +663,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
                       {/* Binding Logic Pre-calc */}
                       {(() => {
-                        let identities = [];
-                        try {
-                          identities = typeof currentUser.identities_json === 'string' 
-                            ? JSON.parse(currentUser.identities_json || '[]') 
-                            : (currentUser.identities_json || []);
-                        } catch (e) { identities = []; }
-                        
+                        const identities = currentUser.identities || [];
                         const isGithubBound = identities.includes('github') || currentUser.auth_provider === 'github';
                         const isGoogleBound = identities.includes('google') || currentUser.auth_provider === 'google';
 
@@ -718,7 +727,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                                   </button>
                                 ) : (
                                   <button 
-                                    onClick={() => { setShowBindOAuthModal(true); setIsUserCardOpen(false); }}
+                                    onClick={() => { setShowBindModal(true); setIsUserCardOpen(false); }}
                                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, fontSize: '13px' }}
                                   >
                                     绑定
