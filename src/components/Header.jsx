@@ -242,7 +242,18 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         }
 
         // CASE 3: Standard OAuth login or registration
+        // ⚠️ CRITICAL GUARD: If user already has a system JWT they are already
+        // authenticated via our custom auth system. A residual Supabase session
+        // must NOT trigger oauth-login again — that would overwrite bound_providers
+        // that were just hydrated from /api/users/me.
+        const existingSystemToken = localStorage.getItem('access_token');
+        if (existingSystemToken) {
+          console.log('[Auth] CASE 3 skipped: user already has system JWT, ignoring residual Supabase session.');
+          return;
+        }
+
         try {
+          console.log('[Auth] CASE 3: No system JWT found, proceeding with OAuth login flow.');
           const res = await fetch(`${API_BASE}/auth/oauth-login`, {
             method: 'POST',
             headers: { 
