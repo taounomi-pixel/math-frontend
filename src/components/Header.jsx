@@ -444,7 +444,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   };
 
   const handleUnbindOAuth = async (provider) => {
+    console.log(`[Unbind Debug] Starting unbind for provider: ${provider}`);
+    
     if (!window.confirm(lang === 'zh' ? `确定要解除与 ${provider} 的绑定吗？` : `Are you sure you want to unbind ${provider}?`)) {
+      console.log('[Unbind Debug] User canceled confirmation');
       return;
     }
 
@@ -453,41 +456,57 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     setAuthSuccess('');
 
     try {
-      // 1. Get the latest user object from Supabase to find identity_id
+      // 1. Get current session
+      console.log('[Unbind Debug] Fetching user session from Supabase...');
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
+      if (!user) throw new Error(lang === 'zh' ? '未登录或会话已过期' : 'Not logged in or session expired');
+
+      console.log('[Unbind Debug] Current User Identities:');
+      console.table(user.identities);
 
       // 2. Find the identity matching the provider
       const identity = user.identities?.find(id => id.provider === provider);
       if (!identity) {
-        throw new Error(lang === 'zh' ? `未找到 ${provider} 的绑定记录` : `No binding record found for ${provider}`);
+        throw new Error(lang === 'zh' ? `未找到 ${provider} 的绑定记录，请尝试重新登录` : `No binding record found for ${provider}. Try relogging.`);
       }
 
-      // 3. Call Supabase API to unlink (Official unbind)
-      // Note: Use 'identity.id', not 'identity.identity_id' in newer SDK versions.
-      const targetIdentityId = identity.id || identity.identity_id;
-      if (!targetIdentityId) {
-        throw new Error(lang === 'zh' ? '未找到绑定标识符，请刷新后再试' : 'Identity ID not found, please refresh and try again');
+      console.log('[Unbind Debug] Found Identity Object:', identity);
+
+      // Robust ID discovery (Supabase uses 'id', but some older versions or custom setups might vary)
+      const targetId = identity.id || identity.identity_id || identity.sub || identity.uid;
+      console.log(`[Unbind Debug] Attempted ID Discovery: ${targetId}`);
+
+      if (!targetId) {
+        const availableKeys = Object.keys(identity).join(', ');
+        console.error(`[Unbind Debug] CRITICAL: No ID field found in identity object. Available keys: ${availableKeys}`);
+        throw new Error(lang === 'zh' 
+          ? `无法获取绑定标识符 (可用字段: ${availableKeys})。请截图控制台并联系开发人员。` 
+          : `Could not retrieve identity identifier (Available keys: ${availableKeys}). Please screenshot console.`);
       }
 
-      const { error: unlinkError } = await supabase.auth.unlinkIdentity(targetIdentityId);
+      // 3. Call Supabase API to unlink
+      console.log('[Unbind Debug] Calling supabase.auth.unlinkIdentity...');
+      const { error: unlinkError } = await supabase.auth.unlinkIdentity(targetId);
       
       if (unlinkError) {
-        // Special case: Supabase error for unbinding last identity
+        console.error('[Unbind Debug] unlinkIdentity failed:', unlinkError);
         const msg = unlinkError.message?.toLowerCase() || '';
+        
+        if (msg.includes('manual linking is disabled')) {
+          throw new Error(lang === 'zh' 
+            ? '解绑失败：Manual Linking 尚未生效。请在 Supabase 控制台开启该功能并将设置【保存】。如果已开启，请尝试【退出登录】后再试。' 
+            : 'Unbind failed: Manual Linking is disabled in Supabase. Enable it in Auth settings and click Save.');
+        }
+
         if (msg.includes('identity') && (msg.includes('last') || msg.includes('only'))) {
           throw new Error(lang === 'zh' ? '无法解绑唯一的登录方式' : 'Cannot unbind the only login method');
         }
         
-        // Special case: Manual linking disabled in Supabase dashboard
-        if (msg.includes('manual linking is disabled')) {
-          throw new Error(lang === 'zh' 
-            ? '解绑功能未开启。请在 Supabase 控制台的 Authentication -> Providers 中开启 "Manual Linking"。' 
-            : 'Manual Linking is disabled. Please enable it in Supabase Auth settings.');
-        }
-
         throw unlinkError;
       }
+
+      console.log('[Unbind Debug] Supabase unlink success, syncing with backend...');
 
       // 4. Sync with Backend Database
       const localToken = localStorage.getItem('access_token');
@@ -506,18 +525,17 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       }
 
       const data = await res.json();
+      console.log('[Unbind Debug] Backend sync success:', data);
       
-      // 5. Update UI state locally from backend response
+      // 5. Update UI state locally
       loginWithLocalData(data);
-
       setAuthSuccess(lang === 'zh' ? '解绑成功' : 'Successfully unlinked');
       
-      // Auto-clear success message after 30s (so user has time to see it)
+      // Auto-clear success message after 30s
       setTimeout(() => setAuthSuccess(''), 30000);
       
     } catch (err) {
-      console.error('Unbind error:', err);
-      // Catch "cannot unlink only identity" from specific error message if not handled above
+      console.error('[Unbind Debug] Final Catch Error:', err);
       const msg = extractErrorMessage(err);
       if (msg.toLowerCase().includes('last identity') || msg.toLowerCase().includes('only identity')) {
         setAuthError(lang === 'zh' ? '无法解绑唯一的登录方式' : 'Cannot unbind the only login method');
@@ -526,6 +544,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       }
     } finally {
       setUnbindLoading(null);
+      console.log('[Unbind Debug] Operation finished');
     }
   };
 
