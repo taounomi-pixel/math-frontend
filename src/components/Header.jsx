@@ -463,7 +463,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         throw new Error(lang === 'zh' ? `未找到 ${provider} 的绑定记录` : `No binding record found for ${provider}`);
       }
 
-      // 3. Call Supabase API to unlink
+      // 3. Call Supabase API to unlink (Official unbind)
       const { error: unlinkError } = await supabase.auth.unlinkIdentity(identity.identity_id);
       
       if (unlinkError) {
@@ -475,35 +475,31 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         throw unlinkError;
       }
 
-      // 4. Update UI state locally
-      // Calculate updated identities list from local state
-      const currentIdentities = currentUser.identities || [];
-      const updatedIdentities = currentIdentities.filter(id => id !== provider);
-      
-      // Update localStorage
-      localStorage.setItem('user_identities', JSON.stringify(updatedIdentities));
-      
-      // If the unlinked provider was the 'main' provider, clear it
-      if (currentUser.auth_provider === provider) {
-        const nextProvider = updatedIdentities.length > 0 ? updatedIdentities[0] : '';
-        localStorage.setItem('auth_provider', nextProvider);
-        
-        setCurrentUser(prev => ({
-          ...prev,
-          auth_provider: nextProvider,
-          identities: updatedIdentities
-        }));
-      } else {
-        setCurrentUser(prev => ({
-          ...prev,
-          identities: updatedIdentities
-        }));
+      // 4. Sync with Backend Database
+      const localToken = localStorage.getItem('access_token');
+      const res = await fetch(`${API_BASE}/auth/unbind`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localToken}`
+        },
+        body: JSON.stringify({ provider })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(extractErrorMessage(errData));
       }
+
+      const data = await res.json();
+      
+      // 5. Update UI state locally from backend response
+      loginWithLocalData(data);
 
       setAuthSuccess(lang === 'zh' ? '解绑成功' : 'Successfully unlinked');
       
-      // Auto-clear success message after 3s
-      setTimeout(() => setAuthSuccess(''), 3000);
+      // Auto-clear success message after 30s (so user has time to see it)
+      setTimeout(() => setAuthSuccess(''), 30000);
       
     } catch (err) {
       console.error('Unbind error:', err);
