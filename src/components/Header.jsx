@@ -462,16 +462,18 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       if (userError) throw userError;
       if (!user) throw new Error(lang === 'zh' ? '未登录或会话已过期' : 'Not logged in or session expired');
 
-      console.log('[Unbind Debug] Current User Identities:');
-      console.table(user.identities);
+      // 2. Safety Check: Cannot unbind if only one identity remains
+      if (user.identities && user.identities.length <= 1) {
+        throw new Error(lang === 'zh' ? '这是您唯一的登录方式，无法解绑' : 'This is your only login method and cannot be unlinked');
+      }
 
-      // 2. Find the identity matching the provider
+      // 3. Find the identity matching the provider
       const identity = user.identities?.find(id => id.provider === provider);
       if (!identity) {
         throw new Error(lang === 'zh' ? `未找到 ${provider} 的绑定记录，请尝试重新登录` : `No binding record found for ${provider}. Try relogging.`);
       }
 
-      // 3. Call Supabase API to unlink (Official unbind)
+      // 4. Call Supabase API to unlink (Official unbind)
       const { error: unlinkError } = await supabase.auth.unlinkIdentity(identity);
       
       if (unlinkError) {
@@ -714,8 +716,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       {/* Binding Logic Pre-calc */}
                       {(() => {
                         const identities = currentUser.identities || [];
-                        const isGithubBound = identities.includes('github') || currentUser.auth_provider === 'github';
-                        const isGoogleBound = identities.includes('google') || currentUser.auth_provider === 'google';
+                        const isGithubBound = identities.some(id => (typeof id === 'string' ? id === 'github' : id.provider === 'github'));
+                        const isGoogleBound = identities.some(id => (typeof id === 'string' ? id === 'google' : id.provider === 'google'));
+                        const canUnbind = identities.length > 1;
 
                         return (
                           <>
@@ -738,10 +741,22 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                                 </div>
                                 {isGithubBound ? (
                                   <button 
-                                    onClick={() => handleUnbindOAuth('github')}
-                                    disabled={unbindLoading === 'github'}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }}
-                                    title="解除绑定"
+                                    onClick={() => {
+                                      if (!canUnbind) {
+                                        setAuthError(lang === 'zh' ? '这是您唯一的登录方式，无法解绑' : 'This is your only login method and cannot be unlinked');
+                                        return;
+                                      }
+                                      handleUnbindOAuth('github');
+                                    }}
+                                    disabled={unbindLoading === 'github' || !canUnbind}
+                                    style={{ 
+                                      background: 'none', 
+                                      border: 'none', 
+                                      cursor: canUnbind ? 'pointer' : 'not-allowed', 
+                                      color: canUnbind ? '#ef4444' : '#d1d5db', 
+                                      padding: '4px' 
+                                    }}
+                                    title={canUnbind ? "解除绑定" : "唯一登录方式无法解绑"}
                                   >
                                     {unbindLoading === 'github' ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                                   </button>
@@ -768,10 +783,22 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                                 </div>
                                 {isGoogleBound ? (
                                   <button 
-                                    onClick={() => handleUnbindOAuth('google')}
-                                    disabled={unbindLoading === 'google'}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }}
-                                    title="解除绑定"
+                                    onClick={() => {
+                                      if (!canUnbind) {
+                                        setAuthError(lang === 'zh' ? '这是您唯一的登录方式，无法解绑' : 'This is your only login method and cannot be unlinked');
+                                        return;
+                                      }
+                                      handleUnbindOAuth('google');
+                                    }}
+                                    disabled={unbindLoading === 'google' || !canUnbind}
+                                    style={{ 
+                                      background: 'none', 
+                                      border: 'none', 
+                                      cursor: canUnbind ? 'pointer' : 'not-allowed', 
+                                      color: canUnbind ? '#ef4444' : '#d1d5db', 
+                                      padding: '4px' 
+                                    }}
+                                    title={canUnbind ? "解除绑定" : "唯一登录方式无法解绑"}
                                   >
                                     {unbindLoading === 'google' ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                                   </button>
