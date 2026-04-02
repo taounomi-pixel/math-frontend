@@ -1313,7 +1313,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                               color: '#ef4444', 
                               padding: '8px 12px', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
                               display: 'flex', alignItems: 'center', gap: '6px',
-                              boxShadow: !canUnbind ? '0 0 0 1px #ef4444' : 'none' # Highlight last identity
+                              boxShadow: !canUnbind ? '0 0 0 1px #ef4444' : 'none'
                             }}
                           >
                             {unbindLoading === 'github' ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
