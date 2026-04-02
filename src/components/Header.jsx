@@ -449,44 +449,71 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     }
 
     setUnbindLoading(provider);
-    try {
-      const token = localStorage.getItem('access_token');
-      const res = await fetch(`${API_BASE}/auth/unbind`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ provider })
-      });
+    setAuthError('');
+    setAuthSuccess('');
 
-      const data = await res.json();
-      if (res.ok) {
-        // Update local state
-        const updatedIdentities = data.identities || [];
-        const isStillBound = updatedIdentities.length > 0;
-        
-        const newProvider = isStillBound ? updatedIdentities[0] : null;
-        localStorage.setItem('auth_provider', newProvider || '');
-        localStorage.setItem('user_identities', JSON.stringify(updatedIdentities));
-        
-        if (!isStillBound) {
-          localStorage.removeItem('user_email');
+    try {
+      // 1. Get the latest user object from Supabase to find identity_id
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+
+      // 2. Find the identity matching the provider
+      const identity = user.identities?.find(id => id.provider === provider);
+      if (!identity) {
+        throw new Error(lang === 'zh' ? `未找到 ${provider} 的绑定记录` : `No binding record found for ${provider}`);
+      }
+
+      // 3. Call Supabase API to unlink
+      const { error: unlinkError } = await supabase.auth.unlinkIdentity(identity.identity_id);
+      
+      if (unlinkError) {
+        // Special case: Supabase error for unbinding last identity
+        if (unlinkError.message?.toLowerCase().includes('identity') && 
+            (unlinkError.message?.toLowerCase().includes('last') || unlinkError.message?.toLowerCase().includes('only'))) {
+          throw new Error(lang === 'zh' ? '无法解绑唯一的登录方式' : 'Cannot unbind the only login method');
         }
+        throw unlinkError;
+      }
+
+      // 4. Update UI state locally
+      // Calculate updated identities list from local state
+      const currentIdentities = currentUser.identities || [];
+      const updatedIdentities = currentIdentities.filter(id => id !== provider);
+      
+      // Update localStorage
+      localStorage.setItem('user_identities', JSON.stringify(updatedIdentities));
+      
+      // If the unlinked provider was the 'main' provider, clear it
+      if (currentUser.auth_provider === provider) {
+        const nextProvider = updatedIdentities.length > 0 ? updatedIdentities[0] : '';
+        localStorage.setItem('auth_provider', nextProvider);
         
         setCurrentUser(prev => ({
           ...prev,
-          auth_provider: newProvider,
-          identities: updatedIdentities,
-          email: isStillBound ? prev.email : null
+          auth_provider: nextProvider,
+          identities: updatedIdentities
         }));
-        
-        setAuthSuccess(lang === 'zh' ? '解绑成功' : 'Successfully unlinked');
       } else {
-        setAuthError(extractErrorMessage(data));
+        setCurrentUser(prev => ({
+          ...prev,
+          identities: updatedIdentities
+        }));
       }
+
+      setAuthSuccess(lang === 'zh' ? '解绑成功' : 'Successfully unlinked');
+      
+      // Auto-clear success message after 3s
+      setTimeout(() => setAuthSuccess(''), 3000);
+      
     } catch (err) {
-      setAuthError(extractErrorMessage(err));
+      console.error('Unbind error:', err);
+      // Catch "cannot unlink only identity" from specific error message if not handled above
+      const msg = extractErrorMessage(err);
+      if (msg.toLowerCase().includes('last identity') || msg.toLowerCase().includes('only identity')) {
+        setAuthError(lang === 'zh' ? '无法解绑唯一的登录方式' : 'Cannot unbind the only login method');
+      } else {
+        setAuthError(msg);
+      }
     } finally {
       setUnbindLoading(null);
     }
@@ -656,10 +683,22 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                             {currentUser.username}
                           </div>
                           <div style={{ fontSize: '12px', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {currentUser.email || 'No email bound'}
+                            {currentUser.email || (lang === 'zh' ? '暂未绑定邮箱' : 'No email bound')}
                           </div>
                         </div>
                       </div>
+
+                      {/* Dropdown-level Feedbacks (Toasts) */}
+                      {authError && (
+                        <div style={{ padding: '10px 12px', background: '#fee2e2', color: '#dc2626', borderRadius: '10px', marginBottom: '16px', fontSize: '13px', border: '1px solid #fecaca', animation: 'shake 0.4s ease-in-out' }}>
+                          ⚠️ {authError}
+                        </div>
+                      )}
+                      {authSuccess && (
+                        <div style={{ padding: '10px 12px', background: '#dcfce7', color: '#16a34a', borderRadius: '10px', marginBottom: '16px', fontSize: '13px', border: '1px solid #bbf7d0', animation: 'fadeInDown 0.3s' }}>
+                          ✅ {authSuccess}
+                        </div>
+                      )}
 
                       {/* Binding Logic Pre-calc */}
                       {(() => {
