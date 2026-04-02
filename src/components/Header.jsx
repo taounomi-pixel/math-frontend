@@ -99,7 +99,6 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         const pendingVerification = localStorage.getItem('pending_verification') === 'true';
         const pendingUsername = localStorage.getItem('pending_username');
         const isBindingOAuth = localStorage.getItem('isBindingOAuth') === 'true';
-        const hasLocalSession = !!localStorage.getItem('access_token');
 
         const cleanUpIntents = () => {
           localStorage.removeItem('pending_verification');
@@ -107,69 +106,12 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           localStorage.removeItem('isBindingOAuth');
         };
 
-        // ── BRANCH A: Account Binding ──
-        // STRICT conditions: isBindingOAuth flag is set AND user has a valid local
-        // System JWT (meaning they are already logged in). Without a local JWT the
-        // POST /api/auth/bind will 401, so we must NOT enter this branch for
-        // unauthenticated users who are just trying to log in.
-        if (isBindingOAuth && hasLocalSession) {
-          localStorage.removeItem('isBindingOAuth'); // Immediate cleanup prevents re-entry loops
-          try {
-            console.log('[Auth] BRANCH A: Detected OAuth BINDING return. Syncing with backend...');
-            const localToken = localStorage.getItem('access_token');
-            const res = await fetch(`${API_BASE}/auth/bind`, {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localToken}`
-              },
-              body: JSON.stringify({ supabase_token: token })
-            });
-            if (res.ok) {
-              const data = await res.json();
-              console.log('[Auth] Bind successful. Refreshing user state...', data);
-              localStorage.setItem('auth_provider', data.auth_provider || '');
-              localStorage.setItem('user_email', data.email || '');
-              setCurrentUser(prev => ({
-                ...prev,
-                auth_provider: data.auth_provider,
-                email: data.email
-              }));
-              setShowBindModal(false);
-              cleanUpIntents();
-              cleanUpRedirectUrl();
-            } else {
-              const errData = await res.json();
-              console.error('[Auth] Bind failed:', extractErrorMessage(errData));
-              setAuthError(extractErrorMessage(errData));
-              cleanUpIntents();
-            }
-          } catch (err) {
-            console.error('[Auth] Bind exception:', err);
-            setAuthError(extractErrorMessage(err));
-            cleanUpIntents();
-          }
-          return;
-        }
-
-        // Safety: if isBindingOAuth is set but NO local session exists, this is a
-        // stale/orphaned flag — clean it up and fall through to login flow.
-        if (isBindingOAuth && !hasLocalSession) {
-          console.warn('[Auth] Stale isBindingOAuth flag detected without local session. Cleaning up and falling through to login.');
-          localStorage.removeItem('isBindingOAuth');
-        }
-
-        // URL-based redirect detection (used by MFA verification only)
-        const isReturningFromRedirect = 
-          window.location.hash.includes('access_token=') || 
-          window.location.search.includes('code=');
-
-        // ── MFA Verification (password-login → OAuth verify step) ──
-        if ((pendingVerification || isVerifyingLogin) && isReturningFromRedirect) {
+        // CASE 1: Mandatory login verification
+        if (pendingVerification || isVerifyingLogin) {
           try {
             setAuthLoading(true);
             const targetUsername = pendingUsername || authForm.username;
-            console.log(`[Auth] MFA verification for: ${targetUsername || 'anonymous'}`);
+            console.log(`[Auth] Starting MFA verification for user: ${targetUsername || 'anonymous'}`);
             
             const res = await fetch(`${API_BASE}/auth/verify-login`, {
               method: 'POST',
@@ -185,15 +127,20 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             
             const data = await res.json();
             if (res.ok && data.status === 'ok') {
-              console.log('[Auth] MFA Verification successful.');
+              console.log('[Auth] MFA Verification successful. Syncing state...');
               loginWithLocalData(data);
               resetVerificationStates();
               cleanUpIntents();
-              setTimeout(() => { window.location.reload(); }, 100);
+              
+              // Force hard reload to ensure UI state is fully updated cross-components
+              setTimeout(() => {
+                window.location.reload();
+              }, 100);
             } else {
               const errMsg = extractErrorMessage(data);
               console.error('[Auth] MFA Verification failed:', errMsg);
               setAuthError(errMsg);
+              // Clear sticky state on failure to allow fresh login attempts
               resetVerificationStates();
               cleanUpIntents();
             }
@@ -207,45 +154,69 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           return;
         }
 
-        // ── BRANCH B: Standard OAuth Login / Registration ──
-        // This fires when:
-        //   1. No isBindingOAuth flag (not a binding flow)
-        //   2. No pending MFA verification
-        //   3. User does NOT have an existing local session (not already logged in)
-        // We intentionally do NOT require isReturningFromRedirect here because
-        // PKCE flow auto-clears URL params before onAuthStateChange fires.
-        // The absence of a local session is sufficient proof this is a fresh login.
-        if (!hasLocalSession) {
+        // CASE 2: Account Binding
+        if (isBindingOAuth) {
           try {
-            console.log('[Auth] BRANCH B: OAuth LOGIN detected (no local session). Calling /auth/oauth-login...');
-            const res = await fetch(`${API_BASE}/auth/oauth-login`, {
+            const localToken = localStorage.getItem('access_token');
+            const res = await fetch(`${API_BASE}/auth/bind`, {
               method: 'POST',
               headers: { 
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${localToken}`
               },
               body: JSON.stringify({ supabase_token: token })
             });
-            const data = await res.json();
-            
-            if (data.status === 'ok') {
-              loginWithLocalData(data);
+            if (res.ok) {
+              const data = await res.json();
+              localStorage.setItem('auth_provider', data.auth_provider || '');
+              localStorage.setItem('user_email', data.email || '');
+              setCurrentUser(prev => ({
+                ...prev,
+                auth_provider: data.auth_provider,
+                email: data.email
+              }));
+              setShowBindModal(false);
               cleanUpIntents();
-              cleanUpRedirectUrl();
-            } else if (data.status === 'needs_registration') {
-              setPendingSupabaseToken(token);
-              setOauthProvider(data.provider || '');
-              setOauthEmail(data.email || '');
-              setAuthModal('complete-registration');
             } else {
-              setAuthError(extractErrorMessage(data));
+              const errData = await res.json();
+              setAuthError(extractErrorMessage(errData));
             }
           } catch (err) {
-            console.error('[Auth] OAuth login error:', err);
-            setAuthError(lang === 'zh' ? '服务器连接失败，请稍后再试' : 'Server connection failed, please try again');
-            setAuthModal('login');
+            console.error('Bind error:', err);
+            setAuthError(extractErrorMessage(err));
             cleanUpIntents();
           }
+          return;
+        }
+
+        // CASE 3: Standard OAuth login or registration
+        try {
+          const res = await fetch(`${API_BASE}/auth/oauth-login`, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ supabase_token: token })
+          });
+          const data = await res.json();
+          
+          if (data.status === 'ok') {
+            loginWithLocalData(data);
+            cleanUpIntents();
+          } else if (data.status === 'needs_registration') {
+            setPendingSupabaseToken(token);
+            setOauthProvider(data.provider || '');
+            setOauthEmail(data.email || '');
+            setAuthModal('complete-registration');
+          } else {
+            setAuthError(extractErrorMessage(data));
+          }
+        } catch (err) {
+          console.error('OAuth login error:', err);
+          setAuthError(lang === 'zh' ? '服务器连接失败，请稍后再试' : 'Server connection failed, please try again');
+          setAuthModal('login');
+          cleanUpIntents();
         }
       }
     });
@@ -264,8 +235,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, [isMobileNavOpen]);
 
-  // OAuth Login (used by login modal + register modal + MFA verification buttons)
-  // CRITICAL: This function must NEVER set isBindingOAuth. Only handleBindOAuth does that.
+  // OAuth Login
   const handleOAuthLogin = async (provider) => {
     if (!supabase) {
       setAuthError(lang === 'zh' ? 'OAuth 未配置' : 'OAuth not configured');
@@ -273,9 +243,6 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     }
     setAuthLoading(true);
     setAuthError('');
-    
-    // Defensive cleanup: ensure no stale binding flag can interfere with login
-    localStorage.removeItem('isBindingOAuth');
     
     // Determine if this is a login verification or a new login
     // Persist intent in localStorage to survive redirect
@@ -326,13 +293,6 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     
     setAuthModal(null);
     setAuthForm({ username: '', password: '', email: '' });
-  };
-
-  // Clean up OAuth redirect URL parameters (hash fragments, query params)
-  // Prevents the ugly access_token/code params from lingering in the address bar
-  const cleanUpRedirectUrl = () => {
-    const cleanUrl = window.location.origin + window.location.pathname;
-    window.history.replaceState({}, document.title, cleanUrl);
   };
 
   const resetVerificationStates = () => {
@@ -450,13 +410,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const handleBindOAuth = async (provider) => {
     if (!supabase) return;
     
-    // 1. Set binding intent flag in localStorage to survive redirect
+    // Mark this as a binding flow so onAuthStateChange routes to /api/auth/bind
+    // instead of the standard OAuth login path.
     localStorage.setItem('isBindingOAuth', 'true');
-    console.log(`[Auth] Initiating ${provider} account link...`);
 
-    // 2. Redirect to OAuth provider using linkIdentity (Standard for account binding)
-    // This will redirect the user to the provider and then back to our site.
-    const { error } = await supabase.auth.linkIdentity({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo: window.location.origin
@@ -464,11 +422,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     });
     
     if (error) {
-      console.error('[Auth] linkIdentity Error:', error.message);
       setAuthError(error.message);
       localStorage.removeItem('isBindingOAuth');
     }
-    // Note: If successful, the page will redirect, so no further code here will run.
   };
 
 
