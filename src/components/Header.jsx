@@ -106,12 +106,18 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           localStorage.removeItem('pending_bind');
         };
 
+        // CHECK: Are we actually returning from a redirect? 
+        // This prevents the "immediate POST" bug when linkIdentity is triggered.
+        const isReturningFromRedirect = 
+          window.location.hash.includes('access_token=') || 
+          window.location.search.includes('code=');
+
         // CASE 1: Mandatory login verification
-        if (pendingVerification || isVerifyingLogin) {
+        if ((pendingVerification || isVerifyingLogin) && isReturningFromRedirect) {
           try {
             setAuthLoading(true);
             const targetUsername = pendingUsername || authForm.username;
-            console.log(`[Auth] Starting MFA verification for user: ${targetUsername || 'anonymous'}`);
+            console.log(`[Auth] Returning from OAuth callback. Starting MFA verification for: ${targetUsername || 'anonymous'}`);
             
             const res = await fetch(`${API_BASE}/auth/verify-login`, {
               method: 'POST',
@@ -155,8 +161,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         }
 
         // CASE 2: Account Binding
-        if (pendingBind) {
+        if (pendingBind && isReturningFromRedirect) {
           try {
+            console.log('[Auth] Returning from OAuth callback. Initiating account bind...');
             const localToken = localStorage.getItem('access_token');
             const res = await fetch(`${API_BASE}/auth/bind`, {
               method: 'POST',
@@ -190,33 +197,36 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         }
 
         // CASE 3: Standard OAuth login or registration
-        try {
-          const res = await fetch(`${API_BASE}/auth/oauth-login`, {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ supabase_token: token })
-          });
-          const data = await res.json();
-          
-          if (data.status === 'ok') {
-            loginWithLocalData(data);
+        if (isReturningFromRedirect) {
+          try {
+            console.log('[Auth] Returning from OAuth callback. Starting OAuth login/register flow...');
+            const res = await fetch(`${API_BASE}/auth/oauth-login`, {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ supabase_token: token })
+            });
+            const data = await res.json();
+            
+            if (data.status === 'ok') {
+              loginWithLocalData(data);
+              cleanUpIntents();
+            } else if (data.status === 'needs_registration') {
+              setPendingSupabaseToken(token);
+              setOauthProvider(data.provider || '');
+              setOauthEmail(data.email || '');
+              setAuthModal('complete-registration');
+            } else {
+              setAuthError(extractErrorMessage(data));
+            }
+          } catch (err) {
+            console.error('OAuth login error:', err);
+            setAuthError(lang === 'zh' ? '服务器连接失败，请稍后再试' : 'Server connection failed, please try again');
+            setAuthModal('login');
             cleanUpIntents();
-          } else if (data.status === 'needs_registration') {
-            setPendingSupabaseToken(token);
-            setOauthProvider(data.provider || '');
-            setOauthEmail(data.email || '');
-            setAuthModal('complete-registration');
-          } else {
-            setAuthError(extractErrorMessage(data));
           }
-        } catch (err) {
-          console.error('OAuth login error:', err);
-          setAuthError(lang === 'zh' ? '服务器连接失败，请稍后再试' : 'Server connection failed, please try again');
-          setAuthModal('login');
-          cleanUpIntents();
         }
       }
     });
@@ -410,11 +420,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const handleBindOAuth = async (provider) => {
     if (!supabase) return;
     
-    // Persist bind intent in localStorage to survive redirect
+    // 1. Set intent in localStorage to survive redirect
     localStorage.setItem('pending_bind', 'true');
+    console.log(`[Auth] Initiating ${provider} account link...`);
 
-    // First sign in with OAuth
-    const { error } = await supabase.auth.signInWithOAuth({
+    // 2. Redirect to OAuth provider using linkIdentity (Standard for account binding)
+    // This will redirect the user to the provider and then back to our site.
+    const { error } = await supabase.auth.linkIdentity({
       provider,
       options: {
         redirectTo: window.location.origin
@@ -422,9 +434,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     });
     
     if (error) {
+      console.error('[Auth] linkIdentity Error:', error.message);
       setAuthError(error.message);
       localStorage.removeItem('pending_bind');
     }
+    // Note: If successful, the page will redirect, so no further code here will run.
   };
 
 
