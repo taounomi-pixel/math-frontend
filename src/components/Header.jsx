@@ -422,7 +422,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
         if (!res.ok) {
           // New check for 403 oauth_verification_required (MFA Interception)
-          if (res.status === 403 && data.detail?.error === 'oauth_verification_required') {
+          if (res.status === 403 && data.detail?.error_code === 'oauth_verification_required') {
             setAuthError(null); 
             setVerificationRequired(true);
             setVerificationProviders(data.detail.bound_providers || []);
@@ -951,36 +951,25 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 </div>
                 
                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {verificationProviders.length > 0 ? (
-                    verificationProviders.map(prov => (
-                      <button 
-                        key={prov}
-                        onClick={() => handleOAuthLogin(prov)} 
-                        style={{
-                          ...oauthBtnStyle(prov === 'github' ? '#24292e' : '#4285f4'),
-                          padding: '12px 16px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '10px'
-                        }}
-                      >
-                        {prov === 'github' ? <GithubIcon size={20} /> : <GoogleIcon size={20} />}
-                        {lang === 'zh' 
-                          ? `通过 ${prov.charAt(0).toUpperCase() + prov.slice(1)} 账号验证` 
-                          : `Verify with ${prov.charAt(0).toUpperCase() + prov.slice(1)} Account`}
-                      </button>
-                    ))
-                  ) : (
-                    // Fallback button if no providers were returned or identified
+                  {verificationProviders.map(prov => (
                     <button 
-                      onClick={() => handleOAuthLogin('github')} 
-                      style={oauthBtnStyle('#24292e')}
+                      key={prov}
+                      onClick={() => handleOAuthLogin(prov)} 
+                      style={{
+                        ...oauthBtnStyle(prov === 'github' ? '#24292e' : '#4285f4'),
+                        padding: '12px 16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '10px'
+                      }}
                     >
-                      <ShieldAlert size={20} />
-                      {lang === 'zh' ? '点击此处通过 GitHub/Google 验证' : 'Click here to verify'}
+                      {prov === 'github' ? <GithubIcon size={20} /> : <GoogleIcon size={20} />}
+                      {lang === 'zh' 
+                        ? `通过 ${prov === 'github' ? 'GitHub' : 'Google'} 账号验证` 
+                        : `Verify with ${prov === 'github' ? 'GitHub' : 'Google'} Account`}
                     </button>
-                  )}
+                  ))}
                 </div>
                 
                 <button 
