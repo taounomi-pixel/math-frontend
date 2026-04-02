@@ -127,10 +127,15 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             
             const data = await res.json();
             if (res.ok && data.status === 'ok') {
-              console.log('[Auth] MFA Verification successful.');
+              console.log('[Auth] MFA Verification successful. Syncing state...');
               loginWithLocalData(data);
               resetVerificationStates();
               cleanUpIntents();
+              
+              // Force hard reload to ensure UI state is fully updated cross-components
+              setTimeout(() => {
+                window.location.reload();
+              }, 100);
             } else {
               const errMsg = extractErrorMessage(data);
               console.error('[Auth] MFA Verification failed:', errMsg);
@@ -265,19 +270,27 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
   // Helper to persist local login data
   const loginWithLocalData = (data) => {
+    // Standard keys for absolute backend JWT
     localStorage.setItem('access_token', data.access_token);
-    localStorage.setItem('username', data.username);
-    localStorage.setItem('user_id', data.user_id);
-    localStorage.setItem('is_admin', data.is_admin ? 'true' : 'false');
-    localStorage.setItem('auth_provider', data.auth_provider || '');
-    localStorage.setItem('user_email', data.email || '');
+    localStorage.setItem('token', data.access_token); // Alias as requested for robustness
+    
+    // Nested user data handling
+    const user = data.user || data; // Fallback for backward compatibility
+    
+    localStorage.setItem('username', user.username || '');
+    localStorage.setItem('user_id', user.id || '');
+    localStorage.setItem('is_admin', user.is_admin ? 'true' : 'false');
+    localStorage.setItem('auth_provider', user.auth_provider || '');
+    localStorage.setItem('user_email', user.email || '');
+    
     setCurrentUser({
-      username: data.username,
-      id: data.user_id,
-      is_admin: !!data.is_admin,
-      auth_provider: data.auth_provider,
-      email: data.email
+      username: user.username,
+      id: user.id || user.user_id,
+      is_admin: !!user.is_admin,
+      auth_provider: user.auth_provider,
+      email: user.email
     });
+    
     setAuthModal(null);
     setAuthForm({ username: '', password: '', email: '' });
   };
