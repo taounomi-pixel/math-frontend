@@ -646,72 +646,89 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         </div>
                       </div>
 
-                      {/* Binding Section */}
-                      <div style={{ marginBottom: '16px' }}>
-                        <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                          账号绑定
-                        </div>
+                      {/* Binding Logic Pre-calc */}
+                      {(() => {
+                        let identities = [];
+                        try {
+                          identities = typeof currentUser.identities_json === 'string' 
+                            ? JSON.parse(currentUser.identities_json || '[]') 
+                            : (currentUser.identities_json || []);
+                        } catch (e) { identities = []; }
                         
-                        {/* GitHub Row */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-                            <GithubIcon size={18} />
-                            <span>GitHub</span>
-                            {currentUser.auth_provider === 'github' ? (
-                              <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
-                            ) : (
-                              <span style={{ fontSize: '10px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
-                            )}
-                          </div>
-                          {currentUser.auth_provider === 'github' ? (
-                            <button 
-                              onClick={() => handleUnbindOAuth('github')}
-                              disabled={unbindLoading === 'github'}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }}
-                              title="解除绑定"
-                            >
-                              {unbindLoading === 'github' ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                            </button>
-                          ) : (
-                            <button 
-                              onClick={() => { setShowBindModal(true); setIsUserCardOpen(false); }}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, fontSize: '13px' }}
-                            >
-                              绑定
-                            </button>
-                          )}
-                        </div>
+                        const isGithubBound = identities.includes('github') || currentUser.auth_provider === 'github';
+                        const isGoogleBound = identities.includes('google') || currentUser.auth_provider === 'google';
 
-                        {/* Google Row */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-                            <Mail size={18} />
-                            <span>Google</span>
-                            {currentUser.auth_provider === 'google' ? (
-                              <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
-                            ) : (
-                              <span style={{ fontSize: '10px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
-                            )}
-                          </div>
-                          {currentUser.auth_provider === 'google' ? (
-                            <button 
-                              onClick={() => handleUnbindOAuth('google')}
-                              disabled={unbindLoading === 'google'}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }}
-                              title="解除绑定"
-                            >
-                              {unbindLoading === 'google' ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                            </button>
-                          ) : (
-                            <button 
-                              onClick={() => { setShowBindModal(true); setIsUserCardOpen(false); }}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, fontSize: '13px' }}
-                            >
-                              绑定
-                            </button>
-                          )}
-                        </div>
-                      </div>
+                        return (
+                          <>
+                            {/* Binding Section */}
+                            <div style={{ marginBottom: '16px' }}>
+                              <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                账号绑定
+                              </div>
+                              
+                              {/* GitHub Row */}
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                                  <GithubIcon size={18} />
+                                  <span>GitHub</span>
+                                  {isGithubBound ? (
+                                    <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
+                                  ) : (
+                                    <span style={{ fontSize: '10px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
+                                  )}
+                                </div>
+                                {isGithubBound ? (
+                                  <button 
+                                    onClick={() => handleUnbindOAuth('github')}
+                                    disabled={unbindLoading === 'github'}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }}
+                                    title="解除绑定"
+                                  >
+                                    {unbindLoading === 'github' ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                                  </button>
+                                ) : (
+                                  <button 
+                                    onClick={() => { setShowBindOAuthModal(true); setIsUserCardOpen(false); }}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, fontSize: '13px' }}
+                                  >
+                                    绑定
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Google Row */}
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                                  <Mail size={18} />
+                                  <span>Google</span>
+                                  {isGoogleBound ? (
+                                    <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
+                                  ) : (
+                                    <span style={{ fontSize: '10px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
+                                  )}
+                                </div>
+                                {isGoogleBound ? (
+                                  <button 
+                                    onClick={() => handleUnbindOAuth('google')}
+                                    disabled={unbindLoading === 'google'}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }}
+                                    title="解除绑定"
+                                  >
+                                    {unbindLoading === 'google' ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                                  </button>
+                                ) : (
+                                  <button 
+                                    onClick={() => { setShowBindOAuthModal(true); setIsUserCardOpen(false); }}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, fontSize: '13px' }}
+                                  >
+                                    绑定
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </>
+                        );
+                      })()}
 
                       {/* Card Footer */}
                       <button 
