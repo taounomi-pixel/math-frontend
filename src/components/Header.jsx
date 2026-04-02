@@ -1,11 +1,23 @@
-// Sync v1.0.4 - Multi-provider UI update
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, Globe, ChevronDown, User, Menu, X, LogOut, Upload, Link2, Mail, ShieldCheck, ShieldAlert, Trash2, Loader2, ExternalLink } from 'lucide-react';
-
-// Brand Icon: GitHub (Lucide removed brand icons in v0.400+)
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { 
+  Search, Menu, X, User, LogOut, ChevronDown, 
+  Globe, Github, Trash2, Loader2,
+  Settings, ExternalLink
+} from 'lucide-react';
+// Brand Icon: GitHub
 const GithubIcon = ({ size = 20 }) => (
   <svg height={size} width={size} viewBox="0 0 24 24" fill="currentColor">
     <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+  </svg>
+);
+
+// Brand Icon: Google (Standard multi-color SVG)
+const GoogleIcon = ({ size = 20 }) => (
+  <svg height={size} width={size} viewBox="0 0 24 24">
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
   </svg>
 );
 import UploadModal from './UploadModal';
@@ -32,6 +44,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const [oauthProvider, setOauthProvider] = useState('');
   const [oauthEmail, setOauthEmail] = useState('');
   const [showBindModal, setShowBindModal] = useState(false);
+  const [showAccountModal, setShowAccountModal] = useState(false);
   const [isUserCardOpen, setIsUserCardOpen] = useState(false);
   const cardRef = useRef(null);
   const [unbindLoading, setUnbindLoading] = useState(null); // 'github' | 'google' | null
@@ -713,108 +726,31 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         </div>
                       )}
 
-                      {/* Binding Logic Pre-calc */}
-                      {(() => {
-                        const identities = currentUser.identities || [];
-                        const isGithubBound = identities.some(id => (typeof id === 'string' ? id === 'github' : id.provider === 'github'));
-                        const isGoogleBound = identities.some(id => (typeof id === 'string' ? id === 'google' : id.provider === 'google'));
-                        const canUnbind = identities.length > 1;
-
-                        return (
-                          <>
-                            {/* Binding Section */}
-                            <div style={{ marginBottom: '16px' }}>
-                              <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                账号绑定
-                              </div>
-                              
-                              {/* GitHub Row */}
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-                                  <GithubIcon size={18} />
-                                  <span>GitHub</span>
-                                  {isGithubBound ? (
-                                    <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
-                                  ) : (
-                                    <span style={{ fontSize: '10px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
-                                  )}
-                                </div>
-                                {isGithubBound ? (
-                                  <button 
-                                    onClick={() => {
-                                      if (!canUnbind) {
-                                        setAuthError(lang === 'zh' ? '这是您唯一的登录方式，无法解绑' : 'This is your only login method and cannot be unlinked');
-                                        return;
-                                      }
-                                      handleUnbindOAuth('github');
-                                    }}
-                                    disabled={unbindLoading === 'github' || !canUnbind}
-                                    style={{ 
-                                      background: 'none', 
-                                      border: 'none', 
-                                      cursor: canUnbind ? 'pointer' : 'not-allowed', 
-                                      color: canUnbind ? '#ef4444' : '#d1d5db', 
-                                      padding: '4px' 
-                                    }}
-                                    title={canUnbind ? "解除绑定" : "唯一登录方式无法解绑"}
-                                  >
-                                    {unbindLoading === 'github' ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                                  </button>
-                                ) : (
-                                  <button 
-                                    onClick={() => { setShowBindModal(true); setIsUserCardOpen(false); }}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, fontSize: '13px' }}
-                                  >
-                                    绑定
-                                  </button>
-                                )}
-                              </div>
-
-                              {/* Google Row */}
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-                                  <Mail size={18} />
-                                  <span>Google</span>
-                                  {isGoogleBound ? (
-                                    <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
-                                  ) : (
-                                    <span style={{ fontSize: '10px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
-                                  )}
-                                </div>
-                                {isGoogleBound ? (
-                                  <button 
-                                    onClick={() => {
-                                      if (!canUnbind) {
-                                        setAuthError(lang === 'zh' ? '这是您唯一的登录方式，无法解绑' : 'This is your only login method and cannot be unlinked');
-                                        return;
-                                      }
-                                      handleUnbindOAuth('google');
-                                    }}
-                                    disabled={unbindLoading === 'google' || !canUnbind}
-                                    style={{ 
-                                      background: 'none', 
-                                      border: 'none', 
-                                      cursor: canUnbind ? 'pointer' : 'not-allowed', 
-                                      color: canUnbind ? '#ef4444' : '#d1d5db', 
-                                      padding: '4px' 
-                                    }}
-                                    title={canUnbind ? "解除绑定" : "唯一登录方式无法解绑"}
-                                  >
-                                    {unbindLoading === 'google' ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                                  </button>
-                                ) : (
-                                  <button 
-                                    onClick={() => { setShowBindModal(true); setIsUserCardOpen(false); }}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, fontSize: '13px' }}
-                                  >
-                                    绑定
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          </>
-                        );
-                      })()}
+                      {/* New Settings Item */}
+                      <div style={{ marginBottom: '16px' }}>
+                        <button 
+                          onClick={() => { setShowAccountModal(true); setIsUserCardOpen(false); }}
+                          style={{ 
+                            width: '100%', padding: '12px', borderRadius: '10px',
+                            display: 'flex', alignItems: 'center', gap: '10px',
+                            background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
+                            color: 'var(--text-primary)', fontWeight: 600, fontSize: '14px', cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseOver={e => {
+                            e.currentTarget.style.borderColor = 'var(--primary)';
+                            e.currentTarget.style.background = 'white';
+                          }}
+                          onMouseOut={e => {
+                            e.currentTarget.style.borderColor = 'var(--border-color)';
+                            e.currentTarget.style.background = 'var(--bg-secondary)';
+                          }}
+                        >
+                          <Link2 size={18} color="var(--primary)" />
+                          <span>第三方账号绑定</span>
+                          <ChevronDown size={14} style={{ marginLeft: 'auto', transform: 'rotate(-90deg)', opacity: 0.5 }} />
+                        </button>
+                      </div>
 
                       {/* Card Footer */}
                       <button 
@@ -1101,7 +1037,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
                     onMouseOut={e => e.currentTarget.style.opacity = '1'}
                   >
-                    <Mail size={20} />
+                    <GoogleIcon size={20} />
                     {t('registerWithGoogle')}
                   </button>
                 </div>
@@ -1255,10 +1191,180 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
                 onMouseOut={e => e.currentTarget.style.opacity = '1'}
               >
-                <Mail size={20} />
+                <GoogleIcon size={20} />
                 {t('bindGoogle')}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* New Account Settings Modal */}
+      {showAccountModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+          background: 'rgba(0,0,0,0.5)', zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div style={{
+            background: 'white', padding: '32px', borderRadius: '24px', 
+            width: '90%', maxWidth: '440px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            animation: 'scaleIn 0.3s ease-out'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px', alignItems: 'center' }}>
+              <h2 style={{ fontSize: '22px', margin: 0, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+                {lang === 'zh' ? '账号设置' : 'Account Settings'}
+              </h2>
+              <button 
+                onClick={() => setShowAccountModal(false)}
+                className="hover-scale"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '4px' }}
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '20px', lineHeight: 1.6 }}>
+                {lang === 'zh' ? '管理您的第三方账号连接。请确保至少保留一种登录方式。' : 'Manage your third-party account connections. Ensure at least one login method is kept.'}
+              </p>
+
+              {authError && (
+                <div style={{ padding: '12px 16px', background: '#fee2e2', color: '#dc2626', borderRadius: '12px', marginBottom: '16px', fontSize: '14px', border: '1px solid #fecaca' }}>
+                  {authError}
+                </div>
+              )}
+              {authSuccess && (
+                <div style={{ padding: '12px 16px', background: '#dcfce7', color: '#16a34a', borderRadius: '12px', marginBottom: '16px', fontSize: '14px', border: '1px solid #bbf7d0' }}>
+                  {authSuccess}
+                </div>
+              )}
+
+              {(() => {
+                const identities = currentUser?.identities || [];
+                const isGithubBound = identities.some(id => (typeof id === 'string' ? id === 'github' : id.provider === 'github'));
+                const isGoogleBound = identities.some(id => (typeof id === 'string' ? id === 'google' : id.provider === 'google'));
+                const canUnbind = identities.length > 1;
+
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {/* GitHub Row */}
+                    <div style={{ 
+                      padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      background: 'var(--bg-secondary)'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ pading: '8px', background: 'white', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px' }}>
+                          <GithubIcon size={20} />
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: '14px' }}>GitHub</div>
+                          <div style={{ fontSize: '12px', color: isGithubBound ? '#10b981' : 'var(--text-secondary)' }}>
+                            {isGithubBound ? (lang === 'zh' ? '已绑定' : 'Connected') : (lang === 'zh' ? '未绑定' : 'Not Connected')}
+                          </div>
+                        </div>
+                      </div>
+                      {isGithubBound ? (
+                        <button 
+                          onClick={() => {
+                            if (!canUnbind) {
+                              setAuthError(lang === 'zh' ? '这是您唯一的登录方式，无法解绑' : 'This is your only login method and cannot be unlinked');
+                              return;
+                            }
+                            handleUnbindOAuth('github');
+                          }}
+                          disabled={unbindLoading === 'github' || !canUnbind}
+                          style={{ 
+                            background: canUnbind ? '#fee2e2' : '#f3f4f6', 
+                            border: 'none', 
+                            cursor: canUnbind ? 'pointer' : 'not-allowed', 
+                            color: canUnbind ? '#ef4444' : '#9ca3af', 
+                            padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
+                            display: 'flex', alignItems: 'center', gap: '6px'
+                          }}
+                        >
+                          {unbindLoading === 'github' ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                          {lang === 'zh' ? '解绑' : 'Unlink'}
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => handleBindOAuth('github')}
+                          style={{ 
+                            background: 'var(--primary)', color: 'white', border: 'none',
+                            cursor: 'pointer', padding: '8px 16px', borderRadius: '8px',
+                            fontSize: '13px', fontWeight: 600
+                          }}
+                        >
+                          {lang === 'zh' ? '绑定' : 'Connect'}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Google Row */}
+                    <div style={{ 
+                      padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      background: 'var(--bg-secondary)'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ pading: '8px', background: 'white', borderRadius: '8px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px' }}>
+                          <GoogleIcon size={20} />
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: '14px' }}>Google</div>
+                          <div style={{ fontSize: '12px', color: isGoogleBound ? '#10b981' : 'var(--text-secondary)' }}>
+                            {isGoogleBound ? (lang === 'zh' ? '已绑定' : 'Connected') : (lang === 'zh' ? '未绑定' : 'Not Connected')}
+                          </div>
+                        </div>
+                      </div>
+                      {isGoogleBound ? (
+                        <button 
+                          onClick={() => {
+                            if (!canUnbind) {
+                              setAuthError(lang === 'zh' ? '这是您唯一的登录方式，无法解绑' : 'This is your only login method and cannot be unlinked');
+                              return;
+                            }
+                            handleUnbindOAuth('google');
+                          }}
+                          disabled={unbindLoading === 'google' || !canUnbind}
+                          style={{ 
+                            background: canUnbind ? '#fee2e2' : '#f3f4f6', 
+                            border: 'none', 
+                            cursor: canUnbind ? 'pointer' : 'not-allowed', 
+                            color: canUnbind ? '#ef4444' : '#9ca3af', 
+                            padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
+                            display: 'flex', alignItems: 'center', gap: '6px'
+                          }}
+                        >
+                          {unbindLoading === 'google' ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                          {lang === 'zh' ? '解绑' : 'Unlink'}
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => handleBindOAuth('google')}
+                          style={{ 
+                            background: 'var(--primary)', color: 'white', border: 'none',
+                            cursor: 'pointer', padding: '8px 16px', borderRadius: '8px',
+                            fontSize: '13px', fontWeight: 600
+                          }}
+                        >
+                          {lang === 'zh' ? '绑定' : 'Connect'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            <button 
+              onClick={() => setShowAccountModal(false)}
+              style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--text-primary)', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer' }}
+            >
+              {lang === 'zh' ? '确定' : 'Done'}
+            </button>
           </div>
         </div>
       )}
