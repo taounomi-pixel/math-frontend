@@ -42,22 +42,38 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const [verificationEmail, setVerificationEmail] = useState('');
   const [isVerifyingLogin, setIsVerifyingLogin] = useState(false);
 
-  // Auto-login check on mount
+  // Auto-login check on mount + hydrate bound_providers from server
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     const storedUsername = localStorage.getItem('username');
     const storedUserId = localStorage.getItem('user_id');
     const storedIsAdmin = localStorage.getItem('is_admin') === 'true';
-    const storedProvider = localStorage.getItem('auth_provider');
     const storedEmail = localStorage.getItem('user_email');
+    // Restore bound_providers from localStorage cache first (instant UI)
+    let cachedProviders = [];
+    try { cachedProviders = JSON.parse(localStorage.getItem('bound_providers') || '[]'); } catch { cachedProviders = []; }
+    
     if (token && storedUsername) {
       setCurrentUser({ 
         username: storedUsername, 
         id: storedUserId ? parseInt(storedUserId, 10) : null,
         is_admin: storedIsAdmin,
-        auth_provider: storedProvider || null,
+        bound_providers: cachedProviders,
         email: storedEmail || null
       });
+
+      // Hydrate real-time bound_providers from server
+      fetch(`${API_BASE}/users/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data && data.bound_providers) {
+            localStorage.setItem('bound_providers', JSON.stringify(data.bound_providers));
+            setCurrentUser(prev => prev ? ({ ...prev, bound_providers: data.bound_providers }) : prev);
+          }
+        })
+        .catch(() => { /* silent — use cached value */ });
     }
   }, []);
 
@@ -168,13 +184,23 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             });
             if (res.ok) {
               const data = await res.json();
-              localStorage.setItem('auth_provider', data.auth_provider || '');
               localStorage.setItem('user_email', data.email || '');
-              setCurrentUser(prev => ({
-                ...prev,
-                auth_provider: data.auth_provider,
-                email: data.email
-              }));
+              // Refresh bound_providers from /api/users/me
+              try {
+                const meRes = await fetch(`${API_BASE}/users/me`, {
+                  headers: { 'Authorization': `Bearer ${localToken}` }
+                });
+                if (meRes.ok) {
+                  const meData = await meRes.json();
+                  const providers = meData.bound_providers || [];
+                  localStorage.setItem('bound_providers', JSON.stringify(providers));
+                  setCurrentUser(prev => ({
+                    ...prev,
+                    bound_providers: providers,
+                    email: data.email
+                  }));
+                }
+              } catch { /* fallback: keep previous state */ }
               setShowBindModal(false);
               cleanUpIntents();
             } else {
@@ -280,14 +306,16 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     localStorage.setItem('username', user.username || '');
     localStorage.setItem('user_id', user.id || '');
     localStorage.setItem('is_admin', user.is_admin ? 'true' : 'false');
-    localStorage.setItem('auth_provider', user.auth_provider || '');
     localStorage.setItem('user_email', user.email || '');
+    // Persist bound_providers as JSON array
+    const providers = user.bound_providers || (user.auth_provider ? [user.auth_provider] : []);
+    localStorage.setItem('bound_providers', JSON.stringify(providers));
     
     setCurrentUser({
       username: user.username,
       id: user.id || user.user_id,
       is_admin: !!user.is_admin,
-      auth_provider: user.auth_provider,
+      bound_providers: providers,
       email: user.email
     });
     
@@ -434,7 +462,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     localStorage.removeItem('username');
     localStorage.removeItem('user_id');
     localStorage.removeItem('is_admin');
-    localStorage.removeItem('auth_provider');
+    localStorage.removeItem('bound_providers');
     localStorage.removeItem('user_email');
     setCurrentUser(null);
     
@@ -471,21 +499,28 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
       const data = await res.json();
       if (res.ok) {
-        // Update local state
-        const updatedProviders = data.auth_providers || [];
-        const isStillBound = updatedProviders.length > 0;
-        
-        const newProvider = isStillBound ? updatedProviders[0] : null;
-        localStorage.setItem('auth_provider', newProvider || '');
-        if (!isStillBound) {
-          localStorage.removeItem('user_email'); // Optional: keep or remove
+        // Refresh bound_providers from /api/users/me for ground truth
+        try {
+          const meRes = await fetch(`${API_BASE}/users/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (meRes.ok) {
+            const meData = await meRes.json();
+            const providers = meData.bound_providers || [];
+            localStorage.setItem('bound_providers', JSON.stringify(providers));
+            setCurrentUser(prev => ({
+              ...prev,
+              bound_providers: providers,
+              email: providers.length > 0 ? prev.email : null
+            }));
+          }
+        } catch {
+          // Fallback: just remove the unbound provider from local state
+          setCurrentUser(prev => ({
+            ...prev,
+            bound_providers: (prev.bound_providers || []).filter(p => p !== provider)
+          }));
         }
-        
-        setCurrentUser(prev => ({
-          ...prev,
-          auth_provider: newProvider,
-          email: isStillBound ? prev.email : null
-        }));
         
         setAuthSuccess(lang === 'zh' ? '解绑成功' : 'Successfully unlinked');
       } else {
@@ -598,7 +633,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     paddingRight: '12px',
                     borderRadius: '10px',
                     cursor: 'pointer',
-                    background: currentUser.auth_provider ? 'transparent' : '#f3f4f6', // Gray if not linked
+                    background: (currentUser.bound_providers && currentUser.bound_providers.length > 0) ? 'transparent' : '#f3f4f6', // Gray if not linked
                     transition: 'all 0.2s ease',
                     border: '1px solid transparent',
                     maxWidth: '180px'
@@ -623,7 +658,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     }}>
                       {currentUser.username}
                     </span>
-                    {!currentUser.auth_provider && (
+                    {(!currentUser.bound_providers || currentUser.bound_providers.length === 0) && (
                       <span style={{ fontSize: '10px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '2px' }}>
                         <ShieldAlert size={10} /> 未绑定
                       </span>
@@ -678,13 +713,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
                             <GithubIcon size={18} />
                             <span>GitHub</span>
-                            {currentUser.auth_provider === 'github' ? (
+                            {(currentUser.bound_providers || []).includes('github') ? (
                               <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
                             ) : (
                               <span style={{ fontSize: '10px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
                             )}
                           </div>
-                          {currentUser.auth_provider === 'github' ? (
+                          {(currentUser.bound_providers || []).includes('github') ? (
                             <button 
                               onClick={() => handleUnbindOAuth('github')}
                               disabled={unbindLoading === 'github'}
@@ -708,13 +743,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
                             <Mail size={18} />
                             <span>Google</span>
-                            {currentUser.auth_provider === 'google' ? (
+                            {(currentUser.bound_providers || []).includes('google') ? (
                               <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
                             ) : (
                               <span style={{ fontSize: '10px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
                             )}
                           </div>
-                          {currentUser.auth_provider === 'google' ? (
+                          {(currentUser.bound_providers || []).includes('google') ? (
                             <button 
                               onClick={() => handleUnbindOAuth('google')}
                               disabled={unbindLoading === 'google'}
