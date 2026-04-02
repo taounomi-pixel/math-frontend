@@ -70,14 +70,37 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         identities = storedIdentities ? JSON.parse(storedIdentities) : [];
       } catch (e) { identities = []; }
 
-      setCurrentUser({ 
+      const initialUser = { 
         username: storedUsername, 
         id: storedUserId ? parseInt(storedUserId, 10) : null,
         is_admin: storedIsAdmin,
         auth_provider: storedProvider || null,
         email: storedEmail || null,
         identities: identities
-      });
+      };
+      setCurrentUser(initialUser);
+
+      // ASYNC REFRESH: Get actual metadata from Supabase
+      if (supabase) {
+        supabase.auth.getUser().then(({ data: { user } }) => {
+          if (user) {
+            const realIdentities = user.identities?.map(id => id.provider) || [];
+            const realEmail = user.email || initialUser.email;
+            
+            const updatedUser = {
+              ...initialUser,
+              email: realEmail,
+              identities: realIdentities,
+              auth_provider: realIdentities[0] || null
+            };
+            
+            setCurrentUser(updatedUser);
+            localStorage.setItem('user_identities', JSON.stringify(realIdentities));
+            localStorage.setItem('user_email', realEmail || '');
+            localStorage.setItem('auth_provider', realIdentities[0] || '');
+          }
+        });
+      }
     }
   }, []);
 
@@ -142,9 +165,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
               })
             });
             const data = await res.json();
-            if (data.status === 'ok') {
-              loginWithLocalData(data);
-              resetVerificationStates();
+              if (data.status === 'ok') {
+                await loginWithLocalData(data);
+                resetVerificationStates();
               cleanUpIntents();
             } else {
               setAuthError(extractErrorMessage(data));
@@ -211,7 +234,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           const data = await res.json();
           
           if (data.status === 'ok') {
-            loginWithLocalData(data);
+            await loginWithLocalData(data);
             cleanUpIntents();
           } else if (data.status === 'needs_registration') {
             setPendingSupabaseToken(token);
@@ -278,22 +301,35 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   };
 
   // Helper to persist local login data
-  const loginWithLocalData = (data) => {
+  const loginWithLocalData = async (data) => {
     localStorage.setItem('access_token', data.access_token);
     localStorage.setItem('username', data.username);
     localStorage.setItem('user_id', data.user_id);
     localStorage.setItem('is_admin', data.is_admin ? 'true' : 'false');
-    localStorage.setItem('auth_provider', data.auth_provider || '');
-    localStorage.setItem('user_email', data.email || '');
-    localStorage.setItem('user_identities', JSON.stringify(data.identities || []));
+    
+    let identities = data.identities || [];
+    let email = data.email || '';
+
+    // Enrich with real Supabase data if possible
+    if (supabase) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        identities = user.identities?.map(id => id.provider) || identities;
+        email = user.email || email;
+      }
+    }
+
+    localStorage.setItem('auth_provider', identities[0] || '');
+    localStorage.setItem('user_email', email);
+    localStorage.setItem('user_identities', JSON.stringify(identities));
     
     setCurrentUser({
       username: data.username,
       id: data.user_id,
       is_admin: !!data.is_admin,
-      auth_provider: data.auth_provider,
-      email: data.email,
-      identities: data.identities || []
+      auth_provider: identities[0] || null,
+      email: email,
+      identities: identities
     });
     setAuthModal(null);
     setAuthForm({ username: '', password: '', email: '' });
@@ -334,7 +370,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       }
       
       const data = await res.json();
-      loginWithLocalData(data);
+      await loginWithLocalData(data);
       setPendingSupabaseToken(null);
     } catch (err) {
       setAuthError(extractErrorMessage(err));
@@ -398,8 +434,6 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           throw data;
         }
 
-        loginWithLocalData(data);
-
         if (data.status === 'needs_verification') {
           setVerificationRequired(true);
           setVerificationProviders(data.auth_providers || [data.auth_provider] || []);
@@ -407,7 +441,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           return;
         }
 
-        loginWithLocalData(data);
+        await loginWithLocalData(data);
       }
     } catch (err) {
       console.error('Auth error:', err);
