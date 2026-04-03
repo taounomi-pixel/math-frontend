@@ -1481,19 +1481,20 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 
                 
                 {/* ──── Segmented Control (Tabs) ──── */}
-                {/* iOS 风格滑动切换器 */}
-                <div className="relative flex p-1 bg-gray-100 rounded-lg mb-6">
-                  {/* 悬浮的物理白色滑块 (负责滑动动画) */}
+                {/* iOS 风格滑动切换器（完整安全版） */}
+                <div className="relative flex p-1 bg-gray-100 rounded-lg mb-6 w-full">
+                  
+                  {/* 悬浮的物理白色滑块 */}
                   <div
-                    className={`absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-white rounded-md shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+                    className={`absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-white rounded-md shadow transition-transform duration-300 ease-in-out ${
                       loginMethod === 'password' ? 'translate-x-0' : 'translate-x-full'
                     }`}
                   ></div>
 
-                  {/* 密码登录按钮 (需设置 z-10 浮于滑块之上) */}
+                  {/* 密码登录按钮 */}
                   <button
                     type="button"
-                    className={`relative z-10 flex-1 py-1.5 text-sm font-semibold transition-colors duration-300 ${
+                    className={`relative z-10 flex-1 py-2 text-sm font-medium text-center transition-colors duration-300 focus:outline-none ${
                       loginMethod === 'password' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
                     }`}
                     onClick={() => setLoginMethod('password')}
@@ -1501,10 +1502,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     {lang === 'zh' ? '密码登录' : 'Password'}
                   </button>
 
-                  {/* 验证码登录按钮 (同理 z-10) */}
+                  {/* 验证码登录按钮 */}
                   <button
                     type="button"
-                    className={`relative z-10 flex-1 py-1.5 text-sm font-semibold transition-colors duration-300 ${
+                    className={`relative z-10 flex-1 py-2 text-sm font-medium text-center transition-colors duration-300 focus:outline-none ${
                       loginMethod === 'otp' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
                     }`}
                     onClick={() => setLoginMethod('otp')}
