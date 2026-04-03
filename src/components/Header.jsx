@@ -202,10 +202,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
               resetVerificationStates();
               cleanUpIntents();
               
-              // Force hard reload to ensure UI state is fully updated cross-components
-              setTimeout(() => {
-                window.location.reload();
-              }, 100);
+              resetVerificationStates();
+              cleanUpIntents();
             } else {
               const errMsg = extractErrorMessage(data);
               console.error('[Auth] MFA Verification failed:', errMsg);
@@ -386,6 +384,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     
     setAuthModal(null);
     setAuthForm({ username: '', password: '', email: '' });
+    
+    // Force hard reload to ensure UI state is fully updated cross-components
+    window.location.reload();
   };
 
   const resetVerificationStates = () => {
@@ -793,6 +794,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     if (supabase) {
       await supabase.auth.signOut();
     }
+    
+    // Force hard redirect to home for a clean state
+    window.location.href = '/';
   };
 
   const openAuthModal = (mode) => {
