@@ -1481,47 +1481,32 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 
                 
                 {/* ──── Segmented Control (Tabs) ──── */}
-                <div style={{ 
-                  display: 'flex', 
-                  padding: '4px', 
-                  background: '#f1f5f9', 
-                  borderRadius: '10px', 
-                  marginBottom: '24px' 
-                }}>
-                  <button 
+                {/* iOS 风格滑动切换器 */}
+                <div className="relative flex p-1 bg-gray-100 rounded-lg mb-6">
+                  {/* 悬浮的物理白色滑块 (负责滑动动画) */}
+                  <div
+                    className={`absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-white rounded-md shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+                      loginMethod === 'password' ? 'translate-x-0' : 'translate-x-full'
+                    }`}
+                  ></div>
+
+                  {/* 密码登录按钮 (需设置 z-10 浮于滑块之上) */}
+                  <button
                     type="button"
-                    style={{
-                      flex: 1,
-                      padding: '8px 0',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      borderRadius: '8px',
-                      transition: 'all 0.2s',
-                      border: 'none',
-                      cursor: 'pointer',
-                      background: loginMethod === 'password' ? 'white' : 'transparent',
-                      color: loginMethod === 'password' ? 'var(--text-primary)' : 'var(--text-tertiary)',
-                      boxShadow: loginMethod === 'password' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-                    }}
+                    className={`relative z-10 flex-1 py-1.5 text-sm font-semibold transition-colors duration-300 ${
+                      loginMethod === 'password' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                    }`}
                     onClick={() => setLoginMethod('password')}
                   >
                     {lang === 'zh' ? '密码登录' : 'Password'}
                   </button>
-                  <button 
+
+                  {/* 验证码登录按钮 (同理 z-10) */}
+                  <button
                     type="button"
-                    style={{
-                      flex: 1,
-                      padding: '8px 0',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      borderRadius: '8px',
-                      transition: 'all 0.2s',
-                      border: 'none',
-                      cursor: 'pointer',
-                      background: loginMethod === 'otp' ? 'white' : 'transparent',
-                      color: loginMethod === 'otp' ? 'var(--text-primary)' : 'var(--text-tertiary)',
-                      boxShadow: loginMethod === 'otp' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-                    }}
+                    className={`relative z-10 flex-1 py-1.5 text-sm font-semibold transition-colors duration-300 ${
+                      loginMethod === 'otp' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                    }`}
                     onClick={() => setLoginMethod('otp')}
                   >
                     {lang === 'zh' ? '验证码登录' : 'Email OTP'}
