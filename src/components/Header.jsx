@@ -1036,6 +1036,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           animation: iosPopIn 0.25s cubic-bezier(0.32, 0.72, 0, 1) forwards;
           transform-origin: top right;
         }
+        .ios-modal-anim {
+          animation: iosPopIn 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+          transform-origin: center;
+        }
       `}</style>
       <header className="header">
         <div className="header-inner container">
@@ -2049,7 +2053,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           background: 'rgba(0,0,0,0.45)', zIndex: 9999, backdropFilter: 'blur(4px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center'
         }} onClick={() => setShowBindModal(false)}>
-          <div style={{
+          <div className="ios-modal-anim" style={{
             background: 'white', borderRadius: '20px',
             width: '90%', maxWidth: '440px',
             boxShadow: '0 25px 50px -12px rgba(0,0,0,0.18)',
