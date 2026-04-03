@@ -997,16 +997,37 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     }
   };
 
+  const [isUserCardClosing, setIsUserCardClosing] = useState(false);
+  const [isBindModalClosing, setIsBindModalClosing] = useState(false);
+
+  const handleCloseUserCard = useCallback(() => {
+    if (!isUserCardOpen || isUserCardClosing) return;
+    setIsUserCardClosing(true);
+    setTimeout(() => {
+      setIsUserCardOpen(false);
+      setIsUserCardClosing(false);
+    }, 200);
+  }, [isUserCardOpen, isUserCardClosing]);
+
+  const handleCloseBindModal = useCallback(() => {
+    if (!showBindModal || isBindModalClosing) return;
+    setIsBindModalClosing(true);
+    setTimeout(() => {
+      setShowBindModal(false);
+      setIsBindModalClosing(false);
+    }, 280);
+  }, [showBindModal, isBindModalClosing]);
+
   // Close card when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (cardRef.current && !cardRef.current.contains(event.target)) {
-        setIsUserCardOpen(false);
+        handleCloseUserCard();
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [handleCloseUserCard]);
 
   // ---- OAuth Button Style ----
   const oauthBtnStyle = (bg, textColor = 'white', borderColor = 'transparent') => ({
@@ -1032,12 +1053,30 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             transform: scale(1) translateY(0);
           }
         }
+        @keyframes iosPopOut {
+          0% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+          100% {
+            opacity: 0;
+            transform: scale(0.9) translateY(-10px);
+          }
+        }
         .ios-dropdown-anim {
           animation: iosPopIn 0.25s cubic-bezier(0.32, 0.72, 0, 1) forwards;
           transform-origin: top right;
         }
+        .ios-dropdown-closing {
+          animation: iosPopOut 0.2s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+          transform-origin: top right;
+        }
         .ios-modal-anim {
           animation: iosPopIn 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+          transform-origin: center;
+        }
+        .ios-modal-closing {
+          animation: iosPopOut 0.25s cubic-bezier(0.32, 0.72, 0, 1) forwards;
           transform-origin: center;
         }
       `}</style>
@@ -1111,10 +1150,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   <Upload size={16} /> <span style={{ fontSize: '14px', fontWeight: 500 }}>{t('upload')}</span>
                 </button>
                 
-                {/* User Trigger */}
                 <div 
                   ref={cardRef}
-                  onClick={() => setIsUserCardOpen(!isUserCardOpen)}
+                  onClick={() => isUserCardOpen ? handleCloseUserCard() : setIsUserCardOpen(true)}
                   style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
@@ -1179,8 +1217,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   }} />
 
                   {/* ================= USER CARD DROPDOWN ================= */}
-                  {isUserCardOpen && (
-                    <div className="ios-dropdown-anim" style={{
+                  {(isUserCardOpen || isUserCardClosing) && (
+                    <div className={isUserCardClosing ? "ios-dropdown-closing" : "ios-dropdown-anim"} style={{
                       position: 'absolute', top: 'calc(100% + 12px)', right: 0,
                       width: '280px', background: 'white', borderRadius: '16px',
                       boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
@@ -2047,13 +2085,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       )}
 
       {/* Account Settings Modal */}
-      {showBindModal && (
+      {(showBindModal || isBindModalClosing) && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           background: 'rgba(0,0,0,0.45)', zIndex: 9999, backdropFilter: 'blur(4px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }} onClick={() => setShowBindModal(false)}>
-          <div className="ios-modal-anim" style={{
+        }} onClick={handleCloseBindModal}>
+          <div className={isBindModalClosing ? "ios-modal-closing" : "ios-modal-anim"} style={{
             background: 'white', borderRadius: '20px',
             width: '90%', maxWidth: '440px',
             boxShadow: '0 25px 50px -12px rgba(0,0,0,0.18)',
@@ -2071,7 +2109,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>管理您的第三方登录绑定</p>
               </div>
               <button
-                onClick={() => setShowBindModal(false)}
+                onClick={handleCloseBindModal}
                 style={{
                   background: '#f1f5f9', border: 'none', cursor: 'pointer',
                   width: '32px', height: '32px', borderRadius: '8px',
