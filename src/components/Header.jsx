@@ -22,6 +22,12 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { supabase } from '../utils/supabaseClient';
 import { API_BASE } from '../utils/api';
 
+const getAvatarText = (username) => {
+  if (!username) return '?';
+  // 提取第一个字符并转为大写（完美兼容中英日文）
+  return username.charAt(0).toUpperCase();
+};
+
 const Header = ({ searchQuery, setSearchQuery }) => {
   const { lang, setLang, t } = useLanguage();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -1105,14 +1111,25 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   onMouseOver={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
                   onMouseOut={e => e.currentTarget.style.borderColor = 'transparent'}
                 >
-                  <div style={{ 
-                    width: '32px', height: '32px', borderRadius: '50%', 
-                    background: 'var(--primary)', color: 'white', 
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                    fontWeight: 'bold', fontSize: '14px', flexShrink: 0,
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                  }}>
-                    {currentUser.username[0].toUpperCase()}
+                  <div 
+                    className="rounded-full flex items-center justify-center overflow-hidden"
+                    style={{ 
+                      width: '32px', height: '32px', borderRadius: '50%', 
+                      /* 液态玻璃质感核心 CSS */
+                      backgroundColor: 'rgba(235, 235, 235, 0.45)', // 半透明浅灰底色
+                      backdropFilter: 'blur(10px) saturate(150%)', // 磨砂与色彩增强
+                      WebkitBackdropFilter: 'blur(10px) saturate(150%)', // 兼容 Safari
+                      border: '1px solid rgba(255, 255, 255, 0.6)', // 玻璃高光边缘
+                      boxShadow: 'inset 0px 2px 4px rgba(255, 255, 255, 0.8), 0px 2px 5px rgba(0, 0, 0, 0.08)', // 内发光折射 + 底层微弱阴影
+                      /* 文字排版 */
+                      color: '#1f2937', 
+                      fontSize: '14px', 
+                      fontWeight: '600',
+                      userSelect: 'none',
+                      flexShrink: 0
+                    }}
+                  >
+                    {getAvatarText(currentUser.username)}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     <span style={{ 
@@ -1148,13 +1165,24 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       
                       {/* Card Header */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #f3f4f6' }}>
-                        <div style={{ 
-                          width: '48px', height: '48px', borderRadius: '50%', 
-                          background: 'var(--primary)', color: 'white', 
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                          fontWeight: 'bold', fontSize: '20px'
-                        }}>
-                          {currentUser.username[0].toUpperCase()}
+                        <div 
+                          className="rounded-full flex items-center justify-center overflow-hidden"
+                          style={{ 
+                            width: '48px', height: '48px', borderRadius: '50%', 
+                            /* 液态玻璃质感核心 CSS */
+                            backgroundColor: 'rgba(235, 235, 235, 0.45)', // 半透明浅灰底色
+                            backdropFilter: 'blur(10px) saturate(150%)', // 磨砂与色彩增强
+                            WebkitBackdropFilter: 'blur(10px) saturate(150%)', // 兼容 Safari
+                            border: '1px solid rgba(255, 255, 255, 0.6)', // 玻璃高光边缘
+                            boxShadow: 'inset 0px 2px 4px rgba(255, 255, 255, 0.8), 0px 2px 5px rgba(0, 0, 0, 0.08)', // 内发光折射 + 底层微弱阴影
+                            /* 文字排版 */
+                            color: '#1f2937', 
+                            fontSize: '20px', 
+                            fontWeight: '600',
+                            userSelect: 'none'
+                          }}
+                        >
+                          {getAvatarText(currentUser.username)}
                         </div>
                         <div style={{ overflow: 'hidden' }}>
                           <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
