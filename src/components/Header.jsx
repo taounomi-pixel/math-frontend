@@ -1215,19 +1215,20 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   </div>
 
                   {/* Email row */}
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                  <div className="flex flex-col sm:flex-row gap-2 w-full overflow-hidden" style={{ marginBottom: '10px' }}>
                     <input
                       id="otp-email-input"
                       type="email"
                       placeholder={lang === 'zh' ? '输入邮箱地址' : 'Enter email address'}
                       value={otpEmail}
                       onChange={e => { setOtpEmail(e.target.value); setAuthError(''); }}
-                      style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none', fontSize: '14px' }}
+                      style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none', fontSize: '14px', width: '100%' }}
                     />
                     <button
                       id="otp-send-btn"
                       onClick={handleSendCode}
                       disabled={authLoading || otpCooldown > 0}
+                      className="w-full sm:w-auto"
                       style={{
                         padding: '10px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
                         cursor: (authLoading || otpCooldown > 0) ? 'not-allowed' : 'pointer',
@@ -1243,7 +1244,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
                   {/* Code row — shown only after code sent */}
                   {otpSent && (
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div className="flex flex-col sm:flex-row gap-2 w-full overflow-hidden">
                       <input
                         id="otp-code-input"
                         type="text"
@@ -1252,13 +1253,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         placeholder={lang === 'zh' ? '6位验证码' : '6-digit code'}
                         value={otpCode}
                         onChange={e => { setOtpCode(e.target.value.replace(/\D/g, '')); setAuthError(''); }}
-                        style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none', fontSize: '20px', letterSpacing: '8px', textAlign: 'center' }}
+                        style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none', fontSize: '20px', letterSpacing: '8px', textAlign: 'center', width: '100%' }}
                       />
                       <button
                         id="otp-verify-btn"
                         onClick={handleVerifyCode}
                         disabled={authLoading || otpCode.length !== 6}
-                        className="btn-primary"
+                        className="btn-primary w-full sm:w-auto"
                         style={{ padding: '10px 20px', borderRadius: '8px', fontSize: '14px', opacity: (authLoading || otpCode.length !== 6) ? 0.6 : 1, cursor: (authLoading || otpCode.length !== 6) ? 'not-allowed' : 'pointer' }}
                       >
                         {lang === 'zh' ? '登录' : 'Login'}
@@ -1369,19 +1370,20 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600, fontSize: '14px' }}>
                   {t('emailRequired')}
                 </label>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div className="flex flex-col sm:flex-row gap-2 w-full overflow-hidden">
                   <input 
                     type="email" 
                     value={authForm.email}
                     onChange={e => setAuthForm({...authForm, email: e.target.value})}
                     required
                     placeholder="user@example.com"
-                    style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none', fontSize: '14px' }}
+                    style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none', fontSize: '14px', width: '100%' }}
                   />
                   <button
                     type="button"
                     onClick={handleRegisterSendCode}
                     disabled={authLoading || registerOtpCooldown > 0}
+                    className="w-full sm:w-auto"
                     style={{
                       padding: '10px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
                       cursor: (authLoading || registerOtpCooldown > 0) ? 'not-allowed' : 'pointer',
