@@ -59,6 +59,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     sent: false,
     cooldown: 0
   });
+  
+  // Login Tab switching
+  const [loginMethod, setLoginMethod] = useState('password'); // 'password' | 'otp'
 
   /**
    * Checks whether the current user is bound to a specific OAuth provider.
@@ -1176,37 +1179,86 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   </>
                 )}
                 
-                {/* Traditional Login Form */}
-                <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, fontSize: '14px' }}>{t('username')}</label>
-                    <input 
-                      type="text" 
-                      value={authForm.username}
-                      onChange={e => setAuthForm({...authForm, username: e.target.value})}
-                      required
-                      autoFocus
-                      style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, fontSize: '14px' }}>{t('password')}</label>
-                    <input 
-                      type="password" 
-                      value={authForm.password}
-                      onChange={e => setAuthForm({...authForm, password: e.target.value})}
-                      required
-                      style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
-                    />
-                  </div>
-                  <button type="submit" className="btn-primary btn-lg" disabled={authLoading} style={{ marginTop: '8px', width: '100%', justifyContent: 'center', opacity: authLoading ? 0.7 : 1 }}>
-                    {authLoading ? (lang === 'zh' ? '请稍候...' : 'Please wait...') : t('continueBtn')}
+                
+                {/* ──── Segmented Control (Tabs) ──── */}
+                <div style={{ 
+                  display: 'flex', 
+                  padding: '4px', 
+                  background: '#f1f5f9', 
+                  borderRadius: '10px', 
+                  marginBottom: '24px' 
+                }}>
+                  <button 
+                    type="button"
+                    style={{
+                      flex: 1,
+                      padding: '8px 0',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      borderRadius: '8px',
+                      transition: 'all 0.2s',
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: loginMethod === 'password' ? 'white' : 'transparent',
+                      color: loginMethod === 'password' ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                      boxShadow: loginMethod === 'password' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+                    }}
+                    onClick={() => setLoginMethod('password')}
+                  >
+                    {lang === 'zh' ? '密码登录' : 'Password'}
                   </button>
-                </form>
+                  <button 
+                    type="button"
+                    style={{
+                      flex: 1,
+                      padding: '8px 0',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      borderRadius: '8px',
+                      transition: 'all 0.2s',
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: loginMethod === 'otp' ? 'white' : 'transparent',
+                      color: loginMethod === 'otp' ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                      boxShadow: loginMethod === 'otp' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+                    }}
+                    onClick={() => setLoginMethod('otp')}
+                  >
+                    {lang === 'zh' ? '验证码登录' : 'Email OTP'}
+                  </button>
+                </div>
 
-                {/* ──── Email OTP Section ──── */}
-                  {/* ──── Email OTP Section (Refactored to Reference Image) ──── */}
-                  <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {loginMethod === 'password' ? (
+                  /* Traditional Password Login Form */
+                  <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, fontSize: '14px' }}>{t('username')}</label>
+                      <input 
+                        type="text" 
+                        value={authForm.username}
+                        onChange={e => setAuthForm({...authForm, username: e.target.value})}
+                        required
+                        autoFocus
+                        style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, fontSize: '14px' }}>{t('password')}</label>
+                      <input 
+                        type="password" 
+                        value={authForm.password}
+                        onChange={e => setAuthForm({...authForm, password: e.target.value})}
+                        required
+                        style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
+                      />
+                    </div>
+                    <button type="submit" className="btn-primary btn-lg" disabled={authLoading} style={{ marginTop: '8px', width: '100%', justifyContent: 'center', opacity: authLoading ? 0.7 : 1 }}>
+                      {authLoading ? (lang === 'zh' ? '请稍候...' : 'Please wait...') : t('continueBtn')}
+                    </button>
+                  </form>
+                ) : (
+                  /* Email OTP Section (Refactored to Reference Image) */
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     
                     {/* Row 1: Email Address */}
                     <div>
@@ -1301,6 +1353,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       {lang === 'zh' ? '登录' : 'Login'}
                     </button>
                   </div>
+                )}
 
               </>
             )}
