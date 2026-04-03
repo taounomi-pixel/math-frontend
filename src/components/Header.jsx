@@ -61,6 +61,16 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     cooldown: 0
   });
   
+  // Email Change state
+  const [changeEmailForm, setChangeEmailForm] = useState({
+    email: '',
+    code: '',
+    isExpanded: false,
+    loading: false,
+    sent: false,
+    cooldown: 0
+  });
+  
   // Login Tab switching
   const [loginMethod, setLoginMethod] = useState('password'); // 'password' | 'otp'
 
@@ -70,6 +80,95 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const [mfaMaskedEmail, setMfaMaskedEmail] = useState('');
   const [mfaCooldown, setMfaCooldown] = useState(0);
   const [mfaSent, setMfaSent] = useState(false);
+
+  const handleUnbindEmail = async () => {
+    if (!window.confirm(lang === 'zh' ? '确定要解绑邮箱吗？这可能会影响您的账号找回。' : 'Are you sure you want to unbind your email? This may affect account recovery.')) {
+      return;
+    }
+    
+    setAuthLoading(true);
+    setAuthError('');
+    try {
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_BASE}/auth/unbind-email`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('解绑失败');
+      
+      const data = await res.json();
+      setAuthSuccess(lang === 'zh' ? '邮箱已解绑' : 'Email unbound successfully');
+      
+      // Update local state
+      const updatedUser = { ...currentUser, email: null };
+      setCurrentUser(updatedUser);
+      localStorage.setItem('user_email', '');
+      
+      setTimeout(() => setAuthSuccess(''), 3000);
+    } catch (err) {
+      setAuthError(err.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleSendChangeEmailCode = async () => {
+    if (!changeEmailForm.email || !changeEmailForm.email.includes('@')) {
+      setAuthError(lang === 'zh' ? '请输入有效的电子邮箱' : 'Please enter a valid email');
+      return;
+    }
+    setChangeEmailForm(prev => ({ ...prev, loading: true }));
+    setAuthError('');
+    try {
+      const res = await fetch(`${API_BASE}/auth/send-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: changeEmailForm.email, intent: 'change_email' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || '发送失败');
+      
+      setChangeEmailForm(prev => ({ ...prev, sent: true, cooldown: 60 }));
+    } catch (err) {
+      setAuthError(err.message);
+    } finally {
+      setChangeEmailForm(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const handleConfirmChangeEmail = async () => {
+    if (changeEmailForm.code.length !== 6) return;
+    setChangeEmailForm(prev => ({ ...prev, loading: true }));
+    setAuthError('');
+    try {
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_BASE}/auth/change-email`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ new_email: changeEmailForm.email, code: changeEmailForm.code })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || '更新失败');
+      
+      setAuthSuccess(lang === 'zh' ? '邮箱已成功更新' : 'Email updated successfully');
+      
+      // Update local state
+      const updatedUser = { ...currentUser, email: changeEmailForm.email };
+      setCurrentUser(updatedUser);
+      localStorage.setItem('user_email', changeEmailForm.email);
+      
+      // Reset form
+      setChangeEmailForm({ email: '', code: '', isExpanded: false, loading: false, sent: false, cooldown: 0 });
+      setTimeout(() => setAuthSuccess(''), 3000);
+    } catch (err) {
+      setAuthError(err.message);
+    } finally {
+      setChangeEmailForm(prev => ({ ...prev, loading: false }));
+    }
+  };
 
   /**
    * Checks whether the current user is bound to a specific OAuth provider.
@@ -318,13 +417,32 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   // Auto-close mobile nav on resize
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth > 768 && isMobileNavOpen) {
-        setIsMobileNavOpen(false);
-      }
+      if (window.innerWidth > 768 && isMobileNavOpen) setIsMobileNavOpen(false);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [isMobileNavOpen]);
+
+  // Cooldown timers for Bind and Change Email
+  useEffect(() => {
+    let timer;
+    if (emailBindForm.cooldown > 0) {
+      timer = setInterval(() => {
+        setEmailBindForm(prev => ({ ...prev, cooldown: Math.max(0, prev.cooldown - 1) }));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [emailBindForm.cooldown]);
+
+  useEffect(() => {
+    let timer;
+    if (changeEmailForm.cooldown > 0) {
+      timer = setInterval(() => {
+        setChangeEmailForm(prev => ({ ...prev, cooldown: Math.max(0, prev.cooldown - 1) }));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [changeEmailForm.cooldown]);
 
   // OAuth Login
   const handleOAuthLogin = async (provider) => {
@@ -697,7 +815,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       return;
     }
     
-    console.log(">>> 准备发起 API 请求, Payload: ", { email, intent: 'bind' });
+    console.log(">>> 准备发起 API 请求, Payload: ", { email, intent: 'bind_email' });
     
     setAuthError('');
     setEmailBindForm(prev => ({ ...prev, loading: true }));
@@ -705,7 +823,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       const res = await fetch(`${API_BASE}/auth/send-code`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, intent: 'bind' }),
+        body: JSON.stringify({ email, intent: 'bind_email' }),
       });
       
       let data = {};
@@ -1889,9 +2007,47 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       
                       {/* Right: action button */}
                       {key === 'email' ? (
-                        !isBound && (
+                        isBound ? (
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              onClick={() => {
+                                setChangeEmailForm(prev => ({ ...prev, isExpanded: !prev.isExpanded }));
+                                setEmailBindForm(prev => ({ ...prev, isExpanded: false }));
+                              }}
+                              style={{
+                                display: 'flex', alignItems: 'center', gap: '6px',
+                                padding: '7px 12px', borderRadius: '8px',
+                                background: '#f1f5f9', color: 'var(--text-primary)',
+                                border: '1px solid #e2e8f0', fontSize: '12px', fontWeight: 500,
+                                cursor: 'pointer', transition: 'all 0.15s'
+                              }}
+                              onMouseOver={e => e.currentTarget.style.background = '#e2e8f0'}
+                              onMouseOut={e => e.currentTarget.style.background = '#f1f5f9'}
+                            >
+                              {lang === 'zh' ? '更换' : 'Change'}
+                            </button>
+                            <button
+                              onClick={handleUnbindEmail}
+                              style={{
+                                display: 'flex', alignItems: 'center', gap: '6px',
+                                padding: '7px 12px', borderRadius: '8px',
+                                background: 'white', border: '1px solid #fca5a5',
+                                color: '#ef4444', fontSize: '12px', fontWeight: 500,
+                                cursor: 'pointer', transition: 'all 0.15s'
+                              }}
+                              onMouseOver={e => e.currentTarget.style.background = '#fef2f2'}
+                              onMouseOut={e => e.currentTarget.style.background = 'white'}
+                            >
+                              <Trash2 size={13} />
+                              {lang === 'zh' ? '解绑' : 'Unbind'}
+                            </button>
+                          </div>
+                        ) : (
                           <button
-                            onClick={() => setEmailBindForm(prev => ({ ...prev, isExpanded: !prev.isExpanded }))}
+                            onClick={() => {
+                              setEmailBindForm(prev => ({ ...prev, isExpanded: !prev.isExpanded }));
+                              setChangeEmailForm(prev => ({ ...prev, isExpanded: false }));
+                            }}
                             style={{
                               display: 'flex', alignItems: 'center', gap: '6px',
                               padding: '7px 14px', borderRadius: '8px',
@@ -1947,6 +2103,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         borderRadius: '12px', border: '1px solid #e2e8f0',
                         display: 'flex', flexDirection: 'column', gap: '12px'
                       }}>
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                          {lang === 'zh' ? '绑定新邮箱' : 'Bind new email'}
+                        </div>
                         <div style={{ display: 'flex', gap: '8px' }}>
                           <input 
                             type="email" 
@@ -1997,8 +2156,69 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         )}
                       </div>
                     )}
+
+                    {/* Email Change Expanded Form */}
+                    {key === 'email' && changeEmailForm.isExpanded && (
+                      <div style={{
+                        marginTop: '8px', padding: '16px', background: '#f8fafc',
+                        borderRadius: '12px', border: '1px solid #e2e8f0',
+                        display: 'flex', flexDirection: 'column', gap: '12px'
+                      }}>
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                          {lang === 'zh' ? '更换新邮箱' : 'Change to new email'}
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <input 
+                            type="email" 
+                            placeholder={lang === 'zh' ? '新邮箱地址' : 'New email address'}
+                            value={changeEmailForm.email}
+                            onChange={e => {
+                              const val = e.target.value;
+                              setChangeEmailForm(prev => ({...prev, email: val}));
+                            }}
+                            style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '14px' }}
+                          />
+                          <button
+                            onClick={handleSendChangeEmailCode}
+                            disabled={changeEmailForm.loading || changeEmailForm.cooldown > 0}
+                            style={{ 
+                              padding: '8px 12px', borderRadius: '8px', background: 'white', border: '1px solid var(--border-color)', 
+                              fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap',
+                              color: changeEmailForm.cooldown > 0 ? '#94a3b8' : 'var(--text-primary)'
+                            }}
+                          >
+                            {changeEmailForm.cooldown > 0 ? `${changeEmailForm.cooldown}s` : t('getCode')}
+                          </button>
+                        </div>
+                        {changeEmailForm.sent && (
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <input 
+                              type="text" 
+                              placeholder={t('verificationCodePlaceholder')}
+                              value={changeEmailForm.code}
+                              onChange={e => {
+                                const val = e.target.value;
+                                setChangeEmailForm(prev => ({...prev, code: val}));
+                              }}
+                              maxLength={6}
+                              style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '14px' }}
+                            />
+                            <button
+                              onClick={handleConfirmChangeEmail}
+                              disabled={changeEmailForm.loading || changeEmailForm.code.length !== 6}
+                              style={{ 
+                                padding: '8px 16px', borderRadius: '8px', background: 'var(--accent-primary)', color: 'white', 
+                                border: 'none', fontSize: '13px', fontWeight: 600, cursor: 'pointer'
+                              }}
+                            >
+                              {changeEmailForm.loading ? <Loader2 size={14} className="animate-spin" /> : (lang === 'zh' ? '确认更换' : 'Confirm')}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                );})}
+                ); })}
 
               {/* Security note */}
               <div style={{
