@@ -1593,12 +1593,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     <button 
                       type="submit" 
                       className="btn-primary btn-lg" 
-                      disabled={authLoading} 
+                      disabled={authLoading || !authForm.username || !authForm.password} 
                       style={{ 
                         marginTop: '8px', 
                         width: '100%', 
                         justifyContent: 'center', 
-                        opacity: authLoading ? 0.7 : 1,
+                        opacity: (authLoading || !authForm.username || !authForm.password) ? 0.6 : 1,
+                        cursor: (authLoading || !authForm.username || !authForm.password) ? 'not-allowed' : 'pointer',
                         borderRadius: '999px'
                       }}
                     >
