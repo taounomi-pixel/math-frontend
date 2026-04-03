@@ -1112,21 +1112,28 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   onMouseOut={e => e.currentTarget.style.borderColor = 'transparent'}
                 >
                   <div 
-                    className="rounded-full flex items-center justify-center overflow-hidden"
                     style={{ 
-                      width: '32px', height: '32px', borderRadius: '50%', 
-                      /* 液态玻璃质感核心 CSS */
-                      backgroundColor: 'rgba(235, 235, 235, 0.45)', // 半透明浅灰底色
-                      backdropFilter: 'blur(10px) saturate(150%)', // 磨砂与色彩增强
-                      WebkitBackdropFilter: 'blur(10px) saturate(150%)', // 兼容 Safari
-                      border: '1px solid rgba(255, 255, 255, 0.6)', // 玻璃高光边缘
-                      boxShadow: 'inset 0px 2px 4px rgba(255, 255, 255, 0.8), 0px 2px 5px rgba(0, 0, 0, 0.08)', // 内发光折射 + 底层微弱阴影
-                      /* 文字排版 */
-                      color: '#1f2937', 
-                      fontSize: '14px', 
-                      fontWeight: '600',
-                      userSelect: 'none',
-                      flexShrink: 0
+                      /* 1. 强制绝对居中 (修复排版崩溃) */
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      /* 2. 固定尺寸与防挤压 */
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '50%',
+                      flexShrink: 0,
+                      /* 3. 纯白背景下的立体液态玻璃 (微渐变 + 高光 + 投影) */
+                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(226, 232, 240, 0.8) 100%)',
+                      border: '1px solid rgba(255, 255, 255, 0.9)',
+                      boxShadow: 'inset 0px 2px 4px rgba(255, 255, 255, 1), inset 0px -2px 4px rgba(0, 0, 0, 0.03), 0px 3px 6px rgba(0, 0, 0, 0.06)',
+                      backdropFilter: 'blur(8px)',
+                      WebkitBackdropFilter: 'blur(8px)',
+                      /* 4. 字体样式 */
+                      color: '#1e293b', 
+                      fontSize: '18px', 
+                      fontWeight: '700',
+                      lineHeight: '1',
+                      userSelect: 'none'
                     }}
                   >
                     {getAvatarText(currentUser.username)}
@@ -1166,19 +1173,27 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       {/* Card Header */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #f3f4f6' }}>
                         <div 
-                          className="rounded-full flex items-center justify-center overflow-hidden"
                           style={{ 
-                            width: '48px', height: '48px', borderRadius: '50%', 
-                            /* 液态玻璃质感核心 CSS */
-                            backgroundColor: 'rgba(235, 235, 235, 0.45)', // 半透明浅灰底色
-                            backdropFilter: 'blur(10px) saturate(150%)', // 磨砂与色彩增强
-                            WebkitBackdropFilter: 'blur(10px) saturate(150%)', // 兼容 Safari
-                            border: '1px solid rgba(255, 255, 255, 0.6)', // 玻璃高光边缘
-                            boxShadow: 'inset 0px 2px 4px rgba(255, 255, 255, 0.8), 0px 2px 5px rgba(0, 0, 0, 0.08)', // 内发光折射 + 底层微弱阴影
-                            /* 文字排版 */
-                            color: '#1f2937', 
-                            fontSize: '20px', 
-                            fontWeight: '600',
+                            /* 1. 强制绝对居中 (修复排版崩溃) */
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            /* 2. 固定尺寸与防挤压 */
+                            width: '48px',
+                            height: '48px',
+                            borderRadius: '50%',
+                            flexShrink: 0,
+                            /* 3. 立体液态玻璃样式 */
+                            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(226, 232, 240, 0.8) 100%)',
+                            border: '1px solid rgba(255, 255, 255, 0.9)',
+                            boxShadow: 'inset 0px 2px 4px rgba(255, 255, 255, 1), inset 0px -2px 4px rgba(0, 0, 0, 0.03), 0px 3px 6px rgba(0, 0, 0, 0.06)',
+                            backdropFilter: 'blur(8px)',
+                            WebkitBackdropFilter: 'blur(8px)',
+                            /* 4. 字体样式 (针对大头像优化) */
+                            color: '#1e293b', 
+                            fontSize: '24px', 
+                            fontWeight: '700',
+                            lineHeight: '1',
                             userSelect: 'none'
                           }}
                         >
