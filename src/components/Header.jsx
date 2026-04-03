@@ -42,6 +42,12 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const [verificationEmail, setVerificationEmail] = useState('');
   const [isVerifyingLogin, setIsVerifyingLogin] = useState(false);
 
+  // Email OTP state
+  const [otpEmail, setOtpEmail] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [otpCooldown, setOtpCooldown] = useState(0); // seconds remaining
+  const [otpSent, setOtpSent] = useState(false);
+
   /**
    * Checks whether the current user is bound to a specific OAuth provider.
    * Handles 3 cases:
@@ -365,6 +371,67 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     setVerificationProviders([]);
     setVerificationEmail('');
     setIsVerifyingLogin(false);
+  };
+
+  // ---- Email OTP handlers ----
+  const handleSendCode = async () => {
+    const email = otpEmail.trim();
+    if (!email || !email.includes('@')) {
+      setAuthError(lang === 'zh' ? '请输入有效的邮箱地址' : 'Please enter a valid email');
+      return;
+    }
+    setAuthError('');
+    setAuthLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/auth/send-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || '发送失败');
+      setOtpSent(true);
+      // Start 60-second cooldown
+      setOtpCooldown(60);
+      const timer = setInterval(() => {
+        setOtpCooldown(prev => {
+          if (prev <= 1) { clearInterval(timer); return 0; }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (err) {
+      setAuthError(err.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    const email = otpEmail.trim();
+    const code = otpCode.trim();
+    if (!email || !code || code.length !== 6) {
+      setAuthError(lang === 'zh' ? '请输入6位验证码' : 'Please enter the 6-digit code');
+      return;
+    }
+    setAuthError('');
+    setAuthLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/auth/verify-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || '验证失败');
+      // Reuse loginWithLocalData to keep state consistent
+      loginWithLocalData(data);
+      // Reset OTP state
+      setOtpEmail(''); setOtpCode(''); setOtpSent(false); setOtpCooldown(0);
+    } catch (err) {
+      setAuthError(err.message);
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
   // Complete OAuth Registration (set username + password)
@@ -987,8 +1054,73 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     {authLoading ? (lang === 'zh' ? '请稍候...' : 'Please wait...') : t('continueBtn')}
                   </button>
                 </form>
+
+                {/* ──── Email OTP Section ──── */}
+                <div style={{ marginTop: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
+                    <span style={{ color: 'var(--text-tertiary)', fontSize: '13px', whiteSpace: 'nowrap' }}>
+                      {lang === 'zh' ? '或通过邮箱验证码登录' : 'or sign in with email code'}
+                    </span>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
+                  </div>
+
+                  {/* Email row */}
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                    <input
+                      id="otp-email-input"
+                      type="email"
+                      placeholder={lang === 'zh' ? '输入邮箱地址' : 'Enter email address'}
+                      value={otpEmail}
+                      onChange={e => { setOtpEmail(e.target.value); setAuthError(''); }}
+                      style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none', fontSize: '14px' }}
+                    />
+                    <button
+                      id="otp-send-btn"
+                      onClick={handleSendCode}
+                      disabled={authLoading || otpCooldown > 0}
+                      style={{
+                        padding: '10px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
+                        cursor: (authLoading || otpCooldown > 0) ? 'not-allowed' : 'pointer',
+                        border: '1px solid var(--primary)',
+                        background: (authLoading || otpCooldown > 0) ? 'var(--bg-secondary)' : 'white',
+                        color: (authLoading || otpCooldown > 0) ? 'var(--text-tertiary)' : 'var(--primary)',
+                        whiteSpace: 'nowrap', transition: 'all 0.2s'
+                      }}
+                    >
+                      {otpCooldown > 0 ? `${otpCooldown}s` : (lang === 'zh' ? '获取验证码' : 'Send Code')}
+                    </button>
+                  </div>
+
+                  {/* Code row — shown only after code sent */}
+                  {otpSent && (
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input
+                        id="otp-code-input"
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={6}
+                        placeholder={lang === 'zh' ? '6位验证码' : '6-digit code'}
+                        value={otpCode}
+                        onChange={e => { setOtpCode(e.target.value.replace(/\D/g, '')); setAuthError(''); }}
+                        style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none', fontSize: '20px', letterSpacing: '8px', textAlign: 'center' }}
+                      />
+                      <button
+                        id="otp-verify-btn"
+                        onClick={handleVerifyCode}
+                        disabled={authLoading || otpCode.length !== 6}
+                        className="btn-primary"
+                        style={{ padding: '10px 20px', borderRadius: '8px', fontSize: '14px', opacity: (authLoading || otpCode.length !== 6) ? 0.6 : 1, cursor: (authLoading || otpCode.length !== 6) ? 'not-allowed' : 'pointer' }}
+                      >
+                        {lang === 'zh' ? '登录' : 'Login'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
               </>
             )}
+
             
             <div style={{ marginTop: '24px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px' }}>
               {t('noAccount')}
