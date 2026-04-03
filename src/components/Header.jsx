@@ -42,6 +42,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const [verificationEmail, setVerificationEmail] = useState('');
   const [isVerifyingLogin, setIsVerifyingLogin] = useState(false);
 
+<<<<<<< HEAD
   // Email OTP state
   const [otpEmail, setOtpEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
@@ -70,21 +71,30 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   );
 
   // Auto-login check on mount + hydrate bound_providers from server
+=======
+  // Auto-login check on mount
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     const storedUsername = localStorage.getItem('username');
     const storedUserId = localStorage.getItem('user_id');
     const storedIsAdmin = localStorage.getItem('is_admin') === 'true';
+<<<<<<< HEAD
     const storedEmail = localStorage.getItem('user_email');
     // Restore bound_providers from localStorage cache first (instant UI, avoids flicker)
     let cachedProviders = [];
     try { cachedProviders = JSON.parse(localStorage.getItem('bound_providers') || '[]'); } catch { cachedProviders = []; }
     
+=======
+    const storedProvider = localStorage.getItem('auth_provider');
+    const storedEmail = localStorage.getItem('user_email');
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
     if (token && storedUsername) {
       setCurrentUser({ 
         username: storedUsername, 
         id: storedUserId ? parseInt(storedUserId, 10) : null,
         is_admin: storedIsAdmin,
+<<<<<<< HEAD
         bound_providers: cachedProviders,
         email: storedEmail || null
       });
@@ -106,6 +116,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           }) : prev);
         })
         .catch(() => { /* silent — keep cached value */ });
+=======
+        auth_provider: storedProvider || null,
+        email: storedEmail || null
+      });
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
     }
   }, []);
 
@@ -146,21 +161,32 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         // Recover pending intent state from localStorage
         const pendingVerification = localStorage.getItem('pending_verification') === 'true';
         const pendingUsername = localStorage.getItem('pending_username');
+<<<<<<< HEAD
         const isBindingOAuth = localStorage.getItem('isBindingOAuth') === 'true';
+=======
+        const pendingBind = localStorage.getItem('pending_bind') === 'true';
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
 
         const cleanUpIntents = () => {
           localStorage.removeItem('pending_verification');
           localStorage.removeItem('pending_username');
+<<<<<<< HEAD
           localStorage.removeItem('isBindingOAuth');
+=======
+          localStorage.removeItem('pending_bind');
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
         };
 
         // CASE 1: Mandatory login verification
         if (pendingVerification || isVerifyingLogin) {
           try {
             setAuthLoading(true);
+<<<<<<< HEAD
             const targetUsername = pendingUsername || authForm.username;
             console.log(`[Auth] Starting MFA verification for user: ${targetUsername || 'anonymous'}`);
             
+=======
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
             const res = await fetch(`${API_BASE}/auth/verify-login`, {
               method: 'POST',
               headers: { 
@@ -168,6 +194,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 'Authorization': `Bearer ${token}`
               },
               body: JSON.stringify({ 
+<<<<<<< HEAD
                 username: targetUsername || null,
                 supabase_token: token 
               })
@@ -188,12 +215,28 @@ const Header = ({ searchQuery, setSearchQuery }) => {
               const errMsg = extractErrorMessage(data);
               console.error('[Auth] MFA Verification failed:', errMsg);
               setAuthError(errMsg);
+=======
+                username: pendingUsername || authForm.username,
+                supabase_token: token 
+              })
+            });
+            const data = await res.json();
+            if (data.status === 'ok') {
+              loginWithLocalData(data);
+              resetVerificationStates();
+              cleanUpIntents();
+            } else {
+              setAuthError(extractErrorMessage(data));
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
               // Clear sticky state on failure to allow fresh login attempts
               resetVerificationStates();
               cleanUpIntents();
             }
           } catch (err) {
+<<<<<<< HEAD
             console.error('[Auth] MFA Handshake Exception:', err);
+=======
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
             setAuthError(extractErrorMessage(err));
             cleanUpIntents();
           } finally {
@@ -203,7 +246,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         }
 
         // CASE 2: Account Binding
+<<<<<<< HEAD
         if (isBindingOAuth) {
+=======
+        if (pendingBind) {
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
           try {
             const localToken = localStorage.getItem('access_token');
             const res = await fetch(`${API_BASE}/auth/bind`, {
@@ -216,6 +263,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             });
             if (res.ok) {
               const data = await res.json();
+<<<<<<< HEAD
               localStorage.setItem('user_email', data.email || '');
               // Refresh bound_providers from /api/users/me
               try {
@@ -233,6 +281,15 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   }));
                 }
               } catch { /* fallback: keep previous state */ }
+=======
+              localStorage.setItem('auth_provider', data.auth_provider || '');
+              localStorage.setItem('user_email', data.email || '');
+              setCurrentUser(prev => ({
+                ...prev,
+                auth_provider: data.auth_provider,
+                email: data.email
+              }));
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
               setShowBindModal(false);
               cleanUpIntents();
             } else {
@@ -248,6 +305,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         }
 
         // CASE 3: Standard OAuth login or registration
+<<<<<<< HEAD
         // ⚠️ CRITICAL GUARD: If user already has a system JWT they are already
         // authenticated via our custom auth system. A residual Supabase session
         // must NOT trigger oauth-login again — that would overwrite bound_providers
@@ -260,6 +318,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
         try {
           console.log('[Auth] CASE 3: No system JWT found, proceeding with OAuth login flow.');
+=======
+        try {
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
           const res = await fetch(`${API_BASE}/auth/oauth-login`, {
             method: 'POST',
             headers: { 
@@ -339,6 +400,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
   // Helper to persist local login data
   const loginWithLocalData = (data) => {
+<<<<<<< HEAD
     // Standard keys for absolute backend JWT
     localStorage.setItem('access_token', data.access_token);
     localStorage.setItem('token', data.access_token); // Alias as requested for robustness
@@ -362,6 +424,21 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       email: user.email
     });
     
+=======
+    localStorage.setItem('access_token', data.access_token);
+    localStorage.setItem('username', data.username);
+    localStorage.setItem('user_id', data.user_id);
+    localStorage.setItem('is_admin', data.is_admin ? 'true' : 'false');
+    localStorage.setItem('auth_provider', data.auth_provider || '');
+    localStorage.setItem('user_email', data.email || '');
+    setCurrentUser({
+      username: data.username,
+      id: data.user_id,
+      is_admin: !!data.is_admin,
+      auth_provider: data.auth_provider,
+      email: data.email
+    });
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
     setAuthModal(null);
     setAuthForm({ username: '', password: '', email: '' });
   };
@@ -373,6 +450,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     setIsVerifyingLogin(false);
   };
 
+<<<<<<< HEAD
   // ---- Email OTP handlers ----
   const handleSendCode = async () => {
     const email = otpEmail.trim();
@@ -434,6 +512,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     }
   };
 
+=======
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
   // Complete OAuth Registration (set username + password)
   const handleCompleteRegistration = async (e) => {
     e.preventDefault();
@@ -542,10 +622,17 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const handleBindOAuth = async (provider) => {
     if (!supabase) return;
     
+<<<<<<< HEAD
     // Mark this as a binding flow so onAuthStateChange routes to /api/auth/bind
     // instead of the standard OAuth login path.
     localStorage.setItem('isBindingOAuth', 'true');
 
+=======
+    // Persist bind intent in localStorage to survive redirect
+    localStorage.setItem('pending_bind', 'true');
+
+    // First sign in with OAuth
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -555,7 +642,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     
     if (error) {
       setAuthError(error.message);
+<<<<<<< HEAD
       localStorage.removeItem('isBindingOAuth');
+=======
+      localStorage.removeItem('pending_bind');
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
     }
   };
 
@@ -566,7 +657,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     localStorage.removeItem('username');
     localStorage.removeItem('user_id');
     localStorage.removeItem('is_admin');
+<<<<<<< HEAD
     localStorage.removeItem('bound_providers');
+=======
+    localStorage.removeItem('auth_provider');
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
     localStorage.removeItem('user_email');
     setCurrentUser(null);
     
@@ -603,6 +698,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
       const data = await res.json();
       if (res.ok) {
+<<<<<<< HEAD
         // Refresh bound_providers from /api/users/me for ground truth
         try {
           const meRes = await fetch(`${API_BASE}/users/me`, {
@@ -626,6 +722,24 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           }));
         }
         
+=======
+        // Update local state
+        const updatedProviders = data.auth_providers || [];
+        const isStillBound = updatedProviders.length > 0;
+        
+        const newProvider = isStillBound ? updatedProviders[0] : null;
+        localStorage.setItem('auth_provider', newProvider || '');
+        if (!isStillBound) {
+          localStorage.removeItem('user_email'); // Optional: keep or remove
+        }
+        
+        setCurrentUser(prev => ({
+          ...prev,
+          auth_provider: newProvider,
+          email: isStillBound ? prev.email : null
+        }));
+        
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
         setAuthSuccess(lang === 'zh' ? '解绑成功' : 'Successfully unlinked');
       } else {
         setAuthError(extractErrorMessage(data));
@@ -737,7 +851,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     paddingRight: '12px',
                     borderRadius: '10px',
                     cursor: 'pointer',
+<<<<<<< HEAD
                     background: hasAnyBinding ? 'transparent' : '#f3f4f6',
+=======
+                    background: currentUser.auth_provider ? 'transparent' : '#f3f4f6', // Gray if not linked
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
                     transition: 'all 0.2s ease',
                     border: '1px solid transparent',
                     maxWidth: '180px'
@@ -762,7 +880,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     }}>
                       {currentUser.username}
                     </span>
+<<<<<<< HEAD
                     {!hasAnyBinding && (
+=======
+                    {!currentUser.auth_provider && (
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
                       <span style={{ fontSize: '10px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '2px' }}>
                         <ShieldAlert size={10} /> 未绑定
                       </span>
@@ -806,6 +928,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         </div>
                       </div>
 
+<<<<<<< HEAD
                       {/* Account Settings Entry */}
                       <button
                         onClick={() => { setShowBindModal(true); setIsUserCardOpen(false); }}
@@ -830,6 +953,74 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         </div>
                         <ExternalLink size={14} style={{ color: 'var(--text-secondary)', opacity: 0.6 }} />
                       </button>
+=======
+                      {/* Binding Section */}
+                      <div style={{ marginBottom: '16px' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          账号绑定
+                        </div>
+                        
+                        {/* GitHub Row */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                            <GithubIcon size={18} />
+                            <span>GitHub</span>
+                            {currentUser.auth_provider === 'github' ? (
+                              <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
+                            ) : (
+                              <span style={{ fontSize: '10px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
+                            )}
+                          </div>
+                          {currentUser.auth_provider === 'github' ? (
+                            <button 
+                              onClick={() => handleUnbindOAuth('github')}
+                              disabled={unbindLoading === 'github'}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }}
+                              title="解除绑定"
+                            >
+                              {unbindLoading === 'github' ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={() => { setShowBindModal(true); setIsUserCardOpen(false); }}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, fontSize: '13px' }}
+                            >
+                              绑定
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Google Row */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                            <Mail size={18} />
+                            <span>Google</span>
+                            {currentUser.auth_provider === 'google' ? (
+                              <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
+                            ) : (
+                              <span style={{ fontSize: '10px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
+                            )}
+                          </div>
+                          {currentUser.auth_provider === 'google' ? (
+                            <button 
+                              onClick={() => handleUnbindOAuth('google')}
+                              disabled={unbindLoading === 'google'}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }}
+                              title="解除绑定"
+                            >
+                              {unbindLoading === 'google' ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={() => { setShowBindModal(true); setIsUserCardOpen(false); }}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, fontSize: '13px' }}
+                            >
+                              绑定
+                            </button>
+                          )}
+                        </div>
+                      </div>
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
 
                       {/* Card Footer */}
                       <button 
@@ -893,6 +1084,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   <Upload size={16} /> {t('upload')}
                 </button>
               )}
+<<<<<<< HEAD
               {/* Account Settings — mobile entry */}
               {currentUser && (
                 <button
@@ -916,6 +1108,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   )}
                 </button>
               )}
+=======
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
               <button className="btn-outline mobile-nav-btn" onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}>
                 <Globe size={16} /> {t('language')}: {lang === 'zh' ? 'CN' : 'EN'}
               </button>
@@ -971,6 +1165,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             
             {verificationRequired ? (
               <div style={{ marginBottom: '20px' }}>
+<<<<<<< HEAD
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {verificationProviders.map(prov => (
                     <button 
@@ -986,6 +1181,40 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   ))}
                 </div>
                 
+=======
+                <div style={{ 
+                   padding: '16px', background: 'rgba(59, 130, 246, 0.1)', 
+                   borderRadius: '12px', color: 'var(--primary)', border: '1px solid var(--primary)',
+                   marginBottom: '16px', fontSize: '14px', lineHeight: 1.5,
+                   display: 'flex', alignItems: 'center', gap: '12px'
+                }}>
+                  <div style={{ fontSize: '24px' }}>🛡️</div>
+                  <div>
+                    <div style={{ fontWeight: 600 }}>{t('verificationRequiredTitle')}</div>
+                    <div style={{ marginTop: '4px' }}>
+                      {lang === 'zh' 
+                        ? `请使用您已绑定的账号进行身份验证 (${verificationProviders.join(', ')})`
+                        : `Please verify your identity using one of your linked accounts (${verificationProviders.join(', ')})`}
+                    </div>
+                  </div>
+                </div>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {verificationProviders.map(prov => (
+                    <button 
+                      key={prov}
+                      onClick={() => handleOAuthLogin(prov)} 
+                      style={oauthBtnStyle(prov === 'github' ? '#24292e' : '#4285f4')}
+                    >
+                      {prov === 'github' ? <GithubIcon size={20} /> : <Mail size={20} />}
+                      {lang === 'zh' 
+                        ? `通过 ${prov.charAt(0).toUpperCase() + prov.slice(1)} 验证身份` 
+                        : `Verify with ${prov.charAt(0).toUpperCase() + prov.slice(1)}`}
+                    </button>
+                  ))}
+                </div>
+                
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
                 <button 
                    onClick={resetVerificationStates}
                    style={{ width: '100%', marginTop: '16px', background: 'none', border: 'none', color: 'var(--text-tertiary)', fontSize: '13px', cursor: 'pointer', textDecoration: 'underline' }}
@@ -1054,6 +1283,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     {authLoading ? (lang === 'zh' ? '请稍候...' : 'Please wait...') : t('continueBtn')}
                   </button>
                 </form>
+<<<<<<< HEAD
 
                 {/* ──── Email OTP Section ──── */}
                 <div style={{ marginTop: '20px' }}>
@@ -1121,6 +1351,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
               </>
             )}
 
+=======
+              </>
+            )}
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
             
             <div style={{ marginTop: '24px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px' }}>
               {t('noAccount')}
@@ -1298,6 +1532,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         </div>
       )}
 
+<<<<<<< HEAD
       {/* Account Settings Modal */}
       {showBindModal && (
         <div style={{
@@ -1439,6 +1674,54 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 <ShieldCheck size={13} style={{ display: 'inline', marginRight: '5px', color: '#10b981', verticalAlign: 'middle' }} />
                 绑定第三方账号后，您可以使用该账号快捷登录，并享受双重身份验证保护。
               </div>
+=======
+      {/* Bind OAuth Modal */}
+      {showBindModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+          background: 'rgba(0,0,0,0.5)', zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{
+            background: 'white', padding: '32px', borderRadius: '16px', 
+            width: '90%', maxWidth: '400px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '22px', margin: 0, color: 'var(--text-primary)' }}>
+                {t('bindAccountTitle')}
+              </h2>
+              <button 
+                onClick={() => setShowBindModal(false)} 
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '20px', lineHeight: 1.5 }}>
+              {t('bindAccountDesc')}
+            </p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button 
+                onClick={() => handleBindOAuth('github')} 
+                style={oauthBtnStyle('#24292e')}
+                onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
+                onMouseOut={e => e.currentTarget.style.opacity = '1'}
+              >
+                <GithubIcon size={20} />
+                {t('bindGithub')}
+              </button>
+              <button 
+                onClick={() => handleBindOAuth('google')}
+                style={oauthBtnStyle('#4285f4')}
+                onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
+                onMouseOut={e => e.currentTarget.style.opacity = '1'}
+              >
+                <Mail size={20} />
+                {t('bindGoogle')}
+              </button>
+>>>>>>> 4ff7067 (feat(ui): implement premium user dropdown card, unbind UI, and fix GitHub icon bug)
             </div>
           </div>
         </div>
