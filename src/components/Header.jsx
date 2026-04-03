@@ -1353,11 +1353,15 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                             prov === 'google' ? '#374151' : 'white',
                             prov === 'google' ? '#d1d5db' : 'transparent'
                           )}
+                          onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
+                          onMouseOut={e => e.currentTarget.style.opacity = '1'}
                         >
                           {prov === 'github' ? <GithubIcon size={20} /> : prov === 'google' ? <GoogleIcon size={20} /> : <Mail size={20} />}
-                          {lang === 'zh' 
-                            ? `通过 ${prov === 'email' ? '电子邮箱' : (prov.charAt(0).toUpperCase() + prov.slice(1))} 验证` 
-                            : `Verify with ${prov.charAt(0).toUpperCase() + prov.slice(1)}`}
+                          <span style={{ marginLeft: '12px' }}>
+                            {lang === 'zh' 
+                              ? `通过 ${prov === 'email' ? '电子邮箱' : (prov.charAt(0).toUpperCase() + prov.slice(1))} 验证` 
+                              : `Verify with ${prov.charAt(0).toUpperCase() + prov.slice(1)}`}
+                          </span>
                         </button>
                       ))}
                       {verificationProviders.length === 0 && (
@@ -1452,7 +1456,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         onMouseOut={e => e.currentTarget.style.opacity = '1'}
                       >
                         <GithubIcon size={20} />
-                        {t('loginWithGithub')}
+                        <span style={{ marginLeft: '12px' }}>{t('loginWithGithub')}</span>
                       </button>
                       <button 
                         onClick={() => handleOAuthLogin('google')}
@@ -1467,7 +1471,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         }}
                       >
                         <GoogleIcon size={20} />
-                        {t('loginWithGoogle')}
+                        <span style={{ marginLeft: '12px' }}>{t('loginWithGoogle')}</span>
                       </button>
                     </div>
                     
@@ -1481,22 +1485,55 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 
                 
                 {/* ──── Segmented Control (Tabs) ──── */}
-                {/* iOS 风格滑动切换器（完整安全版） */}
-                <div className="relative flex p-1 bg-gray-100 rounded-lg mb-6 w-full">
+                {/* iOS 风格滑动切换器（极致稳定性 - 纯内联样式 - 解决坍塌问题） */}
+                <div style={{
+                  position: 'relative',
+                  display: 'flex',
+                  padding: '4px',
+                  background: '#f1f5f9',
+                  borderRadius: '12px',
+                  marginBottom: '24px',
+                  width: '100%',
+                  height: '44px',
+                  boxSizing: 'border-box'
+                }}>
                   
                   {/* 悬浮的物理白色滑块 */}
-                  <div
-                    className={`absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-white rounded-md shadow transition-transform duration-300 ease-in-out ${
-                      loginMethod === 'password' ? 'translate-x-0' : 'translate-x-full'
-                    }`}
-                  ></div>
+                  <div style={{
+                    position: 'absolute',
+                    top: '4px',
+                    bottom: '4px',
+                    left: '4px',
+                    width: 'calc(50% - 4px)',
+                    background: 'white',
+                    borderRadius: '10px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+                    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transform: loginMethod === 'password' ? 'translateX(0)' : 'translateX(100%)',
+                    zIndex: 0
+                  }}></div>
 
                   {/* 密码登录按钮 */}
                   <button
                     type="button"
-                    className={`relative z-10 flex-1 py-2 text-sm font-medium text-center transition-colors duration-300 focus:outline-none ${
-                      loginMethod === 'password' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
-                    }`}
+                    style={{
+                      position: 'relative',
+                      zIndex: 1,
+                      flex: 1,
+                      padding: 0,
+                      margin: 0,
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      textAlign: 'center',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'color 0.3s ease',
+                      color: loginMethod === 'password' ? '#1e293b' : '#64748b',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
                     onClick={() => setLoginMethod('password')}
                   >
                     {lang === 'zh' ? '密码登录' : 'Password'}
@@ -1505,9 +1542,24 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   {/* 验证码登录按钮 */}
                   <button
                     type="button"
-                    className={`relative z-10 flex-1 py-2 text-sm font-medium text-center transition-colors duration-300 focus:outline-none ${
-                      loginMethod === 'otp' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
-                    }`}
+                    style={{
+                      position: 'relative',
+                      zIndex: 1,
+                      flex: 1,
+                      padding: 0,
+                      margin: 0,
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      textAlign: 'center',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'color 0.3s ease',
+                      color: loginMethod === 'otp' ? '#1e293b' : '#64748b',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
                     onClick={() => setLoginMethod('otp')}
                   >
                     {lang === 'zh' ? '验证码登录' : 'Email OTP'}
@@ -1694,9 +1746,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 <button 
                   onClick={() => handleOAuthLogin('github')} 
                   style={oauthBtnStyle('#24292e')}
+                  onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
+                  onMouseOut={e => e.currentTarget.style.opacity = '1'}
                 >
                   <GithubIcon size={20} />
-                  {t('registerWithGithub')}
+                  <span style={{ marginLeft: '12px' }}>{t('registerWithGithub')}</span>
                 </button>
                 <button 
                   onClick={() => handleOAuthLogin('google')}
@@ -1711,7 +1765,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   }}
                 >
                   <GoogleIcon size={20} />
-                  {t('registerWithGoogle')}
+                  <span style={{ marginLeft: '12px' }}>{t('registerWithGoogle')}</span>
                 </button>
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '15px 0' }}>
