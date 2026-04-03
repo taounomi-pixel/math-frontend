@@ -1214,22 +1214,29 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
                   </div>
 
-                  {/* Email row - Absolute Floating Button Layout */}
-                  <div className="relative w-full" style={{ marginBottom: '10px' }}>
+                  {/* Email row - Deeply Integrated Layout */}
+                  <div className="flex items-center w-full focus-within:border-primary transition-all shadow-sm" 
+                       style={{ 
+                         marginBottom: '10px', 
+                         borderRadius: '8px', 
+                         border: '1px solid var(--border-color)',
+                         background: 'white',
+                         overflow: 'hidden'
+                       }}>
                     <input
                       id="otp-email-input"
                       type="email"
                       placeholder={lang === 'zh' ? '输入邮箱地址' : 'Enter email address'}
                       value={otpEmail}
                       onChange={e => { setOtpEmail(e.target.value); setAuthError(''); }}
-                      className="block w-full px-3 py-2 pr-28 border border-gray-300 rounded-lg shadow-sm focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm outline-none transition-all"
                       style={{ 
+                        flex: 1, 
                         padding: '10px 14px', 
-                        paddingRight: '110px',
-                        borderRadius: '8px', 
-                        border: '1px solid var(--border-color)',
-                        width: '100%',
-                        fontSize: '14px'
+                        border: 'none', 
+                        outline: 'none', 
+                        fontSize: '14px', 
+                        background: 'transparent',
+                        width: '100%'
                       }}
                     />
                     <button
@@ -1237,11 +1244,19 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       type="button"
                       onClick={handleSendCode}
                       disabled={authLoading || otpCooldown > 0}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 rounded px-3 py-1.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed"
                       style={{
-                        zIndex: 10,
-                        color: (authLoading || otpCooldown > 0) ? 'var(--text-tertiary)' : 'var(--primary)',
-                        background: (authLoading || otpCooldown > 0) ? 'transparent' : 'rgba(var(--primary-rgb), 0.05)',
+                        margin: '4px',
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        background: (authLoading || otpCooldown > 0) ? 'var(--bg-secondary)' : 'var(--primary)',
+                        color: (authLoading || otpCooldown > 0) ? 'var(--text-tertiary)' : 'white',
+                        border: 'none',
+                        cursor: (authLoading || otpCooldown > 0) ? 'not-allowed' : 'pointer',
+                        whiteSpace: 'nowrap',
+                        transition: 'all 0.2s',
+                        boxShadow: (authLoading || otpCooldown > 0) ? 'none' : '0 1px 2px rgba(0,0,0,0.1)'
                       }}
                     >
                       {otpCooldown > 0 ? `${otpCooldown}s` : (lang === 'zh' ? '获取验证码' : 'Send Code')}
@@ -1376,32 +1391,46 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600, fontSize: '14px' }}>
                   {t('emailRequired')}
                 </label>
-                <div className="relative w-full mt-1">
+                <div className="flex items-center w-full focus-within:border-primary transition-all shadow-sm mt-1"
+                     style={{ 
+                       borderRadius: '8px', 
+                       border: '1px solid var(--border-color)',
+                       background: 'white',
+                       overflow: 'hidden'
+                     }}>
                   <input 
                     type="email" 
                     value={authForm.email}
                     onChange={e => setAuthForm({...authForm, email: e.target.value})}
                     required
                     placeholder="user@example.com"
-                    className="block w-full px-3 py-2 pr-28 border border-gray-300 rounded-lg shadow-sm focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm outline-none transition-all"
                     style={{ 
+                      flex: 1, 
                       padding: '10px 14px', 
-                      paddingRight: '110px',
-                      borderRadius: '8px', 
-                      border: '1px solid var(--border-color)',
-                      width: '100%',
-                      fontSize: '14px'
+                      border: 'none', 
+                      outline: 'none', 
+                      fontSize: '14px', 
+                      background: 'transparent',
+                      width: '100%'
                     }}
                   />
                   <button
                     type="button"
                     onClick={handleRegisterSendCode}
                     disabled={authLoading || registerOtpCooldown > 0}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 rounded px-3 py-1.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed"
                     style={{
-                      zIndex: 10,
-                      color: (authLoading || registerOtpCooldown > 0) ? 'var(--text-tertiary)' : 'var(--primary)',
-                      background: (authLoading || registerOtpCooldown > 0) ? 'transparent' : 'rgba(var(--primary-rgb), 0.05)',
+                      margin: '4px',
+                      padding: '8px 16px',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      background: (authLoading || registerOtpCooldown > 0) ? 'var(--bg-secondary)' : 'var(--primary)',
+                      color: (authLoading || registerOtpCooldown > 0) ? 'var(--text-tertiary)' : 'white',
+                      border: 'none',
+                      cursor: (authLoading || registerOtpCooldown > 0) ? 'not-allowed' : 'pointer',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.2s',
+                      boxShadow: (authLoading || registerOtpCooldown > 0) ? 'none' : '0 1px 2px rgba(0,0,0,0.1)'
                     }}
                   >
                     {registerOtpCooldown > 0 ? t('resendAfter').replace('{s}', registerOtpCooldown) : t('getCode')}
