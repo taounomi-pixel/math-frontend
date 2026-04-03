@@ -904,23 +904,6 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             
             {verificationRequired ? (
               <div style={{ marginBottom: '20px' }}>
-                <div style={{ 
-                   padding: '16px', background: 'rgba(59, 130, 246, 0.1)', 
-                   borderRadius: '12px', color: 'var(--primary)', border: '1px solid var(--primary)',
-                   marginBottom: '16px', fontSize: '14px', lineHeight: 1.5,
-                   display: 'flex', alignItems: 'center', gap: '12px'
-                }}>
-                  <div style={{ fontSize: '24px' }}>🛡️</div>
-                  <div>
-                    <div style={{ fontWeight: 600 }}>{t('verificationRequiredTitle')}</div>
-                    <div style={{ marginTop: '4px' }}>
-                      {lang === 'zh' 
-                        ? `请使用您已绑定的账号进行身份验证 (${verificationProviders.join(', ')})`
-                        : `Please verify your identity using one of your linked accounts (${verificationProviders.join(', ')})`}
-                    </div>
-                  </div>
-                </div>
-                
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {verificationProviders.map(prov => (
                     <button 
