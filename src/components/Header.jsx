@@ -1205,89 +1205,102 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 </form>
 
                 {/* ──── Email OTP Section ──── */}
-                <div style={{ marginTop: '20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
-                    <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
-                    <span style={{ color: 'var(--text-tertiary)', fontSize: '13px', whiteSpace: 'nowrap' }}>
-                      {lang === 'zh' ? '或通过邮箱验证码登录' : 'or sign in with email code'}
-                    </span>
-                    <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
-                  </div>
+                  {/* ──── Email OTP Section (Refactored to Reference Image) ──── */}
+                  <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    
+                    {/* Row 1: Email Address */}
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '14px' }}>
+                        {lang === 'zh' ? '邮箱地址' : 'Email Address'}
+                      </label>
+                      <input
+                        id="otp-email-input"
+                        type="email"
+                        placeholder={lang === 'zh' ? '请输入邮箱' : 'Enter email'}
+                        value={otpEmail}
+                        onChange={e => { setOtpEmail(e.target.value); setAuthError(''); }}
+                        style={{ 
+                          width: '100%', 
+                          padding: '10px 14px', 
+                          borderRadius: '8px', 
+                          border: '1px solid var(--border-color)', 
+                          outline: 'none', 
+                          fontSize: '14px' 
+                        }}
+                      />
+                    </div>
 
-                  {/* Email row - Deeply Integrated Layout */}
-                  <div className="flex items-center w-full focus-within:border-primary transition-all shadow-sm" 
-                       style={{ 
-                         marginBottom: '10px', 
-                         borderRadius: '8px', 
-                         border: '1px solid var(--border-color)',
-                         background: 'white',
-                         overflow: 'hidden'
-                       }}>
-                    <input
-                      id="otp-email-input"
-                      type="email"
-                      placeholder={lang === 'zh' ? '输入邮箱地址' : 'Enter email address'}
-                      value={otpEmail}
-                      onChange={e => { setOtpEmail(e.target.value); setAuthError(''); }}
-                      style={{ 
-                        flex: 1, 
-                        padding: '10px 14px', 
-                        border: 'none', 
-                        outline: 'none', 
-                        fontSize: '14px', 
-                        background: 'transparent',
-                        width: '100%'
-                      }}
-                    />
+                    {/* Row 2: Verification Code + Send Button */}
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '14px' }}>
+                        {lang === 'zh' ? '验证码' : 'Verification Code'}
+                      </label>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 130px', gap: '10px', width: '100%' }}>
+                        <input
+                          id="otp-code-input"
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={6}
+                          placeholder={lang === 'zh' ? '请输入验证码' : '6-digit code'}
+                          value={otpCode}
+                          onChange={e => { setOtpCode(e.target.value.replace(/\D/g, '')); setAuthError(''); }}
+                          style={{ 
+                            width: '100%', 
+                            padding: '10px 14px', 
+                            borderRadius: '8px', 
+                            border: '1px solid var(--border-color)', 
+                            outline: 'none', 
+                            fontSize: '14px',
+                            textAlign: otpSent ? 'center' : 'left',
+                            letterSpacing: otpSent ? '4px' : 'normal'
+                          }}
+                        />
+                        <button
+                          id="otp-send-btn"
+                          type="button"
+                          onClick={handleSendCode}
+                          disabled={authLoading || otpCooldown > 0}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            background: (authLoading || otpCooldown > 0) ? '#f1f5f9' : '#0284c7',
+                            color: (authLoading || otpCooldown > 0) ? '#94a3b8' : 'white',
+                            border: 'none',
+                            cursor: (authLoading || otpCooldown > 0) ? 'not-allowed' : 'pointer',
+                            whiteSpace: 'nowrap',
+                            transition: 'all 0.2s',
+                            boxShadow: (authLoading || otpCooldown > 0) ? 'none' : '0 2px 4px rgba(2, 132, 199, 0.15)'
+                          }}
+                        >
+                          {otpCooldown > 0 ? `${otpCooldown}s` : (lang === 'zh' ? '获取验证码' : 'Send Code')}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Submit Button */}
                     <button
-                      id="otp-send-btn"
-                      type="button"
-                      onClick={handleSendCode}
-                      disabled={authLoading || otpCooldown > 0}
-                      style={{
-                        margin: '4px',
-                        padding: '8px 16px',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        background: (authLoading || otpCooldown > 0) ? 'var(--bg-secondary)' : 'var(--primary)',
-                        color: (authLoading || otpCooldown > 0) ? 'var(--text-tertiary)' : 'white',
-                        border: 'none',
-                        cursor: (authLoading || otpCooldown > 0) ? 'not-allowed' : 'pointer',
-                        whiteSpace: 'nowrap',
-                        transition: 'all 0.2s',
-                        boxShadow: (authLoading || otpCooldown > 0) ? 'none' : '0 1px 2px rgba(0,0,0,0.1)'
+                      id="otp-verify-btn"
+                      onClick={handleVerifyCode}
+                      disabled={authLoading || otpCode.length !== 6 || !otpSent}
+                      className="btn-primary"
+                      style={{ 
+                        marginTop: '8px',
+                        padding: '12px 20px', 
+                        borderRadius: '8px', 
+                        fontSize: '14px', 
+                        width: '100%',
+                        background: 'var(--accent-primary)',
+                        color: 'white',
+                        opacity: (authLoading || otpCode.length !== 6 || !otpSent) ? 0.6 : 1, 
+                        cursor: (authLoading || otpCode.length !== 6 || !otpSent) ? 'not-allowed' : 'pointer' 
                       }}
                     >
-                      {otpCooldown > 0 ? `${otpCooldown}s` : (lang === 'zh' ? '获取验证码' : 'Send Code')}
+                      {lang === 'zh' ? '登录' : 'Login'}
                     </button>
                   </div>
-
-                  {/* Code row — shown only after code sent */}
-                  {otpSent && (
-                    <div className="flex flex-col sm:flex-row gap-2 w-full overflow-hidden">
-                      <input
-                        id="otp-code-input"
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={6}
-                        placeholder={lang === 'zh' ? '6位验证码' : '6-digit code'}
-                        value={otpCode}
-                        onChange={e => { setOtpCode(e.target.value.replace(/\D/g, '')); setAuthError(''); }}
-                        style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none', fontSize: '20px', letterSpacing: '8px', textAlign: 'center', width: '100%' }}
-                      />
-                      <button
-                        id="otp-verify-btn"
-                        onClick={handleVerifyCode}
-                        disabled={authLoading || otpCode.length !== 6}
-                        className="btn-primary w-full sm:w-auto"
-                        style={{ padding: '10px 20px', borderRadius: '8px', fontSize: '14px', opacity: (authLoading || otpCode.length !== 6) ? 0.6 : 1, cursor: (authLoading || otpCode.length !== 6) ? 'not-allowed' : 'pointer' }}
-                      >
-                        {lang === 'zh' ? '登录' : 'Login'}
-                      </button>
-                    </div>
-                  )}
-                </div>
 
               </>
             )}
@@ -1386,76 +1399,78 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 />
               </div>
 
-              {/* Email Section */}
-              <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600, fontSize: '14px' }}>
-                  {t('emailRequired')}
-                </label>
-                <div className="flex items-center w-full focus-within:border-primary transition-all shadow-sm mt-1"
-                     style={{ 
-                       borderRadius: '8px', 
-                       border: '1px solid var(--border-color)',
-                       background: 'white',
-                       overflow: 'hidden'
-                     }}>
-                  <input 
-                    type="email" 
+              {/* Email OTP Section (Refactored to Reference Image) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Row 1: Email Address */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '14px' }}>
+                    {lang === 'zh' ? '邮箱地址' : 'Email Address'}
+                  </label>
+                  <input
+                    type="email"
                     value={authForm.email}
                     onChange={e => setAuthForm({...authForm, email: e.target.value})}
                     required
-                    placeholder="user@example.com"
+                    placeholder={lang === 'zh' ? '请输入邮箱' : 'Enter email'}
                     style={{ 
-                      flex: 1, 
+                      width: '100%', 
                       padding: '10px 14px', 
-                      border: 'none', 
+                      borderRadius: '8px', 
+                      border: '1px solid var(--border-color)', 
                       outline: 'none', 
-                      fontSize: '14px', 
-                      background: 'transparent',
-                      width: '100%'
+                      fontSize: '14px' 
                     }}
                   />
-                  <button
-                    type="button"
-                    onClick={handleRegisterSendCode}
-                    disabled={authLoading || registerOtpCooldown > 0}
-                    style={{
-                      margin: '4px',
-                      padding: '8px 16px',
-                      borderRadius: '6px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      background: (authLoading || registerOtpCooldown > 0) ? 'var(--bg-secondary)' : 'var(--primary)',
-                      color: (authLoading || registerOtpCooldown > 0) ? 'var(--text-tertiary)' : 'white',
-                      border: 'none',
-                      cursor: (authLoading || registerOtpCooldown > 0) ? 'not-allowed' : 'pointer',
-                      whiteSpace: 'nowrap',
-                      transition: 'all 0.2s',
-                      boxShadow: (authLoading || registerOtpCooldown > 0) ? 'none' : '0 1px 2px rgba(0,0,0,0.1)'
-                    }}
-                  >
-                    {registerOtpCooldown > 0 ? t('resendAfter').replace('{s}', registerOtpCooldown) : t('getCode')}
-                  </button>
+                </div>
+
+                {/* Row 2: Verification Code + Send Button */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '14px' }}>
+                    {lang === 'zh' ? '验证码' : 'Verification Code'}
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 130px', gap: '10px', width: '100%' }}>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      placeholder={lang === 'zh' ? '请输入验证码' : '6-digit code'}
+                      value={authForm.code}
+                      onChange={e => setAuthForm({...authForm, code: e.target.value.replace(/\D/g, '')})}
+                      style={{ 
+                        width: '100%', 
+                        padding: '10px 14px', 
+                        borderRadius: '8px', 
+                        border: '1px solid var(--border-color)', 
+                        outline: 'none', 
+                        fontSize: '14px',
+                        textAlign: registerOtpSent ? 'center' : 'left',
+                        letterSpacing: registerOtpSent ? '4px' : 'normal'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRegisterSendCode}
+                      disabled={authLoading || registerOtpCooldown > 0}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        background: (authLoading || registerOtpCooldown > 0) ? '#f1f5f9' : '#0284c7',
+                        color: (authLoading || registerOtpCooldown > 0) ? '#94a3b8' : 'white',
+                        border: 'none',
+                        cursor: (authLoading || registerOtpCooldown > 0) ? 'not-allowed' : 'pointer',
+                        whiteSpace: 'nowrap',
+                        transition: 'all 0.2s',
+                        boxShadow: (authLoading || registerOtpCooldown > 0) ? 'none' : '0 2px 4px rgba(2, 132, 199, 0.15)'
+                      }}
+                    >
+                      {registerOtpCooldown > 0 ? t('resendAfter').replace('{s}', registerOtpCooldown) : (lang === 'zh' ? '获取验证码' : 'Send Code')}
+                    </button>
+                  </div>
                 </div>
               </div>
-
-              {/* OTP Code Section */}
-              {registerOtpSent && (
-                <div>
-                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600, fontSize: '14px' }}>
-                    {t('verificationCode')}
-                  </label>
-                  <input 
-                    type="text" 
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={authForm.code}
-                    onChange={e => setAuthForm({...authForm, code: e.target.value.replace(/\D/g, '')})}
-                    required
-                    placeholder="123456"
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none', textAlign: 'center', fontSize: '18px', letterSpacing: '4px' }}
-                  />
-                </div>
-              )}
 
               <button 
                 type="submit" 
