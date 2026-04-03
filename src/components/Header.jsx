@@ -19,6 +19,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
 
   // Auth States
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
   const [authModal, setAuthModal] = useState(null); // 'login' | 'register' | 'complete-registration' | null
   const [authForm, setAuthForm] = useState({ username: '', password: '', email: '', code: '' });
@@ -129,6 +130,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         })
         .catch(() => { /* silent — keep cached value */ });
     }
+    setIsAuthLoading(false);
   }, []);
 
   // Helper to extract display-safe error strings from any error object
@@ -198,7 +200,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             const data = await res.json();
             if (res.ok && data.status === 'ok') {
               console.log('[Auth] MFA Verification successful. Syncing state...');
-              loginWithLocalData(data);
+              loginWithLocalData(data, false); // Background sync, no reload
               resetVerificationStates();
               cleanUpIntents();
               
@@ -291,7 +293,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           const data = await res.json();
           
           if (data.status === 'ok') {
-            loginWithLocalData(data);
+            loginWithLocalData(data, false); // Background sync, no reload
             cleanUpIntents();
           } else if (data.status === 'needs_registration') {
             setPendingSupabaseToken(token);
@@ -358,7 +360,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   };
 
   // Helper to persist local login data
-  const loginWithLocalData = (data) => {
+  const loginWithLocalData = (data, shouldReload = true) => {
     // Standard keys for absolute backend JWT
     localStorage.setItem('access_token', data.access_token);
     localStorage.setItem('token', data.access_token); // Alias as requested for robustness
@@ -385,8 +387,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     setAuthModal(null);
     setAuthForm({ username: '', password: '', email: '' });
     
-    // Force hard reload to ensure UI state is fully updated cross-components
-    window.location.reload();
+    // Force hard reload (only for manual logins) to ensure global state consistency
+    if (shouldReload) {
+      window.location.reload();
+    }
   };
 
   const resetVerificationStates = () => {
@@ -937,7 +941,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             </div>
             
             {/* Dynamic Sign In / User Profile */}
-            {currentUser ? (
+            {isAuthLoading ? (
+              <div style={{ width: '80px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="spinner-small" style={{ width: '18px', height: '18px', border: '2px solid rgba(0,0,0,0.1)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}></div>
+              </div>
+            ) : currentUser ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'nowrap', position: 'relative' }}>
                 <button 
                   className="btn-ghost" 
