@@ -936,12 +936,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     window.location.href = '/';
   };
 
-  const openAuthModal = (mode) => {
-    setAuthModal(mode);
+  const openAuthModal = (type) => {
+    setAuthModal(type);
+    setLastAuthType(type);
     setAuthError('');
     setAuthSuccess('');
     setAuthForm({ username: '', password: '', email: '' });
-    resetVerificationStates();
+    setLoginMethod('password');
   };
 
   const handleUnbindOAuth = async (provider) => {
@@ -999,6 +1000,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
   const [isUserCardClosing, setIsUserCardClosing] = useState(false);
   const [isBindModalClosing, setIsBindModalClosing] = useState(false);
+  const [isAuthModalClosing, setIsAuthModalClosing] = useState(false);
+  const [lastAuthType, setLastAuthType] = useState(null);
 
   const handleCloseUserCard = useCallback(() => {
     if (!isUserCardOpen || isUserCardClosing) return;
@@ -1017,6 +1020,18 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       setIsBindModalClosing(false);
     }, 280);
   }, [showBindModal, isBindModalClosing]);
+
+  const handleCloseAuthModal = useCallback(() => {
+    if (!authModal || isAuthModalClosing) return;
+    setIsAuthModalClosing(true);
+    setTimeout(() => {
+      setAuthModal(null);
+      setIsAuthModalClosing(false);
+      setLastAuthType(null);
+      setAuthError('');
+      setAuthSuccess('');
+    }, 280);
+  }, [authModal, isAuthModalClosing]);
 
   // Close card when clicking outside
   useEffect(() => {
@@ -1396,25 +1411,32 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       {/* ==================== AUTH MODALS ==================== */}
 
       {/* Login Modal */}
-      {authModal === 'login' && (
+      {(authModal === 'login' || (isAuthModalClosing && lastAuthType === 'login')) && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-          background: 'rgba(0,0,0,0.5)', zIndex: 9999,
+          background: 'rgba(0,0,0,0.5)', zIndex: 9999, backdropFilter: 'blur(4px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <div style={{
-            background: 'white', padding: '32px', borderRadius: '16px', 
-            width: '90%', maxWidth: '420px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
-          }}>
+        }} onClick={handleCloseAuthModal}>
+          <div className={isAuthModalClosing ? "ios-modal-closing" : "ios-modal-anim"} style={{
+            background: 'white', padding: '32px', borderRadius: '20px', 
+            width: '90%', maxWidth: '420px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.18)'
+          }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '24px', margin: 0, color: 'var(--text-primary)' }}>
+              <h2 style={{ fontSize: '24px', margin: 0, color: 'var(--text-primary)', fontWeight: 700 }}>
                 {t('loginTitle')}
               </h2>
               <button 
-                onClick={() => setAuthModal(null)} 
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                onClick={handleCloseAuthModal} 
+                style={{ 
+                  background: '#f1f5f9', border: 'none', cursor: 'pointer', 
+                  width: '32px', height: '32px', borderRadius: '8px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'var(--text-secondary)', transition: 'background 0.15s'
+                }}
+                onMouseOver={e => e.currentTarget.style.background = '#e2e8f0'}
+                onMouseOut={e => e.currentTarget.style.background = '#f1f5f9'}
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
             
@@ -1820,26 +1842,33 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         </div>
       )}
 
-      {/* Register Modal - New Email OTP Flow */}
-      {authModal === 'register' && (
+      {/* Register Modal */}
+      {(authModal === 'register' || (isAuthModalClosing && lastAuthType === 'register')) && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-          background: 'rgba(0,0,0,0.5)', zIndex: 9999,
+          background: 'rgba(0,0,0,0.5)', zIndex: 9999, backdropFilter: 'blur(4px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <div style={{
-            background: 'white', padding: '32px', borderRadius: '16px', 
-            width: '90%', maxWidth: '420px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
-          }}>
+        }} onClick={handleCloseAuthModal}>
+          <div className={isAuthModalClosing ? "ios-modal-closing" : "ios-modal-anim"} style={{
+            background: 'white', padding: '32px', borderRadius: '20px', 
+            width: '90%', maxWidth: '420px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.18)'
+          }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
               <h2 style={{ fontSize: '24px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
                 {t('registerTitle')}
               </h2>
               <button 
-                onClick={() => setAuthModal(null)} 
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                onClick={handleCloseAuthModal} 
+                style={{ 
+                  background: '#f1f5f9', border: 'none', cursor: 'pointer', 
+                  width: '32px', height: '32px', borderRadius: '8px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'var(--text-secondary)', transition: 'background 0.15s'
+                }}
+                onMouseOver={e => e.currentTarget.style.background = '#e2e8f0'}
+                onMouseOut={e => e.currentTarget.style.background = '#f1f5f9'}
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
             
