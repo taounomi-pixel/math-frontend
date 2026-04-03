@@ -605,10 +605,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   };
 
   // ---- Email Binding Handlers ----
-  const handleSendBindEmailCode = async () => {
+  const handleSendBindEmailCode = async (e) => {
+    if (e) e.preventDefault();
     const email = emailBindForm.email.trim();
     if (!email || !email.includes('@')) {
-      setAuthError(t('enterValidEmail'));
+      alert(t('enterValidEmail'));
       return;
     }
     setAuthError('');
@@ -619,11 +620,20 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, intent: 'bind' }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || '发送失败');
+      
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (e) {}
+
+      if (!res.ok) {
+        let errDetail = data.detail || '发送失败';
+        if (typeof errDetail !== 'string') errDetail = JSON.stringify(errDetail);
+        throw new Error(errDetail);
+      }
       
       setEmailBindForm(prev => ({ ...prev, sent: true, cooldown: 60 }));
-      setAuthSuccess(t('verificationSent'));
+      setAuthSuccess(t('verificationSent') || '验证码已发送');
       
       const timer = setInterval(() => {
         setEmailBindForm(prev => {
@@ -632,16 +642,20 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         });
       }, 1000);
     } catch (err) {
-      setAuthError(extractErrorMessage(err));
+      console.error('Send code error:', err);
+      const errMsg = err.message || JSON.stringify(err);
+      setAuthError(errMsg);
+      alert(`获取验证码失败: ${errMsg}`);
     } finally {
       setEmailBindForm(prev => ({ ...prev, loading: false }));
     }
   };
 
-  const handleConfirmEmailBind = async () => {
+  const handleConfirmEmailBind = async (e) => {
+    if (e) e.preventDefault();
     const { email, code } = emailBindForm;
     if (!email || !code || code.length !== 6) {
-      setAuthError(t('enterOtp'));
+      alert(t('enterOtp'));
       return;
     }
     setAuthError('');
@@ -656,15 +670,27 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         },
         body: JSON.stringify({ email, code }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || '绑定失败');
       
-      setAuthSuccess(t('bindingSuccess'));
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (err) {}
+
+      if (!res.ok) {
+        let errDetail = data.detail || '绑定失败';
+        if (typeof errDetail !== 'string') errDetail = JSON.stringify(errDetail);
+        throw new Error(errDetail);
+      }
+      
+      setAuthSuccess(t('bindingSuccess') || '绑定成功');
       localStorage.setItem('user_email', email);
       setCurrentUser(prev => ({ ...prev, email }));
       setEmailBindForm({ email: '', code: '', isExpanded: false, loading: false, sent: false, cooldown: 0 });
     } catch (err) {
-      setAuthError(extractErrorMessage(err));
+      console.error('Confirm bind error:', err);
+      const errMsg = err.message || JSON.stringify(err);
+      setAuthError(errMsg);
+      alert(`绑定邮箱失败: ${errMsg}`);
     } finally {
       setEmailBindForm(prev => ({ ...prev, loading: false }));
     }
