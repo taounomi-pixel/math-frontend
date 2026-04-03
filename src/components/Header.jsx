@@ -1590,8 +1590,19 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
                       />
                     </div>
-                    <button type="submit" className="btn-primary btn-lg" disabled={authLoading} style={{ marginTop: '8px', width: '100%', justifyContent: 'center', opacity: authLoading ? 0.7 : 1 }}>
-                      {authLoading ? (lang === 'zh' ? '请稍候...' : 'Please wait...') : t('continueBtn')}
+                    <button 
+                      type="submit" 
+                      className="btn-primary btn-lg" 
+                      disabled={authLoading} 
+                      style={{ 
+                        marginTop: '8px', 
+                        width: '100%', 
+                        justifyContent: 'center', 
+                        opacity: authLoading ? 0.7 : 1,
+                        borderRadius: '999px'
+                      }}
+                    >
+                      {authLoading ? (lang === 'zh' ? '请稍候...' : 'Please wait...') : (lang === 'zh' ? '登录' : 'Login')}
                     </button>
                   </form>
                 ) : (
@@ -1675,17 +1686,14 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       id="otp-verify-btn"
                       onClick={handleVerifyCode}
                       disabled={authLoading || otpCode.length !== 6 || !otpSent}
-                      className="btn-primary"
+                      className="btn-primary btn-lg"
                       style={{ 
                         marginTop: '8px',
-                        padding: '12px 20px', 
-                        borderRadius: '8px', 
-                        fontSize: '14px', 
                         width: '100%',
-                        background: 'var(--accent-primary)',
-                        color: 'white',
+                        justifyContent: 'center', 
                         opacity: (authLoading || otpCode.length !== 6 || !otpSent) ? 0.6 : 1, 
-                        cursor: (authLoading || otpCode.length !== 6 || !otpSent) ? 'not-allowed' : 'pointer' 
+                        cursor: (authLoading || otpCode.length !== 6 || !otpSent) ? 'not-allowed' : 'pointer',
+                        borderRadius: '999px'
                       }}
                     >
                       {lang === 'zh' ? '登录' : 'Login'}
