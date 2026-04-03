@@ -1021,6 +1021,22 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
   return (
     <>
+      <style>{`
+        @keyframes iosPopIn {
+          0% {
+            opacity: 0;
+            transform: scale(0.9) translateY(-10px);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+        .ios-dropdown-anim {
+          animation: iosPopIn 0.25s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+          transform-origin: top right;
+        }
+      `}</style>
       <header className="header">
         <div className="header-inner container">
           <a href="/" className="logo">
@@ -1160,13 +1176,12 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
                   {/* ================= USER CARD DROPDOWN ================= */}
                   {isUserCardOpen && (
-                    <div style={{
+                    <div className="ios-dropdown-anim" style={{
                       position: 'absolute', top: 'calc(100% + 12px)', right: 0,
                       width: '280px', background: 'white', borderRadius: '16px',
                       boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
                       border: '1px solid var(--border-color)',
                       padding: '20px', zIndex: 10000,
-                      animation: 'fadeInUp 0.2s ease-out',
                       cursor: 'default'
                     }} onClick={e => e.stopPropagation()}>
                       
