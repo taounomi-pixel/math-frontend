@@ -70,6 +70,15 @@ const translations = {
     profileCardTitle: "Account Management",
     accountSecurity: "Security & Identity",
     
+    // Account settings / Binding
+    bindEmail: "Bind Email",
+    emailBound: "Email Linked",
+    emailNotBound: "No Email Linked",
+    bindConfirm: "Confirm Binding",
+    bindingSuccess: "Bound successfully!",
+    verificationSent: "Verification code sent!",
+    enterValidEmail: "Please enter a valid email",
+    
     // Sidebar & Topics
     "allVideos": "All",
     "All Topics": "All Topics",
@@ -236,6 +245,15 @@ const translations = {
     boundTo: "已绑定",
     profileCardTitle: "个人资料与管理",
     accountSecurity: "账号与安全",
+    
+    // 账号设置 / 绑定
+    bindEmail: "绑定邮箱",
+    emailBound: "邮箱已绑定",
+    emailNotBound: "未绑定邮箱",
+    bindConfirm: "确认绑定",
+    bindingSuccess: "绑定成功！",
+    verificationSent: "验证码已发送！",
+    enterValidEmail: "请输入有效的电子邮箱",
     
     // Sidebar & Topics
     "allVideos": "所有",

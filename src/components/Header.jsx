@@ -50,6 +50,16 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const [registerOtpSent, setRegisterOtpSent] = useState(false);
   const [registerOtpCooldown, setRegisterOtpCooldown] = useState(0);
 
+  // Email Bind Modal state
+  const [emailBindForm, setEmailBindForm] = useState({
+    email: '',
+    code: '',
+    isExpanded: false,
+    loading: false,
+    sent: false,
+    cooldown: 0
+  });
+
   /**
    * Checks whether the current user is bound to a specific OAuth provider.
    * Handles 3 cases:
@@ -594,6 +604,72 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     }
   };
 
+  // ---- Email Binding Handlers ----
+  const handleSendBindEmailCode = async () => {
+    const email = emailBindForm.email.trim();
+    if (!email || !email.includes('@')) {
+      setAuthError(t('enterValidEmail'));
+      return;
+    }
+    setAuthError('');
+    setEmailBindForm(prev => ({ ...prev, loading: true }));
+    try {
+      const res = await fetch(`${API_BASE}/auth/send-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, intent: 'bind' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || '发送失败');
+      
+      setEmailBindForm(prev => ({ ...prev, sent: true, cooldown: 60 }));
+      setAuthSuccess(t('verificationSent'));
+      
+      const timer = setInterval(() => {
+        setEmailBindForm(prev => {
+          if (prev.cooldown <= 1) { clearInterval(timer); return { ...prev, cooldown: 0 }; }
+          return { ...prev, cooldown: prev.cooldown - 1 };
+        });
+      }, 1000);
+    } catch (err) {
+      setAuthError(extractErrorMessage(err));
+    } finally {
+      setEmailBindForm(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const handleConfirmEmailBind = async () => {
+    const { email, code } = emailBindForm;
+    if (!email || !code || code.length !== 6) {
+      setAuthError(t('enterOtp'));
+      return;
+    }
+    setAuthError('');
+    setEmailBindForm(prev => ({ ...prev, loading: true }));
+    try {
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_BASE}/auth/bind-email`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ email, code }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || '绑定失败');
+      
+      setAuthSuccess(t('bindingSuccess'));
+      localStorage.setItem('user_email', email);
+      setCurrentUser(prev => ({ ...prev, email }));
+      setEmailBindForm({ email: '', code: '', isExpanded: false, loading: false, sent: false, cooldown: 0 });
+    } catch (err) {
+      setAuthError(extractErrorMessage(err));
+    } finally {
+      setEmailBindForm(prev => ({ ...prev, loading: false }));
+    }
+  };
+
 
 
   const handleLogout = async () => {
@@ -1007,11 +1083,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             {verificationRequired ? (
               <div style={{ marginBottom: '20px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {verificationProviders.map(prov => (
+                  {verificationProviders.filter(p => p !== 'oauth').map(prov => (
                     <button 
                       key={prov}
                       onClick={() => handleOAuthLogin(prov)} 
-                      style={oauthBtnStyle(prov === 'github' ? '#24292e' : '#4285f4')}
+                      style={oauthBtnStyle(
+                        prov === 'github' ? '#24292e' : prov === 'google' ? '#4285f4' : 'var(--primary)'
+                      )}
                     >
                       {prov === 'github' ? <GithubIcon size={20} /> : <Mail size={20} />}
                       {lang === 'zh' 
@@ -1019,6 +1097,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         : `Verify with ${prov.charAt(0).toUpperCase() + prov.slice(1)}`}
                     </button>
                   ))}
+                  {verificationProviders.length === 0 && (
+                    <div style={{ color: '#dc2626', fontSize: '13px', textAlign: 'center', padding: '10px', background: '#fee2e2', borderRadius: '8px' }}>
+                      {lang === 'zh' ? '无法识别验证渠道，请联系管理员或尝试重新绑定' : 'Cannot identify verification provider. Please contact support.'}
+                    </div>
+                  )}
                 </div>
                 
                 <button 
@@ -1464,75 +1547,148 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
               {/* GitHub Row */}
               {[{ key: 'github', label: 'GitHub', icon: <GithubIcon size={20} />, color: '#24292e' },
-                { key: 'google', label: 'Google', icon: <Mail size={20} />, color: '#4285f4' }]
-                .map(({ key, label, icon, color }) => (
-                  <div key={key} style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '14px 16px', borderRadius: '12px', marginBottom: '10px',
-                    background: isBoundTo(key) ? '#f0fdf4' : '#f8fafc',
-                    border: `1px solid ${isBoundTo(key) ? '#bbf7d0' : '#e2e8f0'}`,
-                    transition: 'all 0.2s'
-                  }}>
-                    {/* Left: icon + name + badge */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{
-                        width: '38px', height: '38px', borderRadius: '10px',
-                        background: isBoundTo(key) ? color : '#e2e8f0',
-                        color: isBoundTo(key) ? 'white' : '#94a3b8',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        transition: 'all 0.2s'
-                      }}>
-                        {icon}
+                { key: 'google', label: 'Google', icon: <Mail size={20} />, color: '#4285f4' },
+                { key: 'email', label: t('email'), icon: <Mail size={20} />, color: '#10b981' }]
+                .map(({ key, label, icon, color }) => {
+                  const isBound = key === 'email' ? !!currentUser?.email : isBoundTo(key);
+                  return (
+                  <div key={key} style={{ marginBottom: '10px' }}>
+                    <div style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '14px 16px', borderRadius: '12px',
+                      background: isBound ? '#f0fdf4' : '#f8fafc',
+                      border: `1px solid ${isBound ? '#bbf7d0' : '#e2e8f0'}`,
+                      transition: 'all 0.2s'
+                    }}>
+                      {/* Left: icon + name + badge */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{
+                          width: '38px', height: '38px', borderRadius: '10px',
+                          background: isBound ? color : '#e2e8f0',
+                          color: isBound ? 'white' : '#94a3b8',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          transition: 'all 0.2s'
+                        }}>
+                          {icon}
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)' }}>{label}</div>
+                          {isBound ? (
+                            <span style={{ fontSize: '11px', color: '#16a34a', fontWeight: 500 }}>
+                              {key === 'email' ? currentUser.email : t('boundTo')}
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: '11px', color: '#94a3b8' }}>{t('notBound')}</span>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)' }}>{label}</div>
-                        {isBoundTo(key) ? (
-                          <span style={{ fontSize: '11px', color: '#16a34a', fontWeight: 500 }}>已绑定</span>
+                      
+                      {/* Right: action button */}
+                      {key === 'email' ? (
+                        !isBound && (
+                          <button
+                            onClick={() => setEmailBindForm(prev => ({ ...prev, isExpanded: !prev.isExpanded }))}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: '6px',
+                              padding: '7px 14px', borderRadius: '8px',
+                              background: color, color: 'white',
+                              border: 'none', fontSize: '13px', fontWeight: 500,
+                              cursor: 'pointer', transition: 'opacity 0.15s'
+                            }}
+                          >
+                            <Link2 size={14} />
+                            {t('bindAccount')}
+                          </button>
+                        )
+                      ) : (
+                        isBound ? (
+                          <button
+                            onClick={() => handleUnbindOAuth(key)}
+                            disabled={unbindLoading === key}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: '6px',
+                              padding: '7px 14px', borderRadius: '8px',
+                              background: 'white', border: '1px solid #fca5a5',
+                              color: '#ef4444', fontSize: '13px', fontWeight: 500,
+                              cursor: unbindLoading === key ? 'not-allowed' : 'pointer',
+                              opacity: unbindLoading === key ? 0.6 : 1,
+                              transition: 'all 0.15s'
+                            }}
+                          >
+                            {unbindLoading === key ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                            {lang === 'zh' ? '解绑' : 'Unlink'}
+                          </button>
                         ) : (
-                          <span style={{ fontSize: '11px', color: '#94a3b8' }}>未绑定</span>
+                          <button
+                            onClick={() => handleBindOAuth(key)}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: '6px',
+                              padding: '7px 14px', borderRadius: '8px',
+                              background: color, color: 'white',
+                              border: 'none', fontSize: '13px', fontWeight: 500,
+                              cursor: 'pointer', transition: 'opacity 0.15s'
+                            }}
+                          >
+                            <Link2 size={14} />
+                            {t('bindAccount')}
+                          </button>
+                        )
+                      )}
+                    </div>
+
+                    {/* Email Bind Expanded Form */}
+                    {key === 'email' && emailBindForm.isExpanded && (
+                      <div style={{
+                        marginTop: '8px', padding: '16px', background: '#f8fafc',
+                        borderRadius: '12px', border: '1px solid #e2e8f0',
+                        display: 'flex', flexDirection: 'column', gap: '12px'
+                      }}>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <input 
+                            type="email" 
+                            placeholder={t('email')}
+                            value={emailBindForm.email}
+                            onChange={e => setEmailBindForm({...emailBindForm, email: e.target.value})}
+                            style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '14px' }}
+                          />
+                          <button
+                            onClick={handleSendBindEmailCode}
+                            disabled={emailBindForm.loading || emailBindForm.cooldown > 0}
+                            style={{ 
+                              padding: '8px 12px', borderRadius: '8px', background: 'white', border: '1px solid var(--border-color)', 
+                              fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap',
+                              color: emailBindForm.cooldown > 0 ? '#94a3b8' : 'var(--text-primary)'
+                            }}
+                          >
+                            {emailBindForm.cooldown > 0 ? `${emailBindForm.cooldown}s` : t('getCode')}
+                          </button>
+                        </div>
+                        {emailBindForm.sent && (
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <input 
+                              type="text" 
+                              placeholder={t('verificationCodePlaceholder')}
+                              value={emailBindForm.code}
+                              onChange={e => setEmailBindForm({...emailBindForm, code: e.target.value})}
+                              maxLength={6}
+                              style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '14px' }}
+                            />
+                            <button
+                              onClick={handleConfirmEmailBind}
+                              disabled={emailBindForm.loading || emailBindForm.code.length !== 6}
+                              style={{ 
+                                padding: '8px 16px', borderRadius: '8px', background: '#10b981', color: 'white', 
+                                border: 'none', fontSize: '13px', fontWeight: 600, cursor: 'pointer'
+                              }}
+                            >
+                              {emailBindForm.loading ? <Loader2 size={14} className="animate-spin" /> : t('bindConfirm')}
+                            </button>
+                          </div>
                         )}
                       </div>
-                    </div>
-                    {/* Right: action button */}
-                    {isBoundTo(key) ? (
-                      <button
-                        onClick={() => handleUnbindOAuth(key)}
-                        disabled={unbindLoading === key}
-                        title="解除绑定"
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: '6px',
-                          padding: '7px 14px', borderRadius: '8px',
-                          background: 'white', border: '1px solid #fca5a5',
-                          color: '#ef4444', fontSize: '13px', fontWeight: 500,
-                          cursor: unbindLoading === key ? 'not-allowed' : 'pointer',
-                          opacity: unbindLoading === key ? 0.6 : 1,
-                          transition: 'all 0.15s'
-                        }}
-                        onMouseOver={e => { if (unbindLoading !== key) e.currentTarget.style.background = '#fee2e2'; }}
-                        onMouseOut={e => e.currentTarget.style.background = 'white'}
-                      >
-                        {unbindLoading === key ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                        解绑
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleBindOAuth(key)}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: '6px',
-                          padding: '7px 14px', borderRadius: '8px',
-                          background: color, color: 'white',
-                          border: 'none', fontSize: '13px', fontWeight: 500,
-                          cursor: 'pointer', transition: 'opacity 0.15s'
-                        }}
-                        onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
-                        onMouseOut={e => e.currentTarget.style.opacity = '1'}
-                      >
-                        <Link2 size={14} />
-                        绑定
-                      </button>
                     )}
                   </div>
-              ))}
+                );})}
 
               {/* Security note */}
               <div style={{
