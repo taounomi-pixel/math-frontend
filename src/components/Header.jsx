@@ -826,6 +826,29 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   <Upload size={16} /> {t('upload')}
                 </button>
               )}
+              {/* Account Settings — mobile entry */}
+              {currentUser && (
+                <button
+                  className="btn-outline mobile-nav-btn"
+                  onClick={() => {
+                    setShowBindModal(true);
+                    setIsMobileNavOpen(false);
+                  }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px' }}
+                >
+                  <ShieldCheck size={16} style={{ color: hasAnyBinding ? '#10b981' : 'var(--text-secondary)', flexShrink: 0 }} />
+                  {lang === 'zh' ? '账号设置' : 'Account Settings'}
+                  {hasAnyBinding ? (
+                    <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '1px 6px', borderRadius: '10px', fontWeight: 600, lineHeight: '18px' }}>
+                      {lang === 'zh' ? '已绑定' : 'Linked'}
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '10px', color: '#f59e0b', background: '#fffbeb', padding: '1px 6px', borderRadius: '10px', fontWeight: 600, lineHeight: '18px' }}>
+                      {lang === 'zh' ? '未绑定' : 'Unlinked'}
+                    </span>
+                  )}
+                </button>
+              )}
               <button className="btn-outline mobile-nav-btn" onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}>
                 <Globe size={16} /> {t('language')}: {lang === 'zh' ? 'CN' : 'EN'}
               </button>
