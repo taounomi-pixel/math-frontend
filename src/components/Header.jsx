@@ -607,11 +607,16 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   // ---- Email Binding Handlers ----
   const handleSendBindEmailCode = async (e) => {
     if (e) e.preventDefault();
+    console.log(">>> 获取验证码按钮被点击，当前邮箱状态值: ", emailBindForm.email);
     const email = emailBindForm.email.trim();
+    
     if (!email || !email.includes('@')) {
-      alert(t('enterValidEmail'));
+      alert((t && t('enterValidEmail')) || '请输入有效的邮箱地址，确保包含 @ 符号');
       return;
     }
+    
+    console.log(">>> 准备发起 API 请求, Payload: ", { email, intent: 'bind' });
+    
     setAuthError('');
     setEmailBindForm(prev => ({ ...prev, loading: true }));
     try {
@@ -1674,7 +1679,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                             type="email" 
                             placeholder={t('email')}
                             value={emailBindForm.email}
-                            onChange={e => setEmailBindForm({...emailBindForm, email: e.target.value})}
+                            onChange={e => {
+                              const val = e.target.value;
+                              setEmailBindForm(prev => ({...prev, email: val}));
+                            }}
                             style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '14px' }}
                           />
                           <button
@@ -1695,7 +1703,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                               type="text" 
                               placeholder={t('verificationCodePlaceholder')}
                               value={emailBindForm.code}
-                              onChange={e => setEmailBindForm({...emailBindForm, code: e.target.value})}
+                              onChange={e => {
+                                const val = e.target.value;
+                                setEmailBindForm(prev => ({...prev, code: val}));
+                              }}
                               maxLength={6}
                               style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '14px' }}
                             />
