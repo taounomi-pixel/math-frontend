@@ -63,6 +63,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   // Login Tab switching
   const [loginMethod, setLoginMethod] = useState('password'); // 'password' | 'otp'
 
+  // MFA (2FA) Detail States
+  const [mfaStep, setMfaStep] = useState('select'); // 'select' | 'email-otp'
+  const [mfaCode, setMfaCode] = useState('');
+  const [mfaMaskedEmail, setMfaMaskedEmail] = useState('');
+  const [mfaCooldown, setMfaCooldown] = useState(0);
+  const [mfaSent, setMfaSent] = useState(false);
+
   /**
    * Checks whether the current user is bound to a specific OAuth provider.
    * Handles 3 cases:
@@ -386,6 +393,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     setVerificationProviders([]);
     setVerificationEmail('');
     setIsVerifyingLogin(false);
+    setMfaStep('select');
+    setMfaCode('');
+    setMfaSent(false);
+    setMfaCooldown(0);
   };
 
   // ---- Email OTP handlers ----
@@ -481,6 +492,67 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     }
   };
 
+  // ---- MFA (2FA) Specific Handlers ----
+  const handleSendMfaCode = async () => {
+    if (!verificationEmail) return;
+    setAuthError('');
+    setAuthLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/auth/send-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: verificationEmail, intent: 'mfa' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || '发送失败');
+      setMfaSent(true);
+      setMfaCooldown(60);
+      const timer = setInterval(() => {
+        setMfaCooldown(prev => {
+          if (prev <= 1) { clearInterval(timer); return 0; }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (err) {
+      setAuthError(err.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleVerifyMfaCode = async () => {
+    if (!verificationEmail || !mfaCode || mfaCode.length !== 6) {
+      setAuthError(t('enterOtp'));
+      return;
+    }
+    setAuthError('');
+    setAuthLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/auth/verify-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email: verificationEmail, 
+          code: mfaCode,
+          username: authForm.username || null
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || '验证失败');
+      
+      if (data.status === 'ok') {
+        loginWithLocalData(data);
+        resetVerificationStates();
+      } else {
+        throw new Error(data.detail || '发生未知错误');
+      }
+    } catch (err) {
+      setAuthError(err.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   // Complete OAuth Registration (set username + password)
   const handleCompleteRegistration = async (e) => {
     e.preventDefault();
@@ -569,6 +641,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           setVerificationRequired(true);
           setVerificationProviders(data.auth_providers || [data.auth_provider] || []);
           setVerificationEmail(data.email);
+          setMfaMaskedEmail(data.masked_email || '');
+          setMfaStep('select');
           return;
         }
 
@@ -1116,34 +1190,111 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             
             {verificationRequired ? (
               <div style={{ marginBottom: '20px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {verificationProviders.filter(p => p !== 'oauth').map(prov => (
-                    <button 
-                      key={prov}
-                      onClick={() => handleOAuthLogin(prov)} 
-                      style={oauthBtnStyle(
-                        prov === 'github' ? '#24292e' : prov === 'google' ? '#4285f4' : 'var(--primary)'
+                {mfaStep === 'select' ? (
+                  <>
+                    <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', textAlign: 'center', color: 'var(--text-primary)' }}>
+                      {lang === 'zh' ? '请选择验证方式' : 'Verify your identity'}
+                    </h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {verificationProviders.filter(p => p !== 'oauth').map(prov => (
+                        <button 
+                          key={prov}
+                          onClick={() => {
+                            if (prov === 'email') {
+                              setMfaStep('email-otp');
+                              handleSendMfaCode(); // Auto-send code when entering email mfa step
+                            } else {
+                              handleOAuthLogin(prov);
+                            }
+                          }} 
+                          style={oauthBtnStyle(
+                            prov === 'github' ? '#24292e' : prov === 'google' ? '#4285f4' : '#0369a1'
+                          )}
+                        >
+                          {prov === 'github' ? <GithubIcon size={20} /> : <Mail size={20} />}
+                          {lang === 'zh' 
+                            ? `通过 ${prov === 'email' ? '电子邮箱' : (prov.charAt(0).toUpperCase() + prov.slice(1))} 验证` 
+                            : `Verify with ${prov.charAt(0).toUpperCase() + prov.slice(1)}`}
+                        </button>
+                      ))}
+                      {verificationProviders.length === 0 && (
+                        <div style={{ color: '#dc2626', fontSize: '13px', textAlign: 'center', padding: '10px', background: '#fee2e2', borderRadius: '8px' }}>
+                          {lang === 'zh' ? '无法识别验证渠道，请联系管理员' : 'No verification provider found.'}
+                        </div>
                       )}
-                    >
-                      {prov === 'github' ? <GithubIcon size={20} /> : <Mail size={20} />}
-                      {lang === 'zh' 
-                        ? `通过 ${prov.charAt(0).toUpperCase() + prov.slice(1)} 验证身份` 
-                        : `Verify with ${prov.charAt(0).toUpperCase() + prov.slice(1)}`}
-                    </button>
-                  ))}
-                  {verificationProviders.length === 0 && (
-                    <div style={{ color: '#dc2626', fontSize: '13px', textAlign: 'center', padding: '10px', background: '#fee2e2', borderRadius: '8px' }}>
-                      {lang === 'zh' ? '无法识别验证渠道，请联系管理员或尝试重新绑定' : 'Cannot identify verification provider. Please contact support.'}
                     </div>
-                  )}
-                </div>
+                  </>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+                      <h3 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 8px 0', color: 'var(--text-primary)' }}>
+                        {lang === 'zh' ? '输入验证码' : 'Enter Verification Code'}
+                      </h3>
+                      <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
+                        {lang === 'zh' ? `验证码已发送至 ${mfaMaskedEmail}` : `Code sent to ${mfaMaskedEmail}`}
+                      </p>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: '10px' }}>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={6}
+                        placeholder="••••••"
+                        value={mfaCode}
+                        onChange={e => setMfaCode(e.target.value.replace(/\D/g, ''))}
+                        autoFocus
+                        style={{ 
+                          width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid var(--border-color)', 
+                          outline: 'none', fontSize: '18px', textAlign: 'center', letterSpacing: '8px', fontWeight: 700 
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSendMfaCode}
+                        disabled={authLoading || mfaCooldown > 0}
+                        style={{
+                          borderRadius: '10px', fontSize: '13px', fontWeight: 600,
+                          background: (authLoading || mfaCooldown > 0) ? '#f1f5f9' : '#f8fafc',
+                          color: (authLoading || mfaCooldown > 0) ? '#94a3b8' : 'var(--text-primary)',
+                          border: '1px solid var(--border-color)',
+                          cursor: (authLoading || mfaCooldown > 0) ? 'not-allowed' : 'pointer'
+                        }}
+                      >
+                        {mfaCooldown > 0 ? `${mfaCooldown}s` : (lang === 'zh' ? '重新获取' : 'Resend')}
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={handleVerifyMfaCode}
+                      disabled={authLoading || mfaCode.length !== 6}
+                      className="btn-primary"
+                      style={{ 
+                        padding: '12px', borderRadius: '10px', fontSize: '15px', fontWeight: 600,
+                        width: '100%', background: 'var(--accent-primary)', color: 'white',
+                        opacity: (authLoading || mfaCode.length !== 6) ? 0.6 : 1
+                      }}
+                    >
+                      {authLoading ? (lang === 'zh' ? '验证中...' : 'Verifying...') : (lang === 'zh' ? '完成登录' : 'Complete Login')}
+                    </button>
+
+                    <button 
+                      onClick={() => setMfaStep('select')}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-tertiary)', fontSize: '13px', cursor: 'pointer', textAlign: 'center' }}
+                    >
+                      {lang === 'zh' ? '← 返回选择其他方式' : '← Back to options'}
+                    </button>
+                  </div>
+                )}
                 
-                <button 
-                   onClick={resetVerificationStates}
-                   style={{ width: '100%', marginTop: '16px', background: 'none', border: 'none', color: 'var(--text-tertiary)', fontSize: '13px', cursor: 'pointer', textDecoration: 'underline' }}
-                >
-                  {lang === 'zh' ? '使用其他账号登录' : 'Login with another account'}
-                </button>
+                {mfaStep === 'select' && (
+                  <button 
+                    onClick={resetVerificationStates}
+                    style={{ width: '100%', marginTop: '16px', background: 'none', border: 'none', color: 'var(--text-tertiary)', fontSize: '13px', cursor: 'pointer', textDecoration: 'underline' }}
+                  >
+                    {lang === 'zh' ? '使用其他账号登录' : 'Login with another account'}
+                  </button>
+                )}
               </div>
             ) : (
               <>
