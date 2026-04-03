@@ -1550,7 +1550,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 { key: 'google', label: 'Google', icon: <Mail size={20} />, color: '#4285f4' },
                 { key: 'email', label: t('email'), icon: <Mail size={20} />, color: '#10b981' }]
                 .map(({ key, label, icon, color }) => {
-                  const isBound = key === 'email' ? !!currentUser?.email : isBoundTo(key);
+                  const isBound = key === 'email' ? (!!currentUser?.email && currentUser.email.includes('@')) : isBoundTo(key);
                   return (
                   <div key={key} style={{ marginBottom: '10px' }}>
                     <div style={{
