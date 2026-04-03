@@ -1214,28 +1214,29 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
                   </div>
 
-                  {/* Email row */}
-                  <div className="flex flex-col sm:flex-row gap-2 w-full overflow-hidden" style={{ marginBottom: '10px' }}>
+                  {/* Email row - Integrated Layout */}
+                  <div className="flex items-center border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all" 
+                       style={{ marginBottom: '10px', borderColor: 'var(--border-color)' }}>
                     <input
                       id="otp-email-input"
                       type="email"
                       placeholder={lang === 'zh' ? '输入邮箱地址' : 'Enter email address'}
                       value={otpEmail}
                       onChange={e => { setOtpEmail(e.target.value); setAuthError(''); }}
-                      style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none', fontSize: '14px', width: '100%' }}
+                      style={{ flex: 1, padding: '10px 14px', border: 'none', outline: 'none', fontSize: '14px', width: '100%', background: 'transparent' }}
                     />
                     <button
                       id="otp-send-btn"
                       onClick={handleSendCode}
                       disabled={authLoading || otpCooldown > 0}
-                      className="w-full sm:w-auto"
                       style={{
-                        padding: '10px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
+                        padding: '0 16px', height: '42px', fontSize: '13px', fontWeight: 600,
                         cursor: (authLoading || otpCooldown > 0) ? 'not-allowed' : 'pointer',
-                        border: '1px solid var(--primary)',
-                        background: (authLoading || otpCooldown > 0) ? 'var(--bg-secondary)' : 'white',
+                        borderLeft: '1px solid var(--border-color)',
+                        background: (authLoading || otpCooldown > 0) ? 'var(--bg-secondary)' : 'transparent',
                         color: (authLoading || otpCooldown > 0) ? 'var(--text-tertiary)' : 'var(--primary)',
-                        whiteSpace: 'nowrap', transition: 'all 0.2s'
+                        whiteSpace: 'nowrap', transition: 'all 0.2s',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
                       }}
                     >
                       {otpCooldown > 0 ? `${otpCooldown}s` : (lang === 'zh' ? '获取验证码' : 'Send Code')}
@@ -1370,27 +1371,28 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600, fontSize: '14px' }}>
                   {t('emailRequired')}
                 </label>
-                <div className="flex flex-col sm:flex-row gap-2 w-full overflow-hidden">
+                <div className="flex items-center border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all"
+                     style={{ borderColor: 'var(--border-color)' }}>
                   <input 
                     type="email" 
                     value={authForm.email}
                     onChange={e => setAuthForm({...authForm, email: e.target.value})}
                     required
                     placeholder="user@example.com"
-                    style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none', fontSize: '14px', width: '100%' }}
+                    style={{ flex: 1, padding: '10px 14px', border: 'none', outline: 'none', fontSize: '14px', width: '100%', background: 'transparent' }}
                   />
                   <button
                     type="button"
                     onClick={handleRegisterSendCode}
                     disabled={authLoading || registerOtpCooldown > 0}
-                    className="w-full sm:w-auto"
                     style={{
-                      padding: '10px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
+                      padding: '0 16px', height: '42px', fontSize: '13px', fontWeight: 600,
                       cursor: (authLoading || registerOtpCooldown > 0) ? 'not-allowed' : 'pointer',
-                      border: '1px solid var(--primary)',
-                      background: (authLoading || registerOtpCooldown > 0) ? 'var(--bg-secondary)' : 'white',
+                      borderLeft: '1px solid var(--border-color)',
+                      background: (authLoading || registerOtpCooldown > 0) ? 'var(--bg-secondary)' : 'transparent',
                       color: (authLoading || registerOtpCooldown > 0) ? 'var(--text-tertiary)' : 'var(--primary)',
-                      whiteSpace: 'nowrap'
+                      whiteSpace: 'nowrap', transition: 'all 0.2s',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center'
                     }}
                   >
                     {registerOtpCooldown > 0 ? t('resendAfter').replace('{s}', registerOtpCooldown) : t('getCode')}
