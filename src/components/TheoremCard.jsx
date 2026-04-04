@@ -1,10 +1,199 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { PlayCircle, Bookmark, Play, Heart, Loader2, Trash2, Code, Tag, FolderOpen } from 'lucide-react';
-import { useParams } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { API_BASE } from '../utils/api';
 
+const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
+  const navigate = useNavigate();
+  const finalCategoryLabel = [
+    video.category_l1 ? t(video.category_l1) : null,
+    video.category_l2 ? t(video.category_l2) : null
+  ].filter(Boolean).join(' › ');
+  
+  const [showCode, setShowCode] = useState(false);
+  const [codeContent, setCodeContent] = useState('');
+  const [codeLoading, setCodeLoading] = useState(false);
+
+  const handleViewSourceCode = async (url) => {
+    setShowCode(true);
+    if (codeContent) return;
+    setCodeLoading(true);
+    try {
+      const res = await fetch(url);
+      const text = await res.text();
+      setCodeContent(text);
+    } catch(e) {
+      setCodeContent('Error loading code: ' + e.message);
+    } finally {
+      setCodeLoading(false);
+    }
+  };
+
+  return (
+    <motion.section 
+      layoutId={`video-card-${video.id}`}
+      className="hero-section" 
+      style={{ 
+        minHeight: 'auto', 
+        padding: '32px', 
+        gap: '32px',
+        cursor: 'pointer',
+        position: 'relative'
+      }}
+      onClick={() => navigate(`/video/${video.id}`)}
+      whileHover={{ y: -4, boxShadow: 'var(--shadow-lg)', scale: 1.01 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+    >
+      <div className="hero-content">
+        <span className="badge">{t('uploadedBy')} @{video.uploader_username}</span>
+        <h2 className="hero-title" style={{ fontSize: '32px', margin: '16px 0' }}>{video.title}</h2>
+        {video.tags && (Array.isArray(video.tags) ? video.tags.length > 0 : video.tags.length > 0) && (
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+            {(Array.isArray(video.tags) ? video.tags : video.tags.split(',')).map(tag => (
+              <span key={tag} style={{ 
+                padding: '4px 10px', 
+                borderRadius: '16px', 
+                background: 'var(--bg-tertiary)', 
+                fontSize: '13px', 
+                color: 'var(--text-secondary)',
+                border: '1px solid var(--border-color)'
+              }}>
+                #{t(tag) || tag}
+              </span>
+            ))}
+          </div>
+        )}
+        {finalCategoryLabel && (
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Tag size={14} /> {finalCategoryLabel}
+          </p>
+        )}
+        <p className="hero-desc" style={{ fontSize: '15px' }}>
+          {t('uploadedOn')} {new Date(video.upload_time).toLocaleDateString()}
+        </p>
+        <div className="hero-actions" style={{ marginTop: '24px' }}>
+          <button 
+            className={`btn-primary ${video._liked ? 'liked' : ''}`} 
+            onClick={(e) => { e.stopPropagation(); handleLike(video.id); }} 
+            style={video._liked ? { 
+              display: 'flex', gap: '8px', alignItems: 'center',
+              backgroundColor: '#ec4899',
+              borderColor: '#ec4899',
+              transition: 'background 0.2s'
+            } : {
+              display: 'flex', gap: '8px', alignItems: 'center',
+              transition: 'background 0.2s'
+            }}
+          >
+            <Heart size={20} fill={video._liked ? "currentColor" : "none"} /> 
+            {video.like_count}
+          </button>
+          
+          {video.manim_source_url && (
+            <button 
+              className="btn-ghost" 
+              onClick={(e) => { e.stopPropagation(); handleViewSourceCode(video.manim_source_url); }}
+              style={{ 
+                display: 'flex', gap: '8px', alignItems: 'center', 
+                padding: '8px 16px', border: '1px solid var(--border-color)', 
+                borderRadius: '8px', color: 'var(--text-primary)' 
+              }}
+            >
+              <Code size={18} />
+              {t('viewCode')}
+            </button>
+          )}
+          
+          {isOwner && (
+            <button 
+              className="btn-ghost" 
+              onClick={(e) => { e.stopPropagation(); handleDelete(video.id); }}
+              style={{ 
+                display: 'flex', gap: '8px', alignItems: 'center', 
+                color: '#ef4444', padding: '8px 16px',
+                border: '1px solid #fecaca', borderRadius: '8px'
+              }}
+            >
+              <Trash2 size={18} />
+              {t('btnDelete')}
+            </button>
+          )}
+        </div>
+      </div>
+      <motion.div 
+        layoutId={`video-visual-${video.id}`}
+        className="hero-visual" 
+        style={{ flex: '1 1 50%' }}
+      >
+        <div style={{ borderRadius: '16px', overflow: 'hidden', background: '#000', width: '100%', aspectRatio: '16/9', boxShadow: 'var(--shadow-md)' }}>
+          <video 
+            src={video.video_url.startsWith('http') ? video.video_url : `${API_BASE.replace('/api', '')}${video.video_url}`}
+            style={{ width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }}
+            preload="metadata"
+            muted
+            // Since pointer-events is none, we move the hover logic to the parent if needed, 
+            // but for now let's just make it clickable.
+          />
+        </div>
+      </motion.div>
+      
+      {showCode && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ background: 'var(--bg-primary)', width: '90%', maxWidth: '800px', height: '80vh', borderRadius: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+            <div style={{ 
+              padding: '16px 24px', 
+              borderBottom: '1px solid var(--border-color)', 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              backgroundColor: 'var(--bg-secondary)',
+              borderTopLeftRadius: '16px',
+              borderTopRightRadius: '16px'
+            }}>
+              <h3 style={{ margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', fontWeight: '600' }}>
+                <Code size={20} color="var(--primary)" /> {video.title} - {t('viewCode')}
+              </h3>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setShowCode(false); }} 
+                className="close-button-p"
+                style={{ 
+                  background: 'rgba(0, 0, 0, 0.05)', 
+                  border: 'none', 
+                  cursor: 'pointer', 
+                  fontSize: '24px', 
+                  color: 'var(--text-primary)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  width: '36px', 
+                  height: '36px', 
+                  borderRadius: '50%',
+                  transition: 'all 0.2s'
+                }}
+              >
+                &times;
+              </button>
+            </div>
+            <div style={{ padding: '24px', overflowY: 'auto', flex: 1, backgroundColor: '#1e1e1e', color: '#d4d4d4' }}>
+              {codeLoading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                  <Loader2 className="spinning" size={32} color="var(--primary)" />
+                </div>
+              ) : (
+                <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: '14px', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{codeContent}</pre>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </motion.section>
+  );
+};
+
 const TheoremCard = ({ searchQuery = "" }) => {
+  const navigate = useNavigate();
   const { t } = useLanguage();
   const { categoryL1, categoryL2 } = useParams();
   const [videos, setVideos] = useState([]);
@@ -230,175 +419,6 @@ const TheoremCard = ({ searchQuery = "" }) => {
         />
       ))}
     </div>
-  );
-};
-
-const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
-  const finalCategoryLabel = [
-    video.category_l1 ? t(video.category_l1) : null,
-    video.category_l2 ? t(video.category_l2) : null
-  ].filter(Boolean).join(' › ');
-  
-  const [showCode, setShowCode] = useState(false);
-  const [codeContent, setCodeContent] = useState('');
-  const [codeLoading, setCodeLoading] = useState(false);
-
-  const handleViewSourceCode = async (url) => {
-    setShowCode(true);
-    if (codeContent) return;
-    setCodeLoading(true);
-    try {
-      const res = await fetch(url);
-      const text = await res.text();
-      setCodeContent(text);
-    } catch(e) {
-      setCodeContent('Error loading code: ' + e.message);
-    } finally {
-      setCodeLoading(false);
-    }
-  };
-
-  return (
-    <section className="hero-section" style={{ minHeight: 'auto', padding: '32px', gap: '32px' }}>
-      <div className="hero-content">
-        <span className="badge">{t('uploadedBy')} @{video.uploader_username}</span>
-        <h2 className="hero-title" style={{ fontSize: '32px', margin: '16px 0' }}>{video.title}</h2>
-        {video.tags && (Array.isArray(video.tags) ? video.tags.length > 0 : video.tags.length > 0) && (
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
-            {(Array.isArray(video.tags) ? video.tags : video.tags.split(',')).map(tag => (
-              <span key={tag} style={{ 
-                padding: '4px 10px', 
-                borderRadius: '16px', 
-                background: 'var(--bg-tertiary)', 
-                fontSize: '13px', 
-                color: 'var(--text-secondary)',
-                border: '1px solid var(--border-color)'
-              }}>
-                #{t(tag) || tag}
-              </span>
-            ))}
-          </div>
-        )}
-        {finalCategoryLabel && (
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Tag size={14} /> {finalCategoryLabel}
-          </p>
-        )}
-        <p className="hero-desc" style={{ fontSize: '15px' }}>
-          {t('uploadedOn')} {new Date(video.upload_time).toLocaleDateString()}
-        </p>
-        <div className="hero-actions" style={{ marginTop: '24px' }}>
-          <button 
-            className={`btn-primary ${video._liked ? 'liked' : ''}`} 
-            onClick={() => handleLike(video.id)} 
-            style={video._liked ? { 
-              display: 'flex', gap: '8px', alignItems: 'center',
-              backgroundColor: '#ec4899',
-              borderColor: '#ec4899',
-              transition: 'background 0.2s'
-            } : {
-              display: 'flex', gap: '8px', alignItems: 'center',
-              transition: 'background 0.2s'
-            }}
-          >
-            <Heart size={20} fill={video._liked ? "currentColor" : "none"} /> 
-            {video.like_count}
-          </button>
-          
-          {video.manim_source_url && (
-            <button 
-              className="btn-ghost" 
-              onClick={() => handleViewSourceCode(video.manim_source_url)}
-              style={{ 
-                display: 'flex', gap: '8px', alignItems: 'center', 
-                padding: '8px 16px', border: '1px solid var(--border-color)', 
-                borderRadius: '8px', color: 'var(--text-primary)' 
-              }}
-            >
-              <Code size={18} />
-              {t('viewCode')}
-            </button>
-          )}
-          
-          {isOwner && (
-            <button 
-              className="btn-ghost" 
-              onClick={() => handleDelete(video.id)}
-              style={{ 
-                display: 'flex', gap: '8px', alignItems: 'center', 
-                color: '#ef4444', padding: '8px 16px',
-                border: '1px solid #fecaca', borderRadius: '8px'
-              }}
-            >
-              <Trash2 size={18} />
-              {t('btnDelete')}
-            </button>
-          )}
-        </div>
-      </div>
-      <div className="hero-visual" style={{ flex: '1 1 50%' }}>
-        <div style={{ borderRadius: '16px', overflow: 'hidden', background: '#000', width: '100%', aspectRatio: '16/9', boxShadow: 'var(--shadow-md)' }}>
-          <video 
-            src={video.video_url.startsWith('http') ? video.video_url : `${API_BASE.replace('/api', '')}${video.video_url}`}
-            controls 
-            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-            preload="metadata"
-          >
-            Your browser does not support HTML video.
-          </video>
-        </div>
-      </div>
-      
-      {showCode && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ background: 'var(--bg-primary)', width: '90%', maxWidth: '800px', height: '80vh', borderRadius: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
-            <div style={{ 
-              padding: '16px 24px', 
-              borderBottom: '1px solid var(--border-color)', 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              backgroundColor: 'var(--bg-secondary)',
-              borderTopLeftRadius: '16px',
-              borderTopRightRadius: '16px'
-            }}>
-              <h3 style={{ margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', fontWeight: '600' }}>
-                <Code size={20} color="var(--primary)" /> {video.title} - {t('viewCode')}
-              </h3>
-              <button 
-                onClick={() => setShowCode(false)} 
-                className="close-button-p"
-                style={{ 
-                  background: 'rgba(0, 0, 0, 0.05)', 
-                  border: 'none', 
-                  cursor: 'pointer', 
-                  fontSize: '24px', 
-                  color: 'var(--text-primary)', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  width: '36px', 
-                  height: '36px', 
-                  borderRadius: '50%',
-                  transition: 'all 0.2s'
-                }}
-              >
-                &times;
-              </button>
-            </div>
-            <div style={{ padding: '24px', overflowY: 'auto', flex: 1, backgroundColor: '#1e1e1e', color: '#d4d4d4' }}>
-              {codeLoading ? (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                  <Loader2 className="spinning" size={32} color="var(--primary)" />
-                </div>
-              ) : (
-                <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: '14px', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{codeContent}</pre>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-    </section>
   );
 };
 

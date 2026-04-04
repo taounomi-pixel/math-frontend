@@ -6,6 +6,7 @@ import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import TheoremCard from './components/TheoremCard';
+import VideoDetail from './components/VideoDetail';
 
 // Main Layout Wrapper
 const Layout = () => {
@@ -25,6 +26,7 @@ const Layout = () => {
         <div className="page-content" style={{ marginTop: '24px', animation: 'fadeIn 0.3s ease' }}>
           <Routes>
             <Route path="/" element={<TheoremCard searchQuery={searchQuery} />} />
+            <Route path="/video/:id" element={<VideoDetail />} />
             <Route path="/c/:categoryL1" element={<TheoremCard searchQuery={searchQuery} />} />
             <Route path="/c/:categoryL1/:categoryL2" element={<TheoremCard searchQuery={searchQuery} />} />
             <Route path="*" element={<PlaceholderPage title={t("titleNotFound")} description={t("descNotFound")} />} />
