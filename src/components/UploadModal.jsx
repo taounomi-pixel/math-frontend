@@ -16,6 +16,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
   const [sourceFile, setSourceFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState('');
   const [fileSizeError, setFileSizeError] = useState('');
   const fileInputRef = useRef(null);
@@ -126,12 +127,14 @@ const UploadModal = ({ onClose, onSuccess }) => {
       xhrRef.current = null;
       if (xhr.status >= 200 && xhr.status < 300) {
         setUploadProgress(100);
+        setIsSyncing(true);
         // Show success for a moment then reload
         setTimeout(() => {
-          onSuccess && onSuccess();
-          onClose();
-          window.location.reload(); // Force refresh to show new video
-        }, 1200);
+          if (onSuccess) onSuccess();
+          if (onClose) onClose();
+          // Use assign(origin) instead of reload() to clear hash and avoid white screen
+          window.location.assign(window.location.origin);
+        }, 2000);
       } else {
         try {
           const response = JSON.parse(xhr.responseText);
@@ -478,7 +481,10 @@ const UploadModal = ({ onClose, onSuccess }) => {
                 {isUploading ? (
                   <span style={{ display: 'flex', alignItems: 'center' }}>
                     <Loader2 size={18} className="spinning" style={{ marginRight: '8px' }} /> 
-                    {uploadProgress === 100 ? (lang === 'zh' ? '正在处理...' : 'Processing...') : `${uploadProgress}%`}
+                    {isSyncing 
+                      ? (lang === 'zh' ? '上传成功，正在同步...' : 'Upload successful, syncing...') 
+                      : (uploadProgress === 100 ? (lang === 'zh' ? '正在处理...' : 'Processing...') : `${uploadProgress}%`)
+                    }
                   </span>
                 ) : (
                   <span style={{ display: 'flex', alignItems: 'center' }}>

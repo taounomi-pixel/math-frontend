@@ -163,7 +163,8 @@ const TheoremCard = ({ searchQuery = "" }) => {
     filteredVideos = filteredVideos.filter(video => {
       const titleMatch = (video.title || "").toLowerCase().includes(lowerQuery);
       const uploaderMatch = (video.uploader_username || "").toLowerCase().includes(lowerQuery);
-      const tags = video.tags || [];
+      // Robust tags handling (support both arrays and split strings)
+      const tags = Array.isArray(video.tags) ? video.tags : (video.tags ? video.tags.split(',') : []);
       const tagsMatch = tags.some(tag => tag.toLowerCase().includes(lowerQuery));
       return titleMatch || uploaderMatch || tagsMatch;
     });
@@ -262,9 +263,9 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
       <div className="hero-content">
         <span className="badge">{t('uploadedBy')} @{video.uploader_username}</span>
         <h2 className="hero-title" style={{ fontSize: '32px', margin: '16px 0' }}>{video.title}</h2>
-        {video.tags && video.tags.length > 0 && (
+        {video.tags && (Array.isArray(video.tags) ? video.tags.length > 0 : video.tags.length > 0) && (
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
-            {video.tags.map(tag => (
+            {(Array.isArray(video.tags) ? video.tags : video.tags.split(',')).map(tag => (
               <span key={tag} style={{ 
                 padding: '4px 10px', 
                 borderRadius: '16px', 
