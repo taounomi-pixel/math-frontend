@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 
 // Import Components
@@ -7,35 +8,6 @@ import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import TheoremCard from './components/TheoremCard';
 import VideoDetail from './components/VideoDetail';
-
-// Main Layout Wrapper
-const Layout = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const { t } = useLanguage();
-  
-  useEffect(() => {
-    document.title = t('logoText');
-  }, [t]);
-
-  return (
-    <>
-      <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-      <main className="main-content container">
-        <Sidebar />
-        
-        <div className="page-content" style={{ marginTop: '24px', animation: 'fadeIn 0.3s ease' }}>
-          <Routes>
-            <Route path="/" element={<TheoremCard searchQuery={searchQuery} />} />
-            <Route path="/video/:id" element={<VideoDetail />} />
-            <Route path="/c/:categoryL1" element={<TheoremCard searchQuery={searchQuery} />} />
-            <Route path="/c/:categoryL1/:categoryL2" element={<TheoremCard searchQuery={searchQuery} />} />
-            <Route path="*" element={<PlaceholderPage title={t("titleNotFound")} description={t("descNotFound")} />} />
-          </Routes>
-        </div>
-      </main>
-    </>
-  );
-};
 
 // Generic Placeholder Component
 const PlaceholderPage = ({ title, description }) => (
@@ -52,12 +24,66 @@ const PlaceholderPage = ({ title, description }) => (
   </div>
 );
 
+// Main Layout Wrapper
+const LayoutContent = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const { t } = useLanguage();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // If we have a background location, use it for the gallery routes
+  // This allows the gallery to stay visible underneath the modal
+  const backgroundLocation = location.state?.backgroundLocation;
+  
+  useEffect(() => {
+    document.title = t('logoText');
+  }, [t, location]);
+
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      
+      <main style={{ position: 'relative', flex: 1, display: 'flex' }} className="container">
+        <Sidebar />
+        
+        <div className="page-content" style={{ flex: 1, marginTop: '24px', position: 'relative' }}>
+          {/* 
+            Background Gallery: Renders for homepage routes OR when we have a backgroundLocation.
+            If we access /video/:id directly, backgroundLocation will be null/undefined.
+            We still want the homepage to render behind it.
+          */}
+          <div style={{ filter: backgroundLocation ? 'blur(4px) brightness(0.9)' : 'none', transition: 'filter 0.3s ease, brightness 0.3s ease' }}>
+            <Routes location={backgroundLocation || (location.pathname.startsWith('/video/') ? { ...location, pathname: '/' } : location)}>
+              <Route path="/" element={<TheoremCard searchQuery={searchQuery} />} />
+              <Route path="/videos" element={<TheoremCard searchQuery={searchQuery} />} />
+              <Route path="/c/:categoryL1" element={<TheoremCard searchQuery={searchQuery} />} />
+              <Route path="/c/:categoryL1/:categoryL2" element={<TheoremCard searchQuery={searchQuery} />} />
+              {/* Catch-all for /video/:id to keep the background active */}
+              <Route path="/video/:id" element={<TheoremCard searchQuery={searchQuery} />} />
+              <Route path="*" element={<PlaceholderPage title={t("titleNotFound")} description={t("descNotFound")} />} />
+            </Routes>
+          </div>
+
+          {/* The Overlay */}
+          <AnimatePresence>
+            {(backgroundLocation || location.pathname.startsWith('/video/')) && (
+              <Routes location={location} key="modal">
+                <Route path="/video/:id" element={<VideoDetail />} />
+              </Routes>
+            )}
+          </AnimatePresence>
+        </div>
+      </main>
+    </div>
+  );
+};
+
 // Main App Router
 export default function App() {
   return (
     <LanguageProvider>
       <Router>
-        <Layout />
+        <LayoutContent />
       </Router>
     </LanguageProvider>
   );

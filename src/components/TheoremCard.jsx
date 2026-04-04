@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PlayCircle, Bookmark, Play, Heart, Loader2, Trash2, Code, Tag, FolderOpen } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -7,6 +7,7 @@ import { API_BASE } from '../utils/api';
 
 const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const finalCategoryLabel = [
     video.category_l1 ? t(video.category_l1) : null,
     video.category_l2 ? t(video.category_l2) : null
@@ -42,7 +43,7 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
         cursor: 'pointer',
         position: 'relative'
       }}
-      onClick={() => navigate(`/video/${video.id}`)}
+      onClick={() => navigate(`/video/${video.id}`, { state: { backgroundLocation: location, videoData: video } })}
       whileHover={{ y: -4, boxShadow: 'var(--shadow-lg)', scale: 1.01 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
@@ -88,7 +89,7 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
             }}
           >
             <Heart size={20} fill={video._liked ? "currentColor" : "none"} /> 
-            {video.like_count}
+            <span style={{ fontSize: '15px' }}>{video.like_count}</span>
           </button>
           
           {video.manim_source_url && (

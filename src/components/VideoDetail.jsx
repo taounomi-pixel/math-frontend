@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Heart, Code, Trash2, Tag, ArrowLeft, Loader2 } from 'lucide-react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Heart, Code, Trash2, Tag, ArrowLeft, Loader2, X } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { API_BASE } from '../utils/api';
 import CommentSection from './CommentSection';
@@ -9,10 +9,15 @@ import CommentSection from './CommentSection';
 const VideoDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useLanguage();
-  const [video, setVideo] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  // Use passed videoData for instant rendering (eliminates white flicker)
+  const initialVideoData = location.state?.videoData;
+  const [video, setVideo] = useState(initialVideoData || null);
+  const [isLoading, setIsLoading] = useState(!initialVideoData);
   const [error, setError] = useState('');
+  
   const token = localStorage.getItem('access_token');
   const currentUserId = localStorage.getItem('user_id');
 
@@ -21,6 +26,7 @@ const VideoDetail = () => {
       const headers = {};
       if (token) headers['Authorization'] = `Bearer ${token}`;
       
+      // Fetch all to find the specific one (as per current API structure)
       const response = await fetch(`${API_BASE}/videos`, { headers });
       const data = await response.json();
       const found = data.find(v => v.id.toString() === id);
@@ -34,11 +40,22 @@ const VideoDetail = () => {
   };
 
   useEffect(() => {
-    fetchVideo();
-    window.scrollTo(0, 0);
-  }, [id]);
+    if (!initialVideoData) {
+      fetchVideo();
+    }
+  }, [id, initialVideoData]);
 
-  const toggleLike = async () => {
+  // Handle ESC key to close
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') navigate('/');
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [navigate]);
+
+  const toggleLike = async (e) => {
+    e.stopPropagation();
     if (!token) return alert(t('loginToLike') || 'Please login to like');
     try {
       const res = await fetch(`${API_BASE}/videos/${video.id}/like`, {
@@ -51,141 +68,144 @@ const VideoDetail = () => {
     }
   };
 
-  if (isLoading) {
+  const handleBack = () => navigate('/');
+
+  if (error) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>
-        <Loader2 className="spinning" size={48} color="var(--primary)" />
-      </div>
+      <motion.div 
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+        style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }}
+        onClick={handleBack}
+      >
+        <div className="error-message" style={{ background: 'white', padding: '24px', borderRadius: '12px' }}>{error}</div>
+      </motion.div>
     );
   }
 
-  if (error || !video) {
-    return <div className="error-message" style={{ margin: '32px' }}>{error || 'Error'}</div>;
-  }
-
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
-      style={{ paddingBottom: '100px' }}
-    >
-      {/* Immersive Header / Back Button */}
-      <button 
-        onClick={() => navigate('/')}
-        className="btn-ghost"
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto', padding: '40px 20px' }}>
+      {/* Backdrop */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={handleBack}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(12px)', zIndex: -1 }}
+      />
+
+      {/* Modal Content */}
+      <motion.div 
+        layoutId={`video-card-${id}`}
         style={{ 
-          display: 'flex', alignItems: 'center', gap: '8px', 
-          marginBottom: '24px', color: 'var(--text-secondary)',
-          background: 'transparent', border: 'none', cursor: 'pointer'
+          width: '100%', maxWidth: '1000px', background: 'var(--bg-primary)', 
+          borderRadius: '32px', boxShadow: 'var(--shadow-2xl)', border: '1px solid var(--border-color)',
+          overflow: 'hidden', position: 'relative', minHeight: '80vh'
         }}
       >
-        <ArrowLeft size={20} /> {t('backToGallery')}
-      </button>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-        {/* Expanded Hero Card */}
-        <motion.div 
-          layoutId={`video-card-${video.id}`}
-          className="hero-section"
-          style={{ 
-            minHeight: 'auto', padding: '32px', gap: '48px', 
-            flexDirection: 'column', alignItems: 'stretch',
-            borderRadius: '24px', border: '1px solid var(--border-color)',
-            background: 'var(--bg-secondary)'
-          }}
+        {/* Close Button */}
+        <button 
+          onClick={handleBack}
+          style={{ position: 'absolute', top: '24px', right: '24px', zIndex: 10, background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '50%', padding: '8px', cursor: 'pointer', color: 'var(--text-secondary)' }}
         >
-          {/* Visual Container */}
-          <motion.div 
-            layoutId={`video-visual-${video.id}`}
-            style={{ 
-              borderRadius: '20px', overflow: 'hidden', 
-              background: '#000', width: '100%', 
-              aspectRatio: '16/9', boxShadow: 'var(--shadow-xl)' 
-            }}
+          <X size={24} />
+        </button>
+
+        <div style={{ padding: '48px' }}>
+          {/* Back Label */}
+          <button 
+            onClick={handleBack}
+            className="btn-ghost"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '32px', color: 'var(--text-secondary)', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: '500' }}
           >
-            <video 
-              src={video.video_url.startsWith('http') ? video.video_url : `${API_BASE.replace('/api', '')}${video.video_url}`}
-              controls 
-              autoPlay
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-            />
-          </motion.div>
+            <ArrowLeft size={18} /> {t('backToGallery')}
+          </button>
 
-          {/* Info Container */}
-          <div className="hero-content" style={{ textAlign: 'left' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', flexWrap: 'wrap', gap: '20px' }}>
-              <div>
-                <span className="badge" style={{ background: 'var(--primary)', color: 'white' }}>
-                  {t('uploadedBy')} @{video.uploader_username}
-                </span>
-                <h1 style={{ fontSize: '42px', margin: '16px 0', fontWeight: '800', lineHeight: '1.1' }}>
-                  {video.title}
-                </h1>
-              </div>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <div style={{ 
-                  textAlign: 'center', padding: '16px 24px', 
-                  background: 'var(--bg-tertiary)', borderRadius: '16px',
-                  border: '1px solid var(--border-color)',
-                  boxShadow: 'var(--shadow-sm)'
-                }}>
-                   <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--primary)' }}>{video.like_count}</div>
-                   <div style={{ fontSize: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('likes')}</div>
+          {!video ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>
+              <Loader2 className="spinning" size={48} color="var(--primary)" />
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              {/* Massive Video Player */}
+              <motion.div 
+                layoutId={`video-visual-${video.id}`}
+                style={{ 
+                  borderRadius: '24px', overflow: 'hidden', 
+                  background: '#000', width: '100%', maxWidth: '850px',
+                  aspectRatio: '16/9', boxShadow: 'var(--shadow-xl)',
+                  marginBottom: '40px'
+                }}
+              >
+                <video 
+                  src={video.video_url.startsWith('http') ? video.video_url : `${API_BASE.replace('/api', '')}${video.video_url}`}
+                  controls 
+                  autoPlay
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                />
+              </motion.div>
+
+              {/* Info Container - YouTube style */}
+              <div style={{ width: '100%', maxWidth: '850px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', flexWrap: 'wrap', gap: '24px', marginBottom: '32px' }}>
+                  <div style={{ flex: 1, minWidth: '300px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                       <span className="badge" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)', fontWeight: '600' }}>
+                         {t('uploadedBy')} @{video.uploader_username}
+                       </span>
+                    </div>
+                    <h1 style={{ fontSize: '36px', margin: '0 0 16px 0', fontWeight: '800', lineHeight: '1.2', color: 'var(--text-primary)' }}>
+                      {video.title}
+                    </h1>
+                    
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {(Array.isArray(video.tags) ? video.tags : (video.tags ? video.tags.split(',') : [])).map(tag => (
+                        <span key={tag} className="tag" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '4px 12px', fontSize: '13px' }}>
+                          #{t(tag) || tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <button 
+                      onClick={toggleLike}
+                      className={`btn-primary ${video.is_liked_by_me ? 'liked' : ''}`} 
+                      style={{ 
+                        padding: '12px 24px', borderRadius: '24px',
+                        background: video.is_liked_by_me ? '#ec4899' : 'var(--bg-secondary)',
+                        color: video.is_liked_by_me ? 'white' : 'var(--text-primary)',
+                        border: '1px solid var(--border-color)',
+                        display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px', fontWeight: '600'
+                      }}
+                    >
+                      <Heart size={20} fill={video.is_liked_by_me ? 'currentColor' : 'none'} /> 
+                      {video.like_count}
+                    </button>
+                    {video.manim_source_url && (
+                      <button 
+                        className="btn-ghost" 
+                        style={{ 
+                          padding: '12px 24px', borderRadius: '24px', border: '1px solid var(--border-color)',
+                          display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px', fontWeight: '600'
+                        }}
+                        onClick={() => window.open(video.manim_source_url, '_blank')}
+                      >
+                        <Code size={20} /> {t('viewCode')}
+                      </button>
+                    )}
+                  </div>
                 </div>
+
+                <div style={{ height: '1px', background: 'var(--border-color)', margin: '40px 0' }} />
+
+                {/* Comment Section */}
+                <CommentSection videoId={video.id} />
               </div>
             </div>
-
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '24px' }}>
-              {(Array.isArray(video.tags) ? video.tags : (video.tags ? video.tags.split(',') : [])).map(tag => (
-                <span key={tag} className="tag" style={{ padding: '6px 14px', borderRadius: '20px', border: '1px solid var(--border-color)' }}>
-                  #{t(tag) || tag}
-                </span>
-              ))}
-            </div>
-
-            <div style={{ 
-              display: 'flex', gap: '20px', 
-              paddingTop: '32px', borderTop: '1px solid var(--border-color)',
-              flexWrap: 'wrap'
-            }}>
-               <button 
-                 onClick={toggleLike}
-                 className={`btn-primary ${video.is_liked_by_me ? 'liked' : ''}`} 
-                 style={{ 
-                   padding: '14px 32px', borderRadius: '12px',
-                   background: video.is_liked_by_me ? '#ec4899' : 'var(--primary)',
-                   display: 'flex', alignItems: 'center', gap: '10px', fontSize: '16px', fontWeight: '700'
-                 }}
-               >
-                 <Heart size={22} fill={video.is_liked_by_me ? 'currentColor' : 'none'} /> 
-                 {video.is_liked_by_me ? t('liked') || 'Liked' : t('like')}
-               </button>
-               {video.manim_source_url && (
-                 <button 
-                  className="btn-ghost" 
-                  style={{ 
-                    padding: '14px 32px', borderRadius: '12px', border: '1px solid var(--border-color)',
-                    display: 'flex', alignItems: 'center', gap: '10px', fontSize: '16px', fontWeight: '700'
-                  }}
-                  onClick={() => window.open(video.manim_source_url, '_blank')}
-                 >
-                   <Code size={22} /> {t('viewCode')}
-                 </button>
-               )}
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Comment Section Integration */}
-        <div style={{ 
-          marginTop: '32px', padding: '0 16px' 
-        }}>
-          <CommentSection videoId={video.id} />
+          )}
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 };
 

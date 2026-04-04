@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, Send, MessageCircle } from 'lucide-react';
 import { API_BASE } from '../utils/api';
+import { formatRelativeTime } from '../utils/timeHelper';
 import { useLanguage } from '../contexts/LanguageContext';
 import CommentItem from './CommentItem';
 
@@ -68,7 +69,7 @@ const CommentSection = ({ videoId }) => {
     <div className="comment-section" style={{ maxWidth: '800px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
         <h2 style={{ fontSize: '24px', fontWeight: '700', margin: 0 }}>
-          {comments.length} {t('commentsCount') || (lang === 'zh' ? '条评论' : 'Comments')}
+          {comments.length} {t('commentsCount')}
         </h2>
       </div>
 
@@ -87,7 +88,7 @@ const CommentSection = ({ videoId }) => {
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder={t('addCommentPlace') || (lang === 'zh' ? '添加评论...' : 'Add a comment...')}
+              placeholder={t('addCommentPlace')}
               style={{ 
                 width: '100%', border: 'none', borderBottom: '2px solid var(--border-color)', 
                 background: 'transparent', padding: '8px 0', minHeight: '40px',
