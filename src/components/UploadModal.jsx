@@ -136,14 +136,21 @@ const UploadModal = ({ onClose, onSuccess }) => {
           window.location.assign(window.location.origin);
         }, 2000);
       } else {
+        // Handle 500 or other errors
         try {
-          const response = JSON.parse(xhr.responseText);
-          setError(response.detail || t('errUploadFail'));
+          // If status is 500, we definitely should not redirect
+          if (xhr.status === 500) {
+            setError(lang === 'zh' ? '服务器内部错误，请检查后端日志' : 'Server internal error, please check backend logs');
+          } else {
+            const response = JSON.parse(xhr.responseText);
+            setError(response.detail || t('errUploadFail'));
+          }
         } catch (e) {
           setError(t('errUploadFail'));
         } finally {
           setIsUploading(false);
           setUploadProgress(0);
+          setIsSyncing(false); // Reset syncing state on failure
         }
       }
     };
