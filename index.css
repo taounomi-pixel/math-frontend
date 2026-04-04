@@ -109,48 +109,48 @@ ul {
   letter-spacing: 0.5px;
 }
 
-/* Hardcore Layout Utilities - Total Stabilization */
+/* Definitive Grid Stabilization v4.0 (Anti-Chaos) */
 .grid {
   display: grid !important;
-}
-
-.max-w-\[1600px\] {
-  max-width: 1600px !important;
 }
 
 .grid-cols-1 {
   grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .md\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 4rem 3rem !important;
   }
 }
 
-/* Premium iOS Glassmorphism v3.0 */
-.glass-card {
-  background: rgba(255, 255, 255, 0.7) !important;
-  backdrop-filter: blur(40px) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
-  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08) !important;
-}
-
-.mx-auto {
-  margin-left: auto !important;
-  margin-right: auto !important;
-}
-
+/* Fix for 'White Box' Thumbnail Bug - Tailwind 4.0 flakiness */
 .aspect-video {
   aspect-ratio: 16 / 9 !important;
   display: block !important;
+  position: relative !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  min-height: 180px !important; /* Prevents height collapse */
 }
 
 .object-cover {
-  object-fit: cover !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
   width: 100% !important;
   height: 100% !important;
+  object-fit: cover !important;
+}
+
+/* Premium iOS Glassmorphism v4.0 (Deep Immersion) */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(48px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(48px) saturate(200%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 12px 64px rgba(15, 23, 42, 0.12) !important;
 }
 
 .rounded-2xl {

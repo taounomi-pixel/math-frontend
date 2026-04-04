@@ -26,8 +26,9 @@ className="relative aspect-video w-full overflow-hidden cursor-pointer bg-slate-
 <motion.img 
 layoutId={`video-visual-${video.id}`}
 src={video.thumbnail_url || `https://pub-728b746849b244799047b198b17eb10b.r2.dev/placeholder.webp`}
-className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:rotate-1"
+className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
 alt={video.title}
+loading="lazy"
 />
 {/* Play Overlay */}
 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-500 flex items-center justify-center opacity-0 group-hover:opacity-100">
