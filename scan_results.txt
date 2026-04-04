@@ -1,0 +1,4 @@
+d:\Desktop\数学可视化平台\math-frontend\src\components\CommentItem.jsx: {'corrupted_lines': 0, 'mojibake_detected': True, 'total_lines': 234}
+d:\Desktop\数学可视化平台\math-frontend\src\components\CommentSection.jsx: {'corrupted_lines': 0, 'mojibake_detected': True, 'total_lines': 144}
+d:\Desktop\数学可视化平台\math-frontend\src\components\Header.jsx: {'corrupted_lines': 0, 'mojibake_detected': True, 'total_lines': 2457}
+d:\Desktop\数学可视化平台\math-frontend\src\components\UploadModal.jsx: {'corrupted_lines': 0, 'mojibake_detected': True, 'total_lines': 520}

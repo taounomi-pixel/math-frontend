@@ -1,0 +1,406 @@
+{
+  "d:\\Desktop\\数学可视化平台\\math-frontend\\src\\App.jsx": {
+    "total_lines": 76,
+    "corrupted_count": 0,
+    "corrupted_lines_sample": [],
+    "mojibake_detected": true,
+    "mojibake_lines_sample": [
+      [
+        24,
+        "const backgroundLocation = location.state?.backgroundLocation;"
+      ],
+      [
+        41,
+        "filter: backgroundLocation ? 'blur(8px) brightness(0.9)' : 'none'"
+      ]
+    ]
+  },
+  "d:\\Desktop\\数学可视化平台\\math-frontend\\src\\components\\CommentItem.jsx": {
+    "total_lines": 234,
+    "corrupted_count": 0,
+    "corrupted_lines_sample": [],
+    "mojibake_detected": true,
+    "mojibake_lines_sample": [
+      [
+        20,
+        "alert(t('loginToLike') || (lang === 'zh' ? '请先登录后点赞' : 'Please login to like'));"
+      ],
+      [
+        69,
+        "const confirmText = lang === 'zh' ? '确定要删除这条评论吗？' : 'Are you sure you want to delete this comment?';"
+      ],
+      [
+        87,
+        "<div style={{ display: 'flex', gap: '12px', marginTop: isReply ? '16px' : '0' }}>"
+      ],
+      [
+        90,
+        "width: isReply ? '32px' : '40px',"
+      ],
+      [
+        91,
+        "height: isReply ? '32px' : '40px',"
+      ],
+      [
+        96,
+        "fontSize: isReply ? '14px' : '18px', fontWeight: '700', flexShrink: 0,"
+      ],
+      [
+        99,
+        "{comment.username?.charAt(0).toUpperCase()}"
+      ],
+      [
+        129,
+        "color: comment.is_liked ? '#ec4899' : 'var(--text-secondary)',"
+      ],
+      [
+        135,
+        "<Heart size={16} fill={comment.is_liked ? 'currentColor' : 'none'} />"
+      ],
+      [
+        136,
+        "<span style={{ fontWeight: '600' }}>{comment.likes_count > 0 ? comment.likes_count : ''}</span>"
+      ]
+    ]
+  },
+  "d:\\Desktop\\数学可视化平台\\math-frontend\\src\\components\\CommentSection.jsx": {
+    "total_lines": 144,
+    "corrupted_count": 0,
+    "corrupted_lines_sample": [],
+    "mojibake_detected": true,
+    "mojibake_lines_sample": [
+      [
+        77,
+        "{token ? ("
+      ],
+      [
+        85,
+        "{localStorage.getItem('username')?.charAt(0).toUpperCase()}"
+      ],
+      [
+        107,
+        "{isSubmitting ? <Loader2 className=\"spinning\" size={16} /> : (t('commonSubmit') || (lang === 'zh' ? '评论' : 'Comment'))}"
+      ],
+      [
+        118,
+        "{t('loginToComment') || (lang === 'zh' ? '登录后即可发表评论' : 'Log in to leave a comment')}"
+      ],
+      [
+        124,
+        "{isLoading && comments.length === 0 ? ("
+      ]
+    ]
+  },
+  "d:\\Desktop\\数学可视化平台\\math-frontend\\src\\components\\Header.jsx": {
+    "total_lines": 2457,
+    "corrupted_count": 0,
+    "corrupted_lines_sample": [],
+    "mojibake_detected": true,
+    "mojibake_lines_sample": [
+      [
+        26,
+        "if (!username) return '?';"
+      ],
+      [
+        27,
+        "// 鎻愬彇绗竴涓瓧绗﹀苟杞负澶у啓锛堝畬缇庡吋瀹逛腑鑻辨棩鏂囷級"
+      ],
+      [
+        100,
+        "if (!window.confirm(lang === 'zh' ? '纭畾瑕佽В缁戦偖绠卞悧锛熻繖鍙兘浼氬奖鍝嶆偍鐨勮处鍙锋壘鍥炪€? : 'Are you sure you want to unbind your email? This may affect account recovery.')) {"
+      ],
+      [
+        115,
+        "setAuthSuccess(lang === 'zh' ? '閭宸茶В缁? : 'Email unbound successfully');"
+      ],
+      [
+        132,
+        "setAuthError(lang === 'zh' ? '璇疯緭鍏ユ湁鏁堢殑鐢靛瓙閭' : 'Please enter a valid email');"
+      ],
+      [
+        144,
+        "if (!res.ok) throw new Error(data.detail || '鍙戦€佸け璐?);"
+      ],
+      [
+        171,
+        "setAuthSuccess(lang === 'zh' ? '閭宸叉垚鍔熸洿鏂? : 'Email updated successfully');"
+      ],
+      [
+        193,
+        "*      鈫?we know account IS bound but don't have provider detail; show as bound on all rows"
+      ],
+      [
+        194,
+        "*   3. No binding data 鈫?false"
+      ],
+      [
+        197,
+        "const providers = currentUser?.bound_providers || [];"
+      ]
+    ]
+  },
+  "d:\\Desktop\\数学可视化平台\\math-frontend\\src\\components\\Sidebar.jsx": {
+    "total_lines": 101,
+    "corrupted_count": 0,
+    "corrupted_lines_sample": [],
+    "mojibake_detected": true,
+    "mojibake_lines_sample": [
+      [
+        34,
+        "className={({ isActive }) => `topic-btn ${isActive ? 'active' : ''}`}"
+      ],
+      [
+        36,
+        "...(isActive ? {} : { background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)' }),"
+      ],
+      [
+        54,
+        "className={`topic-btn ${isActive ? 'active' : ''}`}"
+      ],
+      [
+        87,
+        "className={({ isActive }) => `topic-btn ${isActive ? 'active' : ''}`}"
+      ]
+    ]
+  },
+  "d:\\Desktop\\数学可视化平台\\math-frontend\\src\\components\\TheoremCard.jsx": {
+    "total_lines": 213,
+    "corrupted_count": 0,
+    "corrupted_lines_sample": [],
+    "mojibake_detected": true,
+    "mojibake_lines_sample": [
+      [
+        55,
+        "className={`cursor-pointer transition-all duration-300 hover:scale-125 ${video._liked || video.is_liked_by_me ? 'text-pink-500 fill-pink-500' : 'text-slate-400'}`}"
+      ],
+      [
+        58,
+        "<span className={`text-sm font-black ${(video._liked || video.is_liked_by_me) ? 'text-pink-600' : 'text-slate-500'}`}>"
+      ],
+      [
+        65,
+        "{(Array.isArray(video.tags) ? video.tags : (video.tags ? video.tags.split(',') : [])).slice(0, 3).map(tag => ("
+      ],
+      [
+        75,
+        "{video.uploader_username?.[0]?.toUpperCase()}"
+      ],
+      [
+        135,
+        "const currentUserId = localStorage.getItem('user_id') ? parseInt(localStorage.getItem('user_id'), 10) : null;"
+      ],
+      [
+        162,
+        "v.id === videoId ? { ...v, like_count: data.like_count, _liked: data.action === 'liked' } : v"
+      ],
+      [
+        175,
+        "const decodedL1 = categoryL1 ? decodeURIComponent(categoryL1) : null;"
+      ],
+      [
+        176,
+        "const decodedL2 = categoryL2 ? decodeURIComponent(categoryL2) : null;"
+      ],
+      [
+        183,
+        "(Array.isArray(v.tags) ? v.tags : (v.tags ? v.tags.split(',') : [])).some(tag => tag.toLowerCase().includes(lowerQuery))"
+      ]
+    ]
+  },
+  "d:\\Desktop\\数学可视化平台\\math-frontend\\src\\components\\UploadModal.jsx": {
+    "total_lines": 520,
+    "corrupted_count": 0,
+    "corrupted_lines_sample": [],
+    "mojibake_detected": true,
+    "mojibake_lines_sample": [
+      [
+        41,
+        "prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]"
+      ],
+      [
+        132,
+        "console.log(\"鉁?DEBUG: Upload Success (200). Starting 2s synchronization delay...\");"
+      ],
+      [
+        152,
+        "setError(lang === 'zh' ? '服务器内部错误：R2 存储配置失效 (s3_client is NONE)。请检查 Render 环境变量。' : 'Backend Error: R2 storage disabled (s3_client is NONE). Check Render Env Vars.');"
+      ],
+      [
+        438,
+        "className={`tag-item ${isActive ? 'active' : ''}`}"
+      ],
+      [
+        450,
+        "<div className=\"dropzone-refined\" onClick={() => fileInputRef.current?.click()}>"
+      ],
+      [
+        456,
+        "<div style={{ fontSize: '13px', fontWeight: '600', color: file ? 'var(--text-primary)' : 'var(--text-secondary)' }}>"
+      ],
+      [
+        457,
+        "{file ? file.name : t(\"selectFileHint\")}"
+      ],
+      [
+        469,
+        "<FileText size={24} style={{ color: sourceFile ? 'var(--accent-primary)' : 'var(--text-tertiary)', margin: '0 auto 12px' }} />"
+      ],
+      [
+        470,
+        "<div style={{ fontSize: '13px', fontWeight: '600', color: sourceFile ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>"
+      ],
+      [
+        471,
+        "{sourceFile ? sourceFile.name : t('sourceFileHint')}"
+      ]
+    ]
+  },
+  "d:\\Desktop\\数学可视化平台\\math-frontend\\src\\components\\VideoDetail.jsx": {
+    "total_lines": 269,
+    "corrupted_count": 0,
+    "corrupted_lines_sample": [],
+    "mojibake_detected": true,
+    "mojibake_lines_sample": [
+      [
+        19,
+        "const initialVideoData = location.state?.videoData;"
+      ],
+      [
+        23,
+        "const isModal = !!location.state?.backgroundLocation;"
+      ],
+      [
+        156,
+        "{(Array.isArray(video.tags) ? video.tags : (video.tags ? video.tags.split(',') : [])).map(tag => ("
+      ],
+      [
+        168,
+        "? 'bg-pink-500 text-white shadow-lg shadow-pink-200 hover:bg-pink-600'"
+      ],
+      [
+        172,
+        "<Heart size={20} className={(video._liked || video.is_liked_by_me) ? 'fill-white' : ''} />"
+      ],
+      [
+        193,
+        "{video.uploader_username?.[0]?.toUpperCase()}"
+      ],
+      [
+        208,
+        "{video.upload_time ? new Date(video.upload_time).toLocaleDateString() : '--'}"
+      ]
+    ]
+  },
+  "d:\\Desktop\\数学可视化平台\\math-frontend\\src\\contexts\\LanguageContext.jsx": {
+    "total_lines": 391,
+    "corrupted_count": 0,
+    "corrupted_lines_sample": [],
+    "mojibake_detected": true,
+    "mojibake_lines_sample": [
+      [
+        28,
+        "noAccount: \"Don't have an account? \","
+      ],
+      [
+        29,
+        "hasAccount: \"Already have an account? \","
+      ],
+      [
+        67,
+        "unbindConfirm: \"Are you sure you want to unbind this account? You will no longer be able to log in using this provider.\","
+      ],
+      [
+        175,
+        "deleteConfirm: \"Are you sure you want to delete this video? This action cannot be undone.\","
+      ]
+    ]
+  },
+  "d:\\Desktop\\数学可视化平台\\math-frontend\\src\\utils\\RelativeTimeHelper.js": {
+    "total_lines": 41,
+    "corrupted_count": 0,
+    "corrupted_lines_sample": [],
+    "mojibake_detected": true,
+    "mojibake_lines_sample": [
+      [
+        18,
+        "if (diffInSec < 0) return lang === 'zh' ? '刚刚' : 'Just now';"
+      ],
+      [
+        35,
+        "if (diffInMin < 60) return `${diffInMin === 1 ? '1 minute' : diffInMin + ' minutes'} ago`;"
+      ],
+      [
+        36,
+        "if (diffInHour < 24) return `${diffInHour === 1 ? '1 hour' : diffInHour + ' hours'} ago`;"
+      ],
+      [
+        37,
+        "if (diffInDay < 30) return `${diffInDay === 1 ? '1 day' : diffInDay + ' days'} ago`;"
+      ],
+      [
+        38,
+        "if (diffInMonth < 12) return `${diffInMonth === 1 ? '1 month' : diffInMonth + ' months'} ago`;"
+      ],
+      [
+        39,
+        "return `${diffInYear === 1 ? '1 year' : diffInYear + ' years'} ago`;"
+      ]
+    ]
+  },
+  "d:\\Desktop\\数学可视化平台\\math-frontend\\src\\utils\\supabaseClient.js": {
+    "total_lines": 12,
+    "corrupted_count": 0,
+    "corrupted_lines_sample": [],
+    "mojibake_detected": true,
+    "mojibake_lines_sample": [
+      [
+        11,
+        "? createClient(supabaseUrl, supabaseAnonKey)"
+      ]
+    ]
+  },
+  "d:\\Desktop\\数学可视化平台\\math-frontend\\src\\utils\\timeHelper.js": {
+    "total_lines": 34,
+    "corrupted_count": 0,
+    "corrupted_lines_sample": [],
+    "mojibake_detected": true,
+    "mojibake_lines_sample": [
+      [
+        11,
+        "if (diffInSeconds < 0) return lang === 'zh' ? '刚刚' : 'just now';"
+      ],
+      [
+        14,
+        "{ name: lang === 'zh' ? '年' : 'year', seconds: 31536000 },"
+      ],
+      [
+        15,
+        "{ name: lang === 'zh' ? '个月' : 'month', seconds: 2592000 },"
+      ],
+      [
+        16,
+        "{ name: lang === 'zh' ? '天' : 'day', seconds: 86400 },"
+      ],
+      [
+        17,
+        "{ name: lang === 'zh' ? '小时' : 'hour', seconds: 3600 },"
+      ],
+      [
+        18,
+        "{ name: lang === 'zh' ? '分钟' : 'minute', seconds: 60 },"
+      ],
+      [
+        19,
+        "{ name: lang === 'zh' ? '秒' : 'second', seconds: 1 },"
+      ],
+      [
+        28,
+        "return `${value} ${unit.name}${value > 1 ? 's' : ''} ago`;"
+      ],
+      [
+        33,
+        "return lang === 'zh' ? '刚刚' : 'just now';"
+      ]
+    ]
+  }
+}
