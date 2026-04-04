@@ -107,16 +107,16 @@ className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-full font-bold hover:bg
 }
 if (!video) return null;
 return (
-    <div className="flex flex-col w-full">
-      {/* Video Player Section - Robust v6.0 */}
-      <div className="aspect-ratio-box bg-black group overflow-hidden">
-        <video 
-          src={video.video_url} 
-          className="w-full h-full"
-          controls
-          autoPlay
-          poster={video.thumbnail_url}
-        />
+<div className="flex flex-col w-full">
+{/* Video Player Section */}
+<div className="relative aspect-video w-full bg-black group overflow-hidden">
+<video 
+src={video.video_url} 
+className="w-full h-full"
+controls
+autoPlay
+poster={video.thumbnail_url}
+/>
 {/* Top Bar Overlay */}
 <div className="absolute top-0 inset-x-0 p-6 flex justify-between items-start bg-gradient-to-b from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
 <div className="flex items-center gap-3">
@@ -240,12 +240,12 @@ className="w-full max-w-5xl bg-white rounded-[40px] shadow-2xl border border-sla
       className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-12"
       onClick={handleClose}
     >
-      {/* Premium iOS-style Backdrop - Recovered v6.0 */}
+      {/* Premium iOS-style Backdrop */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-white/40 backdrop-blur-[40px] saturate-[180%]"
+        className="fixed inset-0 bg-white/20 backdrop-blur-[60px] saturate-[200%]"
         style={{ zIndex: -1 }}
       />
       

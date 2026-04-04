@@ -5,117 +5,102 @@ import { PlayCircle, Bookmark, Play, Heart, Loader2, Trash2, Code, Tag, FolderOp
 import { useLanguage } from '../contexts/LanguageContext';
 import { API_BASE } from '../utils/api';
 const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const handleOpenVideo = () => {
-    navigate(`/video/${video.id}`, { state: { backgroundLocation: location, videoData: video } });
-  };
-
-  return (
-    <motion.div 
-      layoutId={`video-card-${video.id}`}
-      className="group relative flex flex-col glass-card rounded-[40px] transition-all duration-700 overflow-hidden h-full"
-      style={{ minHeight: '520px' }}
-      whileHover={{ y: -12 }}
-    >
-      {/* Thumbnail Section - Absolute Robust Fix v6.0 */}
-      <div 
-        onClick={handleOpenVideo}
-        className="aspect-ratio-box cursor-pointer"
-      >
-        <motion.img 
-          layoutId={`video-visual-${video.id}`}
-          src={video.thumbnail_url || `https://pub-728b746849b244799047b198b17eb10b.r2.dev/placeholder.webp`}
-          className="object-cover transition-all duration-700 group-hover:scale-110 z-10"
-          alt={video.title}
-          loading="lazy"
-          onError={(e) => {
-            e.target.src = 'https://pub-728b746849b244799047b198b17eb10b.r2.dev/placeholder.webp';
-          }}
-        />
-        
-        {/* Loader Guard */}
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-50 z-0">
-          <Loader2 className="animate-spin text-slate-200" size={32} />
-        </div>
-
-        {/* Play Overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-500 flex items-center justify-center opacity-0 group-hover:opacity-100 z-20">
-          <div className="w-20 h-20 bg-white/20 backdrop-blur-2xl rounded-full flex items-center justify-center border border-white/40 transform scale-75 group-hover:scale-100 transition-all duration-500 shadow-2xl">
-            <Play fill="white" className="text-white ml-1" size={32} />
-          </div>
-        </div>
-
-        {/* Category Badge */}
-        <div className="absolute top-6 left-6 px-4 py-1.5 bg-white/30 backdrop-blur-xl text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-full border border-white/40 shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-500 transform -translate-y-2 group-hover:translate-y-0 z-30">
-          {t(video.category_l1) || video.category_l1}
-        </div>
-      </div>
-
-      {/* Content Area */}
-      <div className="p-8 flex flex-col gap-6 flex-1">
-        <div className="flex items-start justify-between gap-6">
-          <h3 
-            onClick={handleOpenVideo}
-            className="text-2xl md:text-3xl font-black text-slate-900 leading-[1.1] cursor-pointer hover:text-blue-600 transition-colors line-clamp-2"
-          >
-            {video.title}
-          </h3>
-          <div className="flex items-center gap-2.5 px-4 py-2 bg-slate-50 rounded-2xl border border-slate-100 group-hover:border-pink-100 group-hover:bg-pink-50 transition-all duration-300">
-            <Heart 
-              size={20} 
-              className={`cursor-pointer transition-all duration-300 hover:scale-125 ${video._liked || video.is_liked_by_me ? 'text-pink-500 fill-pink-500' : 'text-slate-400'}`}
-              onClick={(e) => { e.stopPropagation(); handleLike(video.id); }}
-            />
-            <span className={`text-base font-black ${(video._liked || video.is_liked_by_me) ? 'text-pink-600' : 'text-slate-500'}`}>
-              {video.like_count}
-            </span>
-          </div>
-        </div>
-
-        {/* Tags */}
-        <div className="flex flex-wrap gap-2.5">
-          {(Array.isArray(video.tags) ? video.tags : (video.tags ? video.tags.split(',') : [])).slice(0, 3).map(tag => (
-            <span key={tag} className="text-[12px] font-black text-slate-400 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100 transition-all hover:bg-white hover:text-blue-500 hover:border-blue-100">
-              #{t(tag) || tag}
-            </span>
-          ))}
-        </div>
-
-        {/* Bottom Meta */}
-        <div className="mt-auto pt-6 border-t border-slate-100/50 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-sm font-black text-white shadow-xl shadow-blue-100">
-              {video.uploader_username?.[0]?.toUpperCase()}
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('uploadedBy')}</span>
-              <span className="text-base font-black text-slate-800">@{video.uploader_username}</span>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {isOwner && (
-              <button 
-                onClick={(e) => { e.stopPropagation(); handleDelete(video.id); }}
-                className="p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all"
-                title={t('btnDelete')}
-              >
-                <Trash2 size={20} />
-              </button>
-            )}
-            <button 
-              onClick={handleOpenVideo}
-              className="p-3 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all"
-            >
-              <Eye size={20} />
-            </button>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
+const navigate = useNavigate();
+const location = useLocation();
+const handleOpenVideo = () => {
+// Navigate with backgroundLocation for modal overlay
+// Also pass videoData to eliminate loading flicker
+navigate(`/video/${video.id}`, { state: { backgroundLocation: location, videoData: video } });
+};
+return (
+<motion.div 
+layoutId={`video-card-${video.id}`}
+className="group relative flex flex-col bg-white rounded-[40px] border border-slate-100 shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-700 overflow-hidden"
+whileHover={{ y: -12 }}
+>
+{/* Thumbnail Section */}
+<div 
+onClick={handleOpenVideo}
+className="relative aspect-video w-full overflow-hidden cursor-pointer bg-slate-900"
+>
+<motion.img 
+layoutId={`video-visual-${video.id}`}
+src={video.thumbnail_url || `https://pub-728b746849b244799047b198b17eb10b.r2.dev/placeholder.webp`}
+className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+alt={video.title}
+loading="lazy"
+/>
+{/* Play Overlay */}
+<div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-500 flex items-center justify-center opacity-0 group-hover:opacity-100">
+<div className="w-16 h-16 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/40 transform scale-75 group-hover:scale-100 transition-all duration-500 shadow-2xl">
+<Play fill="white" className="text-white ml-1" size={28} />
+</div>
+</div>
+{/* Category Badge */}
+<div className="absolute top-4 left-4 px-3 py-1 bg-white/20 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-[0.1em] rounded-full border border-white/30 shadow-xl opacity-0 group-hover:opacity-100 mt-2 transition-all duration-500 transform -translate-y-2 group-hover:translate-y-0">
+{t(video.category_l1) || video.category_l1}
+</div>
+</div>
+{/* Content Area */}
+<div className="p-7 flex flex-col gap-4">
+<div className="flex items-start justify-between gap-4">
+<h3 
+onClick={handleOpenVideo}
+className="text-2xl font-black text-slate-900 leading-tight cursor-pointer hover:text-blue-600 transition-colors line-clamp-2 leading-[1.1]"
+>
+{video.title}
+</h3>
+<div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-2xl border border-slate-100 group-hover:border-pink-100 group-hover:bg-pink-50 transition-all duration-300">
+<Heart 
+size={18} 
+className={`cursor-pointer transition-all duration-300 hover:scale-125 ${video._liked || video.is_liked_by_me ? 'text-pink-500 fill-pink-500' : 'text-slate-400'}`}
+onClick={(e) => { e.stopPropagation(); handleLike(video.id); }}
+/>
+<span className={`text-sm font-black ${(video._liked || video.is_liked_by_me) ? 'text-pink-600' : 'text-slate-500'}`}>
+{video.like_count}
+</span>
+</div>
+</div>
+{/* Tags */}
+<div className="flex flex-wrap gap-2">
+{(Array.isArray(video.tags) ? video.tags : (video.tags ? video.tags.split(',') : [])).slice(0, 3).map(tag => (
+<span key={tag} className="text-[11px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 transition-colors hover:bg-white hover:text-blue-500 hover:border-blue-100">
+#{t(tag) || tag}
+</span>
+))}
+</div>
+{/* Bottom Meta */}
+<div className="flex items-center justify-between mt-2 pt-5 border-t border-slate-50">
+<div className="flex items-center gap-3">
+<div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-xs font-black text-white shadow-lg shadow-blue-100">
+{video.uploader_username?.[0]?.toUpperCase()}
+</div>
+<div className="flex flex-col">
+<span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('uploadedBy')}</span>
+<span className="text-sm font-black text-slate-700">@{video.uploader_username}</span>
+</div>
+</div>
+<div className="flex items-center gap-1.5">
+{isOwner && (
+<button 
+onClick={(e) => { e.stopPropagation(); handleDelete(video.id); }}
+className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+title={t('btnDelete')}
+>
+<Trash2 size={18} />
+</button>
+)}
+<button 
+onClick={handleOpenVideo}
+className="p-2 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+>
+<Eye size={18} />
+</button>
+</div>
+</div>
+</div>
+</motion.div>
+);
 };
 const TheoremCard = ({ searchQuery = "" }) => {
 const { t } = useLanguage();

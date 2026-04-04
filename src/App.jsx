@@ -46,10 +46,7 @@ document.title = t('logoText');
             <div 
               className="w-full transition-all duration-700 ease-in-out"
               style={{ 
-                // Removed redundant blur filter that caused rendering collapse
-                opacity: backgroundLocation ? 0.6 : 1,
-                transform: backgroundLocation ? 'scale(0.98)' : 'scale(1)',
-                pointerEvents: backgroundLocation ? 'none' : 'auto'
+                filter: backgroundLocation ? 'blur(20px) brightness(0.8) saturate(120%)' : 'none'
               }}
             >
               <Routes location={backgroundLocation || location}>
