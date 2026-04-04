@@ -97,7 +97,7 @@ const VideoDetail = () => {
       <motion.div 
         layoutId={`video-card-${id}`}
         className="w-full max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden relative"
-        style={{ minHeight: '80vh' }}
+        style={{ height: 'fit-content', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}
       >
         {/* Close Button */}
         <button 
@@ -132,7 +132,7 @@ const VideoDetail = () => {
                   src={video.video_url.startsWith('http') ? video.video_url : `${API_BASE.replace('/api', '')}${video.video_url}`}
                   controls 
                   autoPlay
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover aspect-video"
                 />
               </motion.div>
 

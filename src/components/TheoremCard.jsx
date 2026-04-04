@@ -61,7 +61,8 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
         >
           <video 
             src={video.video_url.startsWith('http') ? video.video_url : `${API_BASE.replace('/api', '')}${video.video_url}`}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }}
+            className="w-full h-full object-cover"
+            style={{ pointerEvents: 'none' }}
             preload="metadata"
             muted
           />
@@ -361,7 +362,7 @@ const TheoremCard = ({ searchQuery = "" }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 container mx-auto px-4 max-w-7xl py-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 container mx-auto px-4 max-w-7xl py-12">
       {filteredVideos.map(video => (
         <VideoItem 
           key={video.id} 
