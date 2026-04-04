@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import { Upload, X, Loader2, FileText, ChevronDown, CheckCircle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { CATEGORIES } from '../constants/categories';
@@ -129,14 +129,14 @@ const UploadModal = ({ onClose, onSuccess }) => {
       
       // UI Response based on strict HTTP 200 OK
       if (xhr.status === 200) {
-        console.log("✅ DEBUG: Upload Success (200). Starting 2s synchronization delay...");
+        console.log("鉁?DEBUG: Upload Success (200). Starting 2s synchronization delay...");
         setUploadProgress(100);
         setIsSyncing(true);
         // Do NOT set isUploading to false here, keep it true to disable the button permanently
         
         // Execute the 2s pause only on absolute success
         setTimeout(() => {
-          console.log("🏁 DEBUG: 2s delay finished. Executing final hardware-reload redirect.");
+          console.log("馃弫 DEBUG: 2s delay finished. Executing final hardware-reload redirect.");
           if (onSuccess) onSuccess();
           if (onClose) onClose();
           
@@ -145,11 +145,11 @@ const UploadModal = ({ onClose, onSuccess }) => {
           window.location.href = target;
         }, 2000);
       } else {
-        console.error(`❌ DEBUG: Upload Failure (${xhr.status}). Text: ${xhr.responseText}`);
+        console.error(`鉂?DEBUG: Upload Failure (${xhr.status}). Text: ${xhr.responseText}`);
         // Handle 500, 401, 413 or other non-OK status codes
         try {
           if (xhr.status === 500) {
-            setError(lang === 'zh' ? '服务器内部错误：R2 存储配置失效 (s3_client is NONE)。请检查 Render 环境变量。' : 'Backend Error: R2 storage disabled (s3_client is NONE). Check Render Env Vars.');
+            setError(lang === 'zh' ? '鏈嶅姟鍣ㄥ唴閮ㄩ敊璇細R2 瀛樺偍閰嶇疆澶辨晥 (s3_client is NONE)銆傝妫€鏌?Render 鐜鍙橀噺銆? : 'Backend Error: R2 storage disabled (s3_client is NONE). Check Render Env Vars.');
           } else {
             const response = JSON.parse(xhr.responseText);
             setError(response.detail || t('errUploadFail'));
@@ -498,8 +498,8 @@ const UploadModal = ({ onClose, onSuccess }) => {
                   <span style={{ display: 'flex', alignItems: 'center' }}>
                     <Loader2 size={18} className="spinning" style={{ marginRight: '8px' }} /> 
                     {isSyncing 
-                      ? (lang === 'zh' ? '上传成功，正在同步...' : 'Upload successful, syncing...') 
-                      : (uploadProgress === 100 ? (lang === 'zh' ? '服务器处理中...' : 'Server processing...') : `${uploadProgress}%`)
+                      ? (lang === 'zh' ? '涓婁紶鎴愬姛锛屾鍦ㄥ悓姝?..' : 'Upload successful, syncing...') 
+                      : (uploadProgress === 100 ? (lang === 'zh' ? '鏈嶅姟鍣ㄥ鐞嗕腑...' : 'Server processing...') : `${uploadProgress}%`)
                     }
                   </span>
                 ) : (

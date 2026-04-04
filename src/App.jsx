@@ -1,4 +1,4 @@
-1: import React, { useState, useEffect } from 'react';
+﻿1: import React, { useState, useEffect } from 'react';
 2: import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 3: import { AnimatePresence } from 'framer-motion';
 4: import { LanguageProvider, useLanguage } from './contexts/LanguageContext';

@@ -1,4 +1,4 @@
-// Sync v1.0.4 - Multi-provider UI update
+﻿// Sync v1.0.4 - Multi-provider UI update
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, Globe, ChevronDown, User, Menu, X, LogOut, Upload, Link2, Mail, ShieldCheck, ShieldAlert, Trash2, Loader2, ExternalLink } from 'lucide-react';
 
@@ -24,7 +24,7 @@ import { API_BASE } from '../utils/api';
 
 const getAvatarText = (username) => {
   if (!username) return '?';
-  // 提取第一个字符并转为大写（完美兼容中英日文）
+  // 鎻愬彇绗竴涓瓧绗﹀苟杞负澶у啓锛堝畬缇庡吋瀹逛腑鑻辨棩鏂囷級
   return username.charAt(0).toUpperCase();
 };
 
@@ -97,7 +97,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const [mfaSent, setMfaSent] = useState(false);
 
   const handleUnbindEmail = async () => {
-    if (!window.confirm(lang === 'zh' ? '确定要解绑邮箱吗？这可能会影响您的账号找回。' : 'Are you sure you want to unbind your email? This may affect account recovery.')) {
+    if (!window.confirm(lang === 'zh' ? '纭畾瑕佽В缁戦偖绠卞悧锛熻繖鍙兘浼氬奖鍝嶆偍鐨勮处鍙锋壘鍥炪€? : 'Are you sure you want to unbind your email? This may affect account recovery.')) {
       return;
     }
     
@@ -109,10 +109,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (!res.ok) throw new Error('解绑失败');
+      if (!res.ok) throw new Error('瑙ｇ粦澶辫触');
       
       const data = await res.json();
-      setAuthSuccess(lang === 'zh' ? '邮箱已解绑' : 'Email unbound successfully');
+      setAuthSuccess(lang === 'zh' ? '閭宸茶В缁? : 'Email unbound successfully');
       
       // Update local state
       const updatedUser = { ...currentUser, email: null };
@@ -129,7 +129,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
   const handleSendChangeEmailCode = async () => {
     if (!changeEmailForm.email || !changeEmailForm.email.includes('@')) {
-      setAuthError(lang === 'zh' ? '请输入有效的电子邮箱' : 'Please enter a valid email');
+      setAuthError(lang === 'zh' ? '璇疯緭鍏ユ湁鏁堢殑鐢靛瓙閭' : 'Please enter a valid email');
       return;
     }
     setChangeEmailForm(prev => ({ ...prev, loading: true }));
@@ -141,7 +141,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         body: JSON.stringify({ email: changeEmailForm.email, intent: 'change_email' })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || '发送失败');
+      if (!res.ok) throw new Error(data.detail || '鍙戦€佸け璐?);
       
       setChangeEmailForm(prev => ({ ...prev, sent: true, cooldown: 60 }));
     } catch (err) {
@@ -166,9 +166,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         body: JSON.stringify({ new_email: changeEmailForm.email, code: changeEmailForm.code })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || '更新失败');
+      if (!res.ok) throw new Error(data.detail || '鏇存柊澶辫触');
       
-      setAuthSuccess(lang === 'zh' ? '邮箱已成功更新' : 'Email updated successfully');
+      setAuthSuccess(lang === 'zh' ? '閭宸叉垚鍔熸洿鏂? : 'Email updated successfully');
       
       // Update local state
       const updatedUser = { ...currentUser, email: changeEmailForm.email };
@@ -190,8 +190,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
    * Handles 3 cases:
    *   1. Explicit provider in bound_providers array (e.g. ['github'])
    *   2. TIER4 fallback: bound_providers contains 'oauth' AND supabase_uid is set
-   *      → we know account IS bound but don't have provider detail; show as bound on all rows
-   *   3. No binding data → false
+   *      鈫?we know account IS bound but don't have provider detail; show as bound on all rows
+   *   3. No binding data 鈫?false
    */
   const isBoundTo = useCallback((provider) => {
     const providers = currentUser?.bound_providers || [];
@@ -233,7 +233,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           if (!data) return;
-          // BUGFIX: Array.isArray check — empty array [] is falsy in JS but is valid data
+          // BUGFIX: Array.isArray check 鈥?empty array [] is falsy in JS but is valid data
           const providers = Array.isArray(data.bound_providers) ? data.bound_providers : cachedProviders;
           localStorage.setItem('bound_providers', JSON.stringify(providers));
           setCurrentUser(prev => prev ? ({ 
@@ -242,7 +242,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             supabase_uid: data.supabase_uid || null
           }) : prev);
         })
-        .catch(() => { /* silent — keep cached value */ });
+        .catch(() => { /* silent 鈥?keep cached value */ });
     }
     setIsAuthLoading(false);
   }, []);
@@ -269,7 +269,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     try {
       return JSON.stringify(err);
     } catch {
-      return lang === 'zh' ? '发生未知错误' : 'An unknown error occurred';
+      return lang === 'zh' ? '鍙戠敓鏈煡閿欒' : 'An unknown error occurred';
     }
   }, [lang]);
 
@@ -384,9 +384,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         }
 
         // CASE 3: Standard OAuth login or registration
-        // ⚠️ CRITICAL GUARD: If user already has a system JWT they are already
+        // 鈿狅笍 CRITICAL GUARD: If user already has a system JWT they are already
         // authenticated via our custom auth system. A residual Supabase session
-        // must NOT trigger oauth-login again — that would overwrite bound_providers
+        // must NOT trigger oauth-login again 鈥?that would overwrite bound_providers
         // that were just hydrated from /api/users/me.
         const existingSystemToken = localStorage.getItem('access_token');
         if (existingSystemToken) {
@@ -419,7 +419,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           }
         } catch (err) {
           console.error('OAuth login error:', err);
-          setAuthError(lang === 'zh' ? '服务器连接失败，请稍后再试' : 'Server connection failed, please try again');
+          setAuthError(lang === 'zh' ? '鏈嶅姟鍣ㄨ繛鎺ュけ璐ワ紝璇风◢鍚庡啀璇? : 'Server connection failed, please try again');
           setAuthModal('login');
           cleanUpIntents();
         }
@@ -462,7 +462,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   // OAuth Login
   const handleOAuthLogin = async (provider) => {
     if (!supabase) {
-      setAuthError(lang === 'zh' ? 'OAuth 未配置' : 'OAuth not configured');
+      setAuthError(lang === 'zh' ? 'OAuth 鏈厤缃? : 'OAuth not configured');
       return;
     }
     setAuthLoading(true);
@@ -553,7 +553,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         body: JSON.stringify({ email, intent: 'login' }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || '发送失败');
+      if (!res.ok) throw new Error(data.detail || '鍙戦€佸け璐?);
       setOtpSent(true);
       // Start 60-second cooldown
       setOtpCooldown(60);
@@ -585,7 +585,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         body: JSON.stringify({ email, intent: 'register' }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || '发送失败');
+      if (!res.ok) throw new Error(data.detail || '鍙戦€佸け璐?);
       setRegisterOtpSent(true);
       // Start 60-second cooldown
       setRegisterOtpCooldown(60);
@@ -618,7 +618,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         body: JSON.stringify({ email, code }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || '验证失败');
+      if (!res.ok) throw new Error(data.detail || '楠岃瘉澶辫触');
       // Reuse loginWithLocalData to keep state consistent
       loginWithLocalData(data);
       // Reset OTP state
@@ -642,7 +642,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         body: JSON.stringify({ email: verificationEmail, intent: 'mfa' }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || '发送失败');
+      if (!res.ok) throw new Error(data.detail || '鍙戦€佸け璐?);
       setMfaSent(true);
       setMfaCooldown(60);
       const timer = setInterval(() => {
@@ -676,13 +676,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || '验证失败');
+      if (!res.ok) throw new Error(data.detail || '楠岃瘉澶辫触');
       
       if (data.status === 'ok') {
         loginWithLocalData(data);
         resetVerificationStates();
       } else {
-        throw new Error(data.detail || '发生未知错误');
+        throw new Error(data.detail || '鍙戠敓鏈煡閿欒');
       }
     } catch (err) {
       setAuthError(err.message);
@@ -789,7 +789,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     } catch (err) {
       console.error('Auth error:', err);
       if (err.message === 'Failed to fetch' || (err.message && (err.message.includes('Load failed') || err.message.includes('NetworkError')))) {
-        setAuthError(lang === 'zh' ? '服务器正在启动中，请等待约30秒后再试...' : 'Server is waking up, please wait ~30s and try again...');
+        setAuthError(lang === 'zh' ? '鏈嶅姟鍣ㄦ鍦ㄥ惎鍔ㄤ腑锛岃绛夊緟绾?0绉掑悗鍐嶈瘯...' : 'Server is waking up, please wait ~30s and try again...');
       } else {
         setAuthError(extractErrorMessage(err));
       }
@@ -822,15 +822,15 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   // ---- Email Binding Handlers ----
   const handleSendBindEmailCode = async (e) => {
     if (e) e.preventDefault();
-    console.log(">>> 获取验证码按钮被点击，当前邮箱状态值: ", emailBindForm.email);
+    console.log(">>> 鑾峰彇楠岃瘉鐮佹寜閽鐐瑰嚮锛屽綋鍓嶉偖绠辩姸鎬佸€? ", emailBindForm.email);
     const email = emailBindForm.email.trim();
     
     if (!email || !email.includes('@')) {
-      alert((t && t('enterValidEmail')) || '请输入有效的邮箱地址，确保包含 @ 符号');
+      alert((t && t('enterValidEmail')) || '璇疯緭鍏ユ湁鏁堢殑閭鍦板潃锛岀‘淇濆寘鍚?@ 绗﹀彿');
       return;
     }
     
-    console.log(">>> 准备发起 API 请求, Payload: ", { email, intent: 'bind_email' });
+    console.log(">>> 鍑嗗鍙戣捣 API 璇锋眰, Payload: ", { email, intent: 'bind_email' });
     
     setAuthError('');
     setEmailBindForm(prev => ({ ...prev, loading: true }));
@@ -847,13 +847,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       } catch (e) {}
 
       if (!res.ok) {
-        let errDetail = data.detail || '发送失败';
+        let errDetail = data.detail || '鍙戦€佸け璐?;
         if (typeof errDetail !== 'string') errDetail = JSON.stringify(errDetail);
         throw new Error(errDetail);
       }
       
       setEmailBindForm(prev => ({ ...prev, sent: true, cooldown: 60 }));
-      setAuthSuccess(t('verificationSent') || '验证码已发送');
+      setAuthSuccess(t('verificationSent') || '楠岃瘉鐮佸凡鍙戦€?);
       
       const timer = setInterval(() => {
         setEmailBindForm(prev => {
@@ -865,7 +865,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       console.error('Send code error:', err);
       const errMsg = err.message || JSON.stringify(err);
       setAuthError(errMsg);
-      alert(`获取验证码失败: ${errMsg}`);
+      alert(`鑾峰彇楠岃瘉鐮佸け璐? ${errMsg}`);
     } finally {
       setEmailBindForm(prev => ({ ...prev, loading: false }));
     }
@@ -897,12 +897,12 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       } catch (err) {}
 
       if (!res.ok) {
-        let errDetail = data.detail || '绑定失败';
+        let errDetail = data.detail || '缁戝畾澶辫触';
         if (typeof errDetail !== 'string') errDetail = JSON.stringify(errDetail);
         throw new Error(errDetail);
       }
       
-      setAuthSuccess(t('bindingSuccess') || '绑定成功');
+      setAuthSuccess(t('bindingSuccess') || '缁戝畾鎴愬姛');
       localStorage.setItem('user_email', email);
       setCurrentUser(prev => ({ ...prev, email }));
       setEmailBindForm({ email: '', code: '', isExpanded: false, loading: false, sent: false, cooldown: 0 });
@@ -910,7 +910,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       console.error('Confirm bind error:', err);
       const errMsg = err.message || JSON.stringify(err);
       setAuthError(errMsg);
-      alert(`绑定邮箱失败: ${errMsg}`);
+      alert(`缁戝畾閭澶辫触: ${errMsg}`);
     } finally {
       setEmailBindForm(prev => ({ ...prev, loading: false }));
     }
@@ -946,7 +946,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   };
 
   const handleUnbindOAuth = async (provider) => {
-    if (!window.confirm(lang === 'zh' ? `确定要解除与 ${provider} 的绑定吗？` : `Are you sure you want to unbind ${provider}?`)) {
+    if (!window.confirm(lang === 'zh' ? `纭畾瑕佽В闄や笌 ${provider} 鐨勭粦瀹氬悧锛焋 : `Are you sure you want to unbind ${provider}?`)) {
       return;
     }
 
@@ -987,7 +987,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           }));
         }
         
-        setAuthSuccess(lang === 'zh' ? '解绑成功' : 'Successfully unlinked');
+        setAuthSuccess(lang === 'zh' ? '瑙ｇ粦鎴愬姛' : 'Successfully unlinked');
       } else {
         setAuthError(extractErrorMessage(data));
       }
@@ -1186,22 +1186,22 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 >
                   <div 
                     style={{ 
-                      /* 1. 强制绝对居中 (修复排版崩溃) */
+                      /* 1. 寮哄埗缁濆灞呬腑 (淇鎺掔増宕╂簝) */
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      /* 2. 固定尺寸与防挤压 */
+                      /* 2. 鍥哄畾灏哄涓庨槻鎸ゅ帇 */
                       width: '36px',
                       height: '36px',
                       borderRadius: '50%',
                       flexShrink: 0,
-                      /* 3. 纯白背景下的立体液态玻璃 (微渐变 + 高光 + 投影) */
+                      /* 3. 绾櫧鑳屾櫙涓嬬殑绔嬩綋娑叉€佺幓鐠?(寰笎鍙?+ 楂樺厜 + 鎶曞奖) */
                       background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(226, 232, 240, 0.8) 100%)',
                       border: '1px solid rgba(255, 255, 255, 0.9)',
                       boxShadow: 'inset 0px 2px 4px rgba(255, 255, 255, 1), inset 0px -2px 4px rgba(0, 0, 0, 0.03), 0px 3px 6px rgba(0, 0, 0, 0.06)',
                       backdropFilter: 'blur(8px)',
                       WebkitBackdropFilter: 'blur(8px)',
-                      /* 4. 字体样式 */
+                      /* 4. 瀛椾綋鏍峰紡 */
                       color: '#1e293b', 
                       fontSize: '18px', 
                       fontWeight: '700',
@@ -1221,7 +1221,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     </span>
                     {!hasAnyBinding && (
                       <span style={{ fontSize: '10px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                        <ShieldAlert size={10} /> 未绑定
+                        <ShieldAlert size={10} /> 鏈粦瀹?
                       </span>
                     )}
                   </div>
@@ -1246,22 +1246,22 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #f3f4f6' }}>
                         <div 
                           style={{ 
-                            /* 1. 强制绝对居中 (修复排版崩溃) */
+                            /* 1. 寮哄埗缁濆灞呬腑 (淇鎺掔増宕╂簝) */
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            /* 2. 固定尺寸与防挤压 */
+                            /* 2. 鍥哄畾灏哄涓庨槻鎸ゅ帇 */
                             width: '48px',
                             height: '48px',
                             borderRadius: '50%',
                             flexShrink: 0,
-                            /* 3. 立体液态玻璃样式 */
+                            /* 3. 绔嬩綋娑叉€佺幓鐠冩牱寮?*/
                             background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(226, 232, 240, 0.8) 100%)',
                             border: '1px solid rgba(255, 255, 255, 0.9)',
                             boxShadow: 'inset 0px 2px 4px rgba(255, 255, 255, 1), inset 0px -2px 4px rgba(0, 0, 0, 0.03), 0px 3px 6px rgba(0, 0, 0, 0.06)',
                             backdropFilter: 'blur(8px)',
                             WebkitBackdropFilter: 'blur(8px)',
-                            /* 4. 字体样式 (针对大头像优化) */
+                            /* 4. 瀛椾綋鏍峰紡 (閽堝澶уご鍍忎紭鍖? */
                             color: '#1e293b', 
                             fontSize: '24px', 
                             fontWeight: '700',
@@ -1296,11 +1296,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <ShieldCheck size={16} style={{ color: hasAnyBinding ? '#10b981' : 'var(--text-secondary)' }} />
-                          <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>账号设置</span>
+                          <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>璐﹀彿璁剧疆</span>
                           {hasAnyBinding ? (
-                            <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
+                            <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>宸茬粦瀹?/span>
                           ) : (
-                            <span style={{ fontSize: '10px', color: '#f59e0b', background: '#fffbeb', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
+                            <span style={{ fontSize: '10px', color: '#f59e0b', background: '#fffbeb', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>鏈粦瀹?/span>
                           )}
                         </div>
                         <ExternalLink size={14} style={{ color: 'var(--text-secondary)', opacity: 0.6 }} />
@@ -1319,7 +1319,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         onMouseOver={e => e.currentTarget.style.background = '#ffe4e6'}
                         onMouseOut={e => e.currentTarget.style.background = '#fff1f2'}
                       >
-                        <LogOut size={16} /> 退出登录
+                        <LogOut size={16} /> 閫€鍑虹櫥褰?
                       </button>
                     </div>
                   )}
@@ -1368,7 +1368,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   <Upload size={16} /> {t('upload')}
                 </button>
               )}
-              {/* Account Settings — mobile entry */}
+              {/* Account Settings 鈥?mobile entry */}
               {currentUser && (
                 <button
                   className="btn-outline mobile-nav-btn"
@@ -1379,14 +1379,14 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px' }}
                 >
                   <ShieldCheck size={16} style={{ color: hasAnyBinding ? '#10b981' : 'var(--text-secondary)', flexShrink: 0 }} />
-                  {lang === 'zh' ? '账号设置' : 'Account Settings'}
+                  {lang === 'zh' ? '璐﹀彿璁剧疆' : 'Account Settings'}
                   {hasAnyBinding ? (
                     <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '1px 6px', borderRadius: '10px', fontWeight: 600, lineHeight: '18px' }}>
-                      {lang === 'zh' ? '已绑定' : 'Linked'}
+                      {lang === 'zh' ? '宸茬粦瀹? : 'Linked'}
                     </span>
                   ) : (
                     <span style={{ fontSize: '10px', color: '#f59e0b', background: '#fffbeb', padding: '1px 6px', borderRadius: '10px', fontWeight: 600, lineHeight: '18px' }}>
-                      {lang === 'zh' ? '未绑定' : 'Unlinked'}
+                      {lang === 'zh' ? '鏈粦瀹? : 'Unlinked'}
                     </span>
                   )}
                 </button>
@@ -1456,7 +1456,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 {mfaStep === 'select' ? (
                   <>
                     <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', textAlign: 'center', color: 'var(--text-primary)' }}>
-                      {lang === 'zh' ? '请选择验证方式' : 'Verify your identity'}
+                      {lang === 'zh' ? '璇烽€夋嫨楠岃瘉鏂瑰紡' : 'Verify your identity'}
                     </h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       {verificationProviders.filter(p => p !== 'oauth').map(prov => (
@@ -1481,14 +1481,14 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                           {prov === 'github' ? <GithubIcon size={20} /> : prov === 'google' ? <GoogleIcon size={20} /> : <Mail size={20} />}
                           <span style={{ marginLeft: '12px' }}>
                             {lang === 'zh' 
-                              ? `通过 ${prov === 'email' ? '电子邮箱' : (prov.charAt(0).toUpperCase() + prov.slice(1))} 验证` 
+                              ? `閫氳繃 ${prov === 'email' ? '鐢靛瓙閭' : (prov.charAt(0).toUpperCase() + prov.slice(1))} 楠岃瘉` 
                               : `Verify with ${prov.charAt(0).toUpperCase() + prov.slice(1)}`}
                           </span>
                         </button>
                       ))}
                       {verificationProviders.length === 0 && (
                         <div style={{ color: '#dc2626', fontSize: '13px', textAlign: 'center', padding: '10px', background: '#fee2e2', borderRadius: '8px' }}>
-                          {lang === 'zh' ? '无法识别验证渠道，请联系管理员' : 'No verification provider found.'}
+                          {lang === 'zh' ? '鏃犳硶璇嗗埆楠岃瘉娓犻亾锛岃鑱旂郴绠＄悊鍛? : 'No verification provider found.'}
                         </div>
                       )}
                     </div>
@@ -1497,10 +1497,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div style={{ textAlign: 'center', marginBottom: '8px' }}>
                       <h3 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 8px 0', color: 'var(--text-primary)' }}>
-                        {lang === 'zh' ? '输入验证码' : 'Enter Verification Code'}
+                        {lang === 'zh' ? '杈撳叆楠岃瘉鐮? : 'Enter Verification Code'}
                       </h3>
                       <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
-                        {lang === 'zh' ? `验证码已发送至 ${mfaMaskedEmail}` : `Code sent to ${mfaMaskedEmail}`}
+                        {lang === 'zh' ? `楠岃瘉鐮佸凡鍙戦€佽嚦 ${mfaMaskedEmail}` : `Code sent to ${mfaMaskedEmail}`}
                       </p>
                     </div>
 
@@ -1509,7 +1509,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         type="text"
                         inputMode="numeric"
                         maxLength={6}
-                        placeholder="••••••"
+                        placeholder="鈥⑩€⑩€⑩€⑩€⑩€?
                         value={mfaCode}
                         onChange={e => setMfaCode(e.target.value.replace(/\D/g, ''))}
                         autoFocus
@@ -1530,7 +1530,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                           cursor: (authLoading || mfaCooldown > 0) ? 'not-allowed' : 'pointer'
                         }}
                       >
-                        {mfaCooldown > 0 ? `${mfaCooldown}s` : (lang === 'zh' ? '重新获取' : 'Resend')}
+                        {mfaCooldown > 0 ? `${mfaCooldown}s` : (lang === 'zh' ? '閲嶆柊鑾峰彇' : 'Resend')}
                       </button>
                     </div>
 
@@ -1544,14 +1544,14 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         opacity: (authLoading || mfaCode.length !== 6) ? 0.6 : 1
                       }}
                     >
-                      {authLoading ? (lang === 'zh' ? '验证中...' : 'Verifying...') : (lang === 'zh' ? '完成登录' : 'Complete Login')}
+                      {authLoading ? (lang === 'zh' ? '楠岃瘉涓?..' : 'Verifying...') : (lang === 'zh' ? '瀹屾垚鐧诲綍' : 'Complete Login')}
                     </button>
 
                     <button 
                       onClick={() => setMfaStep('select')}
                       style={{ background: 'none', border: 'none', color: 'var(--text-tertiary)', fontSize: '13px', cursor: 'pointer', textAlign: 'center' }}
                     >
-                      {lang === 'zh' ? '← 返回选择其他方式' : '← Back to options'}
+                      {lang === 'zh' ? '鈫?杩斿洖閫夋嫨鍏朵粬鏂瑰紡' : '鈫?Back to options'}
                     </button>
                   </div>
                 )}
@@ -1561,7 +1561,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     onClick={resetVerificationStates}
                     style={{ width: '100%', marginTop: '16px', background: 'none', border: 'none', color: 'var(--text-tertiary)', fontSize: '13px', cursor: 'pointer', textDecoration: 'underline' }}
                   >
-                    {lang === 'zh' ? '使用其他账号登录' : 'Login with another account'}
+                    {lang === 'zh' ? '浣跨敤鍏朵粬璐﹀彿鐧诲綍' : 'Login with another account'}
                   </button>
                 )}
               </div>
@@ -1606,8 +1606,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 )}
                 
                 
-                {/* ──── Segmented Control (Tabs) ──── */}
-                {/* iOS 风格滑动切换器（极致稳定性 - 纯内联样式 - 解决坍塌问题） */}
+                {/* 鈹€鈹€鈹€鈹€ Segmented Control (Tabs) 鈹€鈹€鈹€鈹€ */}
+                {/* iOS 椋庢牸婊戝姩鍒囨崲鍣紙鏋佽嚧绋冲畾鎬?- 绾唴鑱旀牱寮?- 瑙ｅ喅鍧嶅闂锛?*/}
                 <div style={{
                   position: 'relative',
                   display: 'flex',
@@ -1620,7 +1620,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   boxSizing: 'border-box'
                 }}>
                   
-                  {/* 悬浮的物理白色滑块 */}
+                  {/* 鎮诞鐨勭墿鐞嗙櫧鑹叉粦鍧?*/}
                   <div style={{
                     position: 'absolute',
                     top: '4px',
@@ -1635,7 +1635,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     zIndex: 0
                   }}></div>
 
-                  {/* 密码登录按钮 */}
+                  {/* 瀵嗙爜鐧诲綍鎸夐挳 */}
                   <button
                     type="button"
                     style={{
@@ -1658,10 +1658,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     }}
                     onClick={() => setLoginMethod('password')}
                   >
-                    {lang === 'zh' ? '密码登录' : 'Password'}
+                    {lang === 'zh' ? '瀵嗙爜鐧诲綍' : 'Password'}
                   </button>
 
-                  {/* 验证码登录按钮 */}
+                  {/* 楠岃瘉鐮佺櫥褰曟寜閽?*/}
                   <button
                     type="button"
                     style={{
@@ -1684,7 +1684,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     }}
                     onClick={() => setLoginMethod('otp')}
                   >
-                    {lang === 'zh' ? '验证码登录' : 'Email OTP'}
+                    {lang === 'zh' ? '楠岃瘉鐮佺櫥褰? : 'Email OTP'}
                   </button>
                 </div>
 
@@ -1725,7 +1725,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         borderRadius: '999px'
                       }}
                     >
-                      {authLoading ? (lang === 'zh' ? '请稍候...' : 'Please wait...') : (lang === 'zh' ? '登录' : 'Login')}
+                      {authLoading ? (lang === 'zh' ? '璇风◢鍊?..' : 'Please wait...') : (lang === 'zh' ? '鐧诲綍' : 'Login')}
                     </button>
                   </form>
                 ) : (
@@ -1735,12 +1735,12 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     {/* Row 1: Email Address */}
                     <div>
                       <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '14px' }}>
-                        {lang === 'zh' ? '邮箱地址' : 'Email Address'}
+                        {lang === 'zh' ? '閭鍦板潃' : 'Email Address'}
                       </label>
                       <input
                         id="otp-email-input"
                         type="email"
-                        placeholder={lang === 'zh' ? '请输入邮箱' : 'Enter email'}
+                        placeholder={lang === 'zh' ? '璇疯緭鍏ラ偖绠? : 'Enter email'}
                         value={otpEmail}
                         onChange={e => { setOtpEmail(e.target.value); setAuthError(''); }}
                         style={{ 
@@ -1757,7 +1757,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     {/* Row 2: Verification Code + Send Button */}
                     <div>
                       <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '14px' }}>
-                        {lang === 'zh' ? '验证码' : 'Verification Code'}
+                        {lang === 'zh' ? '楠岃瘉鐮? : 'Verification Code'}
                       </label>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 130px', gap: '10px', width: '100%' }}>
                         <input
@@ -1765,7 +1765,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                           type="text"
                           inputMode="numeric"
                           maxLength={6}
-                          placeholder={lang === 'zh' ? '请输入验证码' : '6-digit code'}
+                          placeholder={lang === 'zh' ? '璇疯緭鍏ラ獙璇佺爜' : '6-digit code'}
                           value={otpCode}
                           onChange={e => { setOtpCode(e.target.value.replace(/\D/g, '')); setAuthError(''); }}
                           style={{ 
@@ -1799,7 +1799,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                             boxShadow: (authLoading || otpCooldown > 0) ? 'none' : '0 2px 4px rgba(2, 132, 199, 0.15)'
                           }}
                         >
-                          {otpCooldown > 0 ? `${otpCooldown}s` : (lang === 'zh' ? '获取验证码' : 'Send Code')}
+                          {otpCooldown > 0 ? `${otpCooldown}s` : (lang === 'zh' ? '鑾峰彇楠岃瘉鐮? : 'Send Code')}
                         </button>
                       </div>
                     </div>
@@ -1819,7 +1819,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         borderRadius: '999px'
                       }}
                     >
-                      {lang === 'zh' ? '登录' : 'Login'}
+                      {lang === 'zh' ? '鐧诲綍' : 'Login'}
                     </button>
                   </div>
                 )}
@@ -1922,7 +1922,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   value={authForm.username}
                   onChange={e => setAuthForm({...authForm, username: e.target.value})}
                   required
-                  placeholder={lang === 'zh' ? '设置登录用户名' : 'Set your username'}
+                  placeholder={lang === 'zh' ? '璁剧疆鐧诲綍鐢ㄦ埛鍚? : 'Set your username'}
                   style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
                 />
               </div>
@@ -1933,7 +1933,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   value={authForm.password}
                   onChange={e => setAuthForm({...authForm, password: e.target.value})}
                   required
-                  placeholder={lang === 'zh' ? '设置登录密码' : 'Set your password'}
+                  placeholder={lang === 'zh' ? '璁剧疆鐧诲綍瀵嗙爜' : 'Set your password'}
                   style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
                 />
               </div>
@@ -1943,14 +1943,14 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 {/* Row 1: Email Address */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '14px' }}>
-                    {lang === 'zh' ? '邮箱地址' : 'Email Address'}
+                    {lang === 'zh' ? '閭鍦板潃' : 'Email Address'}
                   </label>
                   <input
                     type="email"
                     value={authForm.email}
                     onChange={e => setAuthForm({...authForm, email: e.target.value})}
                     required
-                    placeholder={lang === 'zh' ? '请输入邮箱' : 'Enter email'}
+                    placeholder={lang === 'zh' ? '璇疯緭鍏ラ偖绠? : 'Enter email'}
                     style={{ 
                       width: '100%', 
                       padding: '10px 14px', 
@@ -1965,14 +1965,14 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 {/* Row 2: Verification Code + Send Button */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '14px' }}>
-                    {lang === 'zh' ? '验证码' : 'Verification Code'}
+                    {lang === 'zh' ? '楠岃瘉鐮? : 'Verification Code'}
                   </label>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 130px', gap: '10px', width: '100%' }}>
                     <input
                       type="text"
                       inputMode="numeric"
                       maxLength={6}
-                      placeholder={lang === 'zh' ? '请输入验证码' : '6-digit code'}
+                      placeholder={lang === 'zh' ? '璇疯緭鍏ラ獙璇佺爜' : '6-digit code'}
                       value={authForm.code}
                       onChange={e => setAuthForm({...authForm, code: e.target.value.replace(/\D/g, '')})}
                       style={{ 
@@ -2005,7 +2005,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         boxShadow: (authLoading || registerOtpCooldown > 0) ? 'none' : '0 2px 4px rgba(2, 132, 199, 0.15)'
                       }}
                     >
-                      {registerOtpCooldown > 0 ? t('resendAfter').replace('{s}', registerOtpCooldown) : (lang === 'zh' ? '获取验证码' : 'Send Code')}
+                      {registerOtpCooldown > 0 ? t('resendAfter').replace('{s}', registerOtpCooldown) : (lang === 'zh' ? '鑾峰彇楠岃瘉鐮? : 'Send Code')}
                     </button>
                   </div>
                 </div>
@@ -2062,7 +2062,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             </div>
 
             <div style={{ padding: '12px 16px', background: '#dcfce7', borderRadius: '10px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '20px' }}>{oauthProvider === 'github' ? '🐙' : '📧'}</span>
+              <span style={{ fontSize: '20px' }}>{oauthProvider === 'github' ? '馃悪' : '馃摟'}</span>
               <div>
                 <div style={{ fontWeight: 600, fontSize: '14px', color: '#15803d' }}>
                   {oauthProvider === 'github' ? 'GitHub' : 'Google'} {t('verifiedSuccess')}
@@ -2090,7 +2090,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   onChange={e => setAuthForm({...authForm, username: e.target.value})}
                   required
                   autoFocus
-                  placeholder={lang === 'zh' ? '设置登录用户名' : 'Set your username'}
+                  placeholder={lang === 'zh' ? '璁剧疆鐧诲綍鐢ㄦ埛鍚? : 'Set your username'}
                   style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
                 />
               </div>
@@ -2101,12 +2101,12 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   value={authForm.password}
                   onChange={e => setAuthForm({...authForm, password: e.target.value})}
                   required
-                  placeholder={lang === 'zh' ? '设置登录密码' : 'Set your password'}
+                  placeholder={lang === 'zh' ? '璁剧疆鐧诲綍瀵嗙爜' : 'Set your password'}
                   style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
                 />
               </div>
               <button type="submit" className="btn-primary btn-lg" disabled={authLoading} style={{ marginTop: '8px', width: '100%', justifyContent: 'center', opacity: authLoading ? 0.7 : 1 }}>
-                {authLoading ? (lang === 'zh' ? '请稍候...' : 'Please wait...') : t('finishRegistration')}
+                {authLoading ? (lang === 'zh' ? '璇风◢鍊?..' : 'Please wait...') : t('finishRegistration')}
               </button>
             </form>
           </div>
@@ -2134,8 +2134,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between'
             }}>
               <div>
-                <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>账号设置</h2>
-                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>管理您的第三方登录绑定</p>
+                <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>璐﹀彿璁剧疆</h2>
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>绠＄悊鎮ㄧ殑绗笁鏂圭櫥褰曠粦瀹?/p>
               </div>
               <button
                 onClick={handleCloseBindModal}
@@ -2169,7 +2169,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
               {/* Providers section label */}
               <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px' }}>
-                已支持的第三方账号
+                宸叉敮鎸佺殑绗笁鏂硅处鍙?
               </div>
 
               {/* GitHub Row */}
@@ -2229,7 +2229,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                               onMouseOver={e => e.currentTarget.style.background = '#e2e8f0'}
                               onMouseOut={e => e.currentTarget.style.background = '#f1f5f9'}
                             >
-                              {lang === 'zh' ? '更换' : 'Change'}
+                              {lang === 'zh' ? '鏇存崲' : 'Change'}
                             </button>
                             <button
                               onClick={handleUnbindEmail}
@@ -2244,7 +2244,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                               onMouseOut={e => e.currentTarget.style.background = 'white'}
                             >
                               <Trash2 size={13} />
-                              {lang === 'zh' ? '解绑' : 'Unbind'}
+                              {lang === 'zh' ? '瑙ｇ粦' : 'Unbind'}
                             </button>
                           </div>
                         ) : (
@@ -2281,7 +2281,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                             }}
                           >
                             {unbindLoading === key ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                            {lang === 'zh' ? '解绑' : 'Unlink'}
+                            {lang === 'zh' ? '瑙ｇ粦' : 'Unlink'}
                           </button>
                         ) : (
                           <button
@@ -2311,7 +2311,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         display: 'flex', flexDirection: 'column', gap: '12px'
                       }}>
                         <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                          {lang === 'zh' ? '绑定新邮箱' : 'Bind new email'}
+                          {lang === 'zh' ? '缁戝畾鏂伴偖绠? : 'Bind new email'}
                         </div>
                         <div style={{ display: 'flex', gap: '8px' }}>
                           <input 
@@ -2372,12 +2372,12 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         display: 'flex', flexDirection: 'column', gap: '12px'
                       }}>
                         <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                          {lang === 'zh' ? '更换新邮箱' : 'Change to new email'}
+                          {lang === 'zh' ? '鏇存崲鏂伴偖绠? : 'Change to new email'}
                         </div>
                         <div style={{ display: 'flex', gap: '8px' }}>
                           <input 
                             type="email" 
-                            placeholder={lang === 'zh' ? '新邮箱地址' : 'New email address'}
+                            placeholder={lang === 'zh' ? '鏂伴偖绠卞湴鍧€' : 'New email address'}
                             value={changeEmailForm.email}
                             onChange={e => {
                               const val = e.target.value;
@@ -2418,7 +2418,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                                 border: 'none', fontSize: '13px', fontWeight: 600, cursor: 'pointer'
                               }}
                             >
-                              {changeEmailForm.loading ? <Loader2 size={14} className="animate-spin" /> : (lang === 'zh' ? '确认更换' : 'Confirm')}
+                              {changeEmailForm.loading ? <Loader2 size={14} className="animate-spin" /> : (lang === 'zh' ? '纭鏇存崲' : 'Confirm')}
                             </button>
                           </div>
                         )}
@@ -2435,7 +2435,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6
               }}>
                 <ShieldCheck size={13} style={{ display: 'inline', marginRight: '5px', color: '#10b981', verticalAlign: 'middle' }} />
-                绑定第三方账号后，您可以使用该账号快捷登录，并享受双重身份验证保护。
+                缁戝畾绗笁鏂硅处鍙峰悗锛屾偍鍙互浣跨敤璇ヨ处鍙峰揩鎹风櫥褰曪紝骞朵韩鍙楀弻閲嶈韩浠介獙璇佷繚鎶ゃ€?
               </div>
             </div>
           </div>
