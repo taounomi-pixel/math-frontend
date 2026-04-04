@@ -163,16 +163,16 @@ className="p-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-
 <div className="flex flex-row md:flex-col gap-3 min-w-max">
 <button 
 onClick={toggleLike}
-className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all transform active:scale-95 ${
-video._liked || video.is_liked_by_me
-? 'bg-pink-500 text-white shadow-lg shadow-pink-200 hover:bg-pink-600' 
-: 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-100'
-}`}
+  className={`flex items-center gap-2 px-6 py-3 rounded-full font-bold transition-all transform active:scale-95 ${
+    video._liked || video.is_liked_by_me
+    ? 'bg-pink-500 text-white shadow-xl shadow-pink-200 hover:bg-pink-600' 
+    : 'bg-slate-50 text-slate-800 hover:bg-slate-100 border border-slate-200'
+  }`}
 >
 <Heart size={20} className={(video._liked || video.is_liked_by_me) ? 'fill-white' : ''} />
 <span>{video.like_count}</span>
 </button>
-<button className="flex items-center justify-center p-3 bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-100 rounded-2xl transition-all">
+<button className="flex items-center justify-center p-3 bg-slate-50 text-slate-800 hover:bg-slate-100 border border-slate-200 rounded-full transition-all">
 <Share2 size={20} />
 </button>
 {video.manim_source_url && (
@@ -245,7 +245,7 @@ className="w-full max-w-5xl bg-white rounded-[40px] shadow-2xl border border-sla
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-white/20 backdrop-blur-[32px] saturate-[180%]"
+        className="fixed inset-0 bg-white/20 backdrop-blur-[60px] saturate-[200%]"
         style={{ zIndex: -1 }}
       />
       
@@ -253,9 +253,9 @@ className="w-full max-w-5xl bg-white rounded-[40px] shadow-2xl border border-sla
       <motion.div 
         layoutId={`video-card-${id}`}
         initial={{ borderRadius: 32 }}
-        className="relative w-full max-w-[1240px] bg-white rounded-[40px] shadow-[0_32px_80px_rgba(0,0,0,0.15)] overflow-hidden overflow-y-auto max-h-[90vh] scrollbar-hide z-10 border border-white/20"
+        className="relative w-full max-w-[1240px] bg-white rounded-[48px] shadow-[0_64px_128px_rgba(0,0,0,0.15)] overflow-hidden overflow-y-auto max-h-[92vh] scrollbar-hide z-10 border border-white/40"
         onClick={(e) => e.stopPropagation()}
-        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+        transition={{ type: 'spring', damping: 30, stiffness: 180 }}
       >
         {renderContent()}
       </motion.div>

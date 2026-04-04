@@ -15,8 +15,8 @@ navigate(`/video/${video.id}`, { state: { backgroundLocation: location, videoDat
 return (
 <motion.div 
 layoutId={`video-card-${video.id}`}
-className="group relative flex flex-col bg-white rounded-[32px] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden"
-whileHover={{ y: -8 }}
+className="group relative flex flex-col bg-white rounded-[40px] border border-slate-100 shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-700 overflow-hidden"
+whileHover={{ y: -12 }}
 >
 {/* Thumbnail Section */}
 <div 
@@ -45,7 +45,7 @@ alt={video.title}
 <div className="flex items-start justify-between gap-4">
 <h3 
 onClick={handleOpenVideo}
-className="text-xl font-black text-slate-800 leading-tight cursor-pointer hover:text-blue-600 transition-colors line-clamp-2"
+className="text-2xl font-black text-slate-900 leading-tight cursor-pointer hover:text-blue-600 transition-colors line-clamp-2 leading-[1.1]"
 >
 {video.title}
 </h3>
@@ -195,7 +195,7 @@ return (
   return (
     <div className="max-w-[1600px] mx-auto py-12 px-4 md:px-8">
       {/* 2-column Grid - Restoring strict layout from original design */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16 md:gap-y-24">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16 md:gap-y-32">
         {filteredVideos.map(video => (
           <VideoItem 
             key={video.id} 
