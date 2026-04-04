@@ -109,7 +109,7 @@ ul {
   letter-spacing: 0.5px;
 }
 
-/* Definitive Grid Stabilization v4.0 (Anti-Chaos) */
+/* Definitive Grid Stabilization v5.0 (Ultimate Restoration) */
 .grid {
   display: grid !important;
 }
@@ -121,36 +121,42 @@ ul {
 @media (min-width: 1024px) {
   .md\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 4rem 3rem !important;
+    gap: 5rem 4rem !important; /* Increased padding for Figure 2 & 3 look */
   }
 }
 
-/* Fix for 'White Box' Thumbnail Bug - Tailwind 4.0 flakiness */
+/* Fix for 'White Box' Thumbnail Bug - Tailwind 4.0 Layout Engine Bypass */
 .aspect-video {
   aspect-ratio: 16 / 9 !important;
-  display: block !important;
+  display: flex !important;
   position: relative !important;
   width: 100% !important;
   overflow: hidden !important;
-  min-height: 180px !important; /* Prevents height collapse */
+  min-height: 240px !important; /* Hard-pinned height for stability */
+  background: #f1f5f9 !important; /* Safe placeholder color */
 }
 
 .object-cover {
   position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
+  inset: 0 !important;
   width: 100% !important;
   height: 100% !important;
   object-fit: cover !important;
+  z-index: 10 !important;
 }
 
-/* Premium iOS Glassmorphism v4.0 (Deep Immersion) */
+/* Premium iOS Glassmorphism v5.0 (Ultimate Immersion) */
 .glass-card {
-  background: rgba(255, 255, 255, 0.7) !important;
-  backdrop-filter: blur(48px) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(48px) saturate(200%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
-  box-shadow: 0 12px 64px rgba(15, 23, 42, 0.12) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(64px) saturate(250%) !important;
+  -webkit-backdrop-filter: blur(64px) saturate(250%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 16px 80px rgba(15, 23, 42, 0.14) !important;
+}
+
+/* Cleanup Legacy Conflicts */
+.video-grid, .video-card {
+  display: contents !important; /* Forces components to use the new grid logic */
 }
 
 .rounded-2xl {
