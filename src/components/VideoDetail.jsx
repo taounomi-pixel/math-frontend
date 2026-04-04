@@ -234,36 +234,40 @@ className="w-full max-w-5xl bg-white rounded-[40px] shadow-2xl border border-sla
 </div>
 );
 }
-// Modal Version
-return (
-<div 
-className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-12 overflow-y-auto"
-onClick={handleClose}
->
-{/* Backdrop */}
-<motion.div 
-initial={{ opacity: 0 }}
-animate={{ opacity: 1 }}
-exit={{ opacity: 0 }}
-className="fixed inset-0 bg-white/40 backdrop-blur-2xl"
-style={{ zIndex: -1 }}
-/>
-{/* Modal Container */}
-<motion.div 
-layoutId={`video-card-${id}`}
-className="relative w-full max-w-5xl bg-white rounded-[40px] shadow-2xl overflow-hidden overflow-y-auto max-h-full scrollbar-hide z-10 border border-white/20"
-onClick={(e) => e.stopPropagation()}
->
-{renderContent()}
-</motion.div>
-{/* Floating Close Button for Mobile */}
-<button 
-onClick={handleClose}
-className="fixed top-8 right-8 z-[110] p-4 bg-white/40 hover:bg-white/60 backdrop-blur-xl rounded-full text-slate-800 border border-white/40 shadow-2xl transition-all transform hover:rotate-90 md:hidden"
->
-<X size={24} />
-</button>
-</div>
-);
+  // Modal Version
+  return (
+    <div 
+      className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-12"
+      onClick={handleClose}
+    >
+      {/* Premium iOS-style Backdrop */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-white/20 backdrop-blur-[32px] saturate-[180%]"
+        style={{ zIndex: -1 }}
+      />
+      
+      {/* Modal Container with layoutId for seamless expansion */}
+      <motion.div 
+        layoutId={`video-card-${id}`}
+        initial={{ borderRadius: 32 }}
+        className="relative w-full max-w-[1240px] bg-white rounded-[40px] shadow-[0_32px_80px_rgba(0,0,0,0.15)] overflow-hidden overflow-y-auto max-h-[90vh] scrollbar-hide z-10 border border-white/20"
+        onClick={(e) => e.stopPropagation()}
+        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+      >
+        {renderContent()}
+      </motion.div>
+
+      {/* Floating Close Button for Mobile */}
+      <button 
+        onClick={handleClose}
+        className="fixed top-8 right-8 z-[1100] p-4 bg-white/40 hover:bg-white/60 backdrop-blur-xl rounded-full text-slate-800 border border-white/40 shadow-2xl transition-all transform hover:rotate-90 md:hidden"
+      >
+        <X size={24} />
+      </button>
+    </div>
+  );
 };
 export default VideoDetail;

@@ -192,22 +192,22 @@ return (
 </div>
 );
 }
-return (
-<div className="max-w-[1600px] mx-auto py-12">
-{/* 2-column Grid - ACCORDING TO USER'S HARD REQUIREMENTS */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16">
-{filteredVideos.map(video => (
-<VideoItem 
-key={video.id} 
-video={video} 
-handleLike={handleLike} 
-handleDelete={handleDelete}
-isOwner={currentUserId === video.uploader_id || currentUsername === video.uploader_username || localStorage.getItem('is_admin') === 'true'}
-t={t} 
-/>
-))}
-</div>
-</div>
-);
+  return (
+    <div className="max-w-[1600px] mx-auto py-12 px-4 md:px-8">
+      {/* 2-column Grid - Restoring strict layout from original design */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16 md:gap-y-24">
+        {filteredVideos.map(video => (
+          <VideoItem 
+            key={video.id} 
+            video={video} 
+            handleLike={handleLike} 
+            handleDelete={handleDelete}
+            isOwner={currentUserId === video.uploader_id || currentUsername === video.uploader_username || localStorage.getItem('is_admin') === 'true'}
+            t={t} 
+          />
+        ))}
+      </div>
+    </div>
+  );
 };
 export default TheoremCard;

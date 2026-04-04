@@ -39,17 +39,14 @@ document.title = t('logoText');
 
         <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         
-        <main className="flex-1 relative w-full max-w-[1920px] mx-auto z-10">
+        <main className="flex-1 relative w-full max-w-[1920px] mx-auto z-10 pt-6 md:pt-10">
           <Sidebar />
-          <div className="page-content mt-6 md:mt-8 px-4 md:px-8">
-            {/* 
-              Background Gallery: Renders for homepage routes OR when we have a backgroundLocation.
-              We add a blur filter if a modal (VideoDetail) is active.
-            */}
+          
+          <div className="page-content px-4 md:px-8">
             <div 
-              className="w-full transition-all duration-500 ease-in-out"
+              className="w-full transition-all duration-700 ease-in-out"
               style={{ 
-                filter: backgroundLocation ? 'blur(8px) brightness(0.9)' : 'none'
+                filter: backgroundLocation ? 'blur(20px) brightness(0.8) saturate(120%)' : 'none'
               }}
             >
               <Routes location={backgroundLocation || location}>
@@ -57,13 +54,11 @@ document.title = t('logoText');
                 <Route path="/videos" element={<TheoremCard searchQuery={searchQuery} />} />
                 <Route path="/c/:categoryL1" element={<TheoremCard searchQuery={searchQuery} />} />
                 <Route path="/c/:categoryL1/:categoryL2" element={<TheoremCard searchQuery={searchQuery} />} />
-                {/* Catch-all for /video/:id to keep the background active as TheoremCard */}
                 <Route path="/video/:id" element={<TheoremCard searchQuery={searchQuery} />} />
                 <Route path="*" element={<PlaceholderPage title={t("titleNotFound")} description={t("descNotFound")} />} />
               </Routes>
             </div>
 
-            {/* Modal Route: Rendered with AnimatePresence for smooth transitions */}
             <AnimatePresence mode="wait">
               {(backgroundLocation || (location.pathname && location.pathname.startsWith('/video/'))) && (
                 <Routes location={location} key="modal">
