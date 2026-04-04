@@ -43,7 +43,7 @@ const LayoutContent = () => {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       
-      <main style={{ position: 'relative', flex: 1, display: 'flex' }} className="container">
+      <main style={{ position: 'relative' }} className="w-full flex-1">
         <Sidebar />
         
         <div className="page-content" style={{ flex: 1, marginTop: '24px', position: 'relative' }}>
@@ -52,7 +52,13 @@ const LayoutContent = () => {
             If we access /video/:id directly, backgroundLocation will be null/undefined.
             We still want the homepage to render behind it.
           */}
-          <div style={{ filter: backgroundLocation ? 'blur(4px) brightness(0.9)' : 'none', transition: 'filter 0.3s ease, brightness 0.3s ease' }}>
+          <div 
+            className="w-full min-h-screen"
+            style={{ 
+              filter: backgroundLocation ? 'blur(4px) brightness(0.9)' : 'none', 
+              transition: 'filter 0.3s ease, brightness 0.3s ease' 
+            }}
+          >
             <Routes location={backgroundLocation || (location.pathname.startsWith('/video/') ? { ...location, pathname: '/' } : location)}>
               <Route path="/" element={<TheoremCard searchQuery={searchQuery} />} />
               <Route path="/videos" element={<TheoremCard searchQuery={searchQuery} />} />
