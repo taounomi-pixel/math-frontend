@@ -129,13 +129,14 @@ const UploadModal = ({ onClose, onSuccess }) => {
       
       // UI Response based on strict HTTP 200 OK
       if (xhr.status === 200) {
-        console.log("DEBUG: Upload Success (200). Starting 2s synchronization delay...");
+        console.log("✅ DEBUG: Upload Success (200). Starting 2s synchronization delay...");
         setUploadProgress(100);
         setIsSyncing(true);
+        // Do NOT set isUploading to false here, keep it true to disable the button permanently
         
         // Execute the 2s pause only on absolute success
         setTimeout(() => {
-          console.log("DEBUG: 2s delay finished. Executing final hardware-reload redirect.");
+          console.log("🏁 DEBUG: 2s delay finished. Executing final hardware-reload redirect.");
           if (onSuccess) onSuccess();
           if (onClose) onClose();
           
@@ -144,11 +145,11 @@ const UploadModal = ({ onClose, onSuccess }) => {
           window.location.href = target;
         }, 2000);
       } else {
-        console.error(`DEBUG: Upload Failure (${xhr.status}). Text: ${xhr.responseText}`);
+        console.error(`❌ DEBUG: Upload Failure (${xhr.status}). Text: ${xhr.responseText}`);
         // Handle 500, 401, 413 or other non-OK status codes
         try {
           if (xhr.status === 500) {
-            setError(lang === 'zh' ? '服务器内部错误，请检查后端日志(R2/DB)' : 'Server internal error, check backend logs (R2/DB)');
+            setError(lang === 'zh' ? '服务器内部错误：R2 存储配置失效 (s3_client is NONE)。请检查 Render 环境变量。' : 'Backend Error: R2 storage disabled (s3_client is NONE). Check Render Env Vars.');
           } else {
             const response = JSON.parse(xhr.responseText);
             setError(response.detail || t('errUploadFail'));
@@ -156,9 +157,9 @@ const UploadModal = ({ onClose, onSuccess }) => {
         } catch (e) {
           setError(t('errUploadFail'));
         } finally {
-          setIsUploading(false);
+          setIsUploading(false); // Reset allows retry ONLY on failure
           setUploadProgress(0);
-          setIsSyncing(false); // Reset to allow retry
+          setIsSyncing(false);
         }
       }
     };
@@ -498,12 +499,12 @@ const UploadModal = ({ onClose, onSuccess }) => {
                     <Loader2 size={18} className="spinning" style={{ marginRight: '8px' }} /> 
                     {isSyncing 
                       ? (lang === 'zh' ? '上传成功，正在同步...' : 'Upload successful, syncing...') 
-                      : (uploadProgress === 100 ? (lang === 'zh' ? '正在处理...' : 'Processing...') : `${uploadProgress}%`)
+                      : (uploadProgress === 100 ? (lang === 'zh' ? '服务器处理中...' : 'Server processing...') : `${uploadProgress}%`)
                     }
                   </span>
                 ) : (
                   <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <CheckCircle size={18} style={{ marginRight: '8px' }} />
+                    <Upload size={18} style={{ marginRight: '8px' }} />
                     {t('btnUpload')}
                   </span>
                 )}
