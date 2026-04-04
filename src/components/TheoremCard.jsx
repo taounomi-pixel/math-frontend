@@ -56,12 +56,12 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
         {/* Thumbnail Section */}
         <motion.div 
           layoutId={`video-visual-${video.id}`}
-          className="video-card-thumbnail" 
-          style={{ width: '100%', aspectRatio: '16/9', background: '#000', position: 'relative', overflow: 'hidden' }}
+          className="video-card-thumbnail aspect-video w-full overflow-hidden" 
+          style={{ background: '#000', position: 'relative' }}
         >
           <video 
             src={video.video_url.startsWith('http') ? video.video_url : `${API_BASE.replace('/api', '')}${video.video_url}`}
-            style={{ width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }}
             preload="metadata"
             muted
           />
@@ -361,7 +361,7 @@ const TheoremCard = ({ searchQuery = "" }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 container mx-auto px-4 py-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 container mx-auto px-4 max-w-7xl py-8">
       {filteredVideos.map(video => (
         <VideoItem 
           key={video.id} 

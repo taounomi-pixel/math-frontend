@@ -96,11 +96,8 @@ const VideoDetail = () => {
       {/* Modal Content */}
       <motion.div 
         layoutId={`video-card-${id}`}
-        style={{ 
-          width: '100%', maxWidth: '1000px', background: 'var(--bg-primary)', 
-          borderRadius: '32px', boxShadow: 'var(--shadow-2xl)', border: '1px solid var(--border-color)',
-          overflow: 'hidden', position: 'relative', minHeight: '80vh'
-        }}
+        className="w-full max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden relative"
+        style={{ minHeight: '80vh' }}
       >
         {/* Close Button */}
         <button 
@@ -110,7 +107,7 @@ const VideoDetail = () => {
           <X size={24} />
         </button>
 
-        <div style={{ padding: '48px' }}>
+        <div className="p-8">
           {/* Back Label */}
           <button 
             onClick={handleBack}
@@ -129,23 +126,18 @@ const VideoDetail = () => {
               {/* Massive Video Player */}
               <motion.div 
                 layoutId={`video-visual-${video.id}`}
-                style={{ 
-                  borderRadius: '24px', overflow: 'hidden', 
-                  background: '#000', width: '100%', maxWidth: '850px',
-                  aspectRatio: '16/9', boxShadow: 'var(--shadow-xl)',
-                  marginBottom: '40px'
-                }}
+                className="aspect-video w-full rounded-2xl overflow-hidden shadow-xl mb-10 bg-black"
               >
                 <video 
                   src={video.video_url.startsWith('http') ? video.video_url : `${API_BASE.replace('/api', '')}${video.video_url}`}
                   controls 
                   autoPlay
-                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                  className="w-full h-full object-cover"
                 />
               </motion.div>
 
               {/* Info Container - YouTube style */}
-              <div style={{ width: '100%', maxWidth: '850px' }}>
+              <div className="w-full">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', flexWrap: 'wrap', gap: '24px', marginBottom: '32px' }}>
                   <div style={{ flex: 1, minWidth: '300px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
