@@ -125,22 +125,22 @@ const UploadModal = ({ onClose, onSuccess }) => {
 
     xhr.onload = () => {
       xhrRef.current = null;
-      if (xhr.status >= 200 && xhr.status < 300) {
+      // UI Response based on strict HTTP 200 OK
+      if (xhr.status === 200) {
         setUploadProgress(100);
         setIsSyncing(true);
-        // Show success for a moment then reload
+        // Execute the 2s pause only on absolute success
         setTimeout(() => {
           if (onSuccess) onSuccess();
           if (onClose) onClose();
-          // Use assign(origin) instead of reload() to clear hash and avoid white screen
+          // Clean redirection to clear hash/anchor
           window.location.assign(window.location.origin);
         }, 2000);
       } else {
-        // Handle 500 or other errors
+        // Handle 500, 401, 413 or other non-OK status codes
         try {
-          // If status is 500, we definitely should not redirect
           if (xhr.status === 500) {
-            setError(lang === 'zh' ? '服务器内部错误，请检查后端日志' : 'Server internal error, please check backend logs');
+            setError(lang === 'zh' ? '服务器内部错误，请检查后端日志' : 'Server internal error, check backend logs');
           } else {
             const response = JSON.parse(xhr.responseText);
             setError(response.detail || t('errUploadFail'));
@@ -150,7 +150,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
         } finally {
           setIsUploading(false);
           setUploadProgress(0);
-          setIsSyncing(false); // Reset syncing state on failure
+          setIsSyncing(false); // Reset to allow retry
         }
       }
     };
