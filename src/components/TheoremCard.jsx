@@ -19,15 +19,15 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
       style={{ minHeight: '520px' }}
       whileHover={{ y: -12 }}
     >
-      {/* Thumbnail Section - Definitive Fix for White Box */}
+      {/* Thumbnail Section - Absolute Robust Fix v6.0 */}
       <div 
         onClick={handleOpenVideo}
-        className="relative aspect-video w-full overflow-hidden cursor-pointer bg-slate-100 flex items-center justify-center"
+        className="aspect-ratio-box cursor-pointer"
       >
         <motion.img 
           layoutId={`video-visual-${video.id}`}
           src={video.thumbnail_url || `https://pub-728b746849b244799047b198b17eb10b.r2.dev/placeholder.webp`}
-          className="object-cover absolute inset-0 w-full h-full transition-all duration-700 group-hover:scale-110 z-10"
+          className="object-cover transition-all duration-700 group-hover:scale-110 z-10"
           alt={video.title}
           loading="lazy"
           onError={(e) => {
@@ -35,8 +35,8 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
           }}
         />
         
-        {/* Placeholder Skeleton (shown during load or failure) */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center z-0">
+        {/* Loader Guard */}
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-50 z-0">
           <Loader2 className="animate-spin text-slate-200" size={32} />
         </div>
 
