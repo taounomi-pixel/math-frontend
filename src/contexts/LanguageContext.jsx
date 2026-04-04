@@ -21,12 +21,20 @@ const translations = {
     username: "Username",
     email: "Email",
     password: "Password",
+    verificationCode: "Verification Code",
+    enterOtp: "Please enter the 6-digit code",
     continueBtn: "Continue",
     createAccountBtn: "Create Account",
     noAccount: "Don't have an account? ",
     hasAccount: "Already have an account? ",
     signUpLink: "Sign up",
     signInLink: "Sign in",
+    invalidEmail: "Please enter a valid email",
+    getCode: "Get Code",
+    sending: "Sending...",
+    resendAfter: "Resend in {s}s",
+    verificationCodePlaceholder: "6-digit code",
+    emailRequired: "Email (Required)",
     
     loginFail: "Login failed",
     regFail: "Registration failed",
@@ -61,6 +69,15 @@ const translations = {
     boundTo: "Bound to",
     profileCardTitle: "Account Management",
     accountSecurity: "Security & Identity",
+    
+    // Account settings / Binding
+    bindEmail: "Bind Email",
+    emailBound: "Email Linked",
+    emailNotBound: "No Email Linked",
+    bindConfirm: "Confirm Binding",
+    bindingSuccess: "Bound successfully!",
+    verificationSent: "Verification code sent!",
+    enterValidEmail: "Please enter a valid email",
     
     // Sidebar & Topics
     "allVideos": "All",
@@ -124,6 +141,11 @@ const translations = {
     uploadedBy: "Uploaded by",
     uploadedOn: "Uploaded on",
     likes: "Likes",
+    backToGallery: "← Back to Gallery",
+    commentsCount: "Comments",
+    addCommentPlace: "Add a comment...",
+    commonSubmit: "Post",
+    loginToComment: "Log in to leave a comment",
     
     // UploadModal
     uploadVideo: "Upload Visualization",
@@ -180,12 +202,20 @@ const translations = {
     username: "用户名",
     email: "电子邮箱",
     password: "密码",
+    verificationCode: "验证码",
+    enterOtp: "请输入6位验证码",
     continueBtn: "继续",
     createAccountBtn: "创建账户",
     noAccount: "还没有账号？ ",
     hasAccount: "已经有账号了？ ",
     signUpLink: "注册",
     signInLink: "登入",
+    invalidEmail: "请输入有效的邮箱",
+    getCode: "获取验证码",
+    sending: "发送中...",
+    resendAfter: "{s}秒后重新获取",
+    verificationCodePlaceholder: "请输入6位验证码",
+    emailRequired: "电子邮箱 (必填)",
     
     loginFail: "登入失败",
     regFail: "注册失败",
@@ -220,6 +250,15 @@ const translations = {
     boundTo: "已绑定",
     profileCardTitle: "个人资料与管理",
     accountSecurity: "账号与安全",
+    
+    // 账号设置 / 绑定
+    bindEmail: "绑定邮箱",
+    emailBound: "邮箱已绑定",
+    emailNotBound: "未绑定邮箱",
+    bindConfirm: "确认绑定",
+    bindingSuccess: "绑定成功！",
+    verificationSent: "验证码已发送！",
+    enterValidEmail: "请输入有效的电子邮箱",
     
     // Sidebar & Topics
     "allVideos": "所有",
@@ -283,6 +322,11 @@ const translations = {
     uploadedBy: "上传者 ",
     uploadedOn: "上传于 ",
     likes: "喜欢",
+    backToGallery: "← 返回首页",
+    commentsCount: "条评论",
+    addCommentPlace: "添加评论...",
+    commonSubmit: "发布",
+    loginToComment: "登录后即可发表评论",
     
     // UploadModal
     uploadVideo: "上传可视化项目",
