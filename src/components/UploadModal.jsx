@@ -7,7 +7,7 @@ import { API_BASE } from '../utils/api';
 const allPossibleTags = Object.values(CATEGORIES).flat();
 
 const UploadModal = ({ onClose, onSuccess }) => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [title, setTitle] = useState('');
   const [categoryL1, setCategoryL1] = useState('');
   const [categoryL2, setCategoryL2] = useState('');
@@ -125,22 +125,30 @@ const UploadModal = ({ onClose, onSuccess }) => {
 
     xhr.onload = () => {
       xhrRef.current = null;
+      console.log(`DEBUG: Upload XHR finished. Status: ${xhr.status}`);
+      
       // UI Response based on strict HTTP 200 OK
       if (xhr.status === 200) {
+        console.log("DEBUG: Upload Success (200). Starting 2s synchronization delay...");
         setUploadProgress(100);
         setIsSyncing(true);
+        
         // Execute the 2s pause only on absolute success
         setTimeout(() => {
+          console.log("DEBUG: 2s delay finished. Executing final hardware-reload redirect.");
           if (onSuccess) onSuccess();
           if (onClose) onClose();
-          // Clean redirection to clear hash/anchor
-          window.location.assign(window.location.origin);
+          
+          // Force a clean reload/redirect to clear state and URL hashes (#)
+          const target = window.location.origin + "/";
+          window.location.href = target;
         }, 2000);
       } else {
+        console.error(`DEBUG: Upload Failure (${xhr.status}). Text: ${xhr.responseText}`);
         // Handle 500, 401, 413 or other non-OK status codes
         try {
           if (xhr.status === 500) {
-            setError(lang === 'zh' ? '服务器内部错误，请检查后端日志' : 'Server internal error, check backend logs');
+            setError(lang === 'zh' ? '服务器内部错误，请检查后端日志(R2/DB)' : 'Server internal error, check backend logs (R2/DB)');
           } else {
             const response = JSON.parse(xhr.responseText);
             setError(response.detail || t('errUploadFail'));
