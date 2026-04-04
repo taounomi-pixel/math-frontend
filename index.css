@@ -1,3 +1,5 @@
+﻿@import 'tailwindcss';
+
 /* =========================================
    MathVis - Light Theme Styles
    Focus: Mathematical Aesthetics & Video Grid
@@ -103,26 +105,6 @@ ul {
   font-weight: 400;
   letter-spacing: 0.5px;
 }
-
-/* Hardcore Layout Utilities (Correcting missing Tailwind) */
-.grid { display: grid; }
-.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-@media (min-width: 768px) {
-  .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-.gap-8 { gap: 2rem; }
-.w-full { width: 100%; }
-.max-w-7xl { max-width: 80rem !important; }
-.max-w-5xl { max-width: 64rem !important; }
-.mx-auto { margin-left: auto !important; margin-right: auto !important; }
-.aspect-video { aspect-ratio: 16 / 9 !important; }
-.object-cover { object-fit: cover !important; }
-.rounded-2xl { border-radius: 1rem; }
-.shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
-.overflow-hidden { overflow: hidden; }
-.p-8 { padding: 2rem !important; }
-.relative { position: relative; }
-.py-12 { padding-top: 3rem; padding-bottom: 3rem; }
 
 /* =========================================
    Background Math Vectors
@@ -649,7 +631,6 @@ kbd {
   flex-direction: column;
   gap: 12px;
   cursor: pointer;
-  group: true;
 }
 
 .thumbnail {
@@ -873,7 +854,7 @@ kbd {
     grid-template-columns: 1fr;
   }
 
-  /* Mobile: keep only π and Σ, shrink them to fit narrow screens */
+  /* Mobile: keep only 蟺 and 危, shrink them to fit narrow screens */
   .symbol-integral,
   .symbol-infinity,
   .symbol-alpha,
@@ -886,3 +867,4 @@ kbd {
   .symbol-pi    { font-size: 80px;  top: 15%; left: 5%;  }
   .symbol-sigma { font-size: 90px;  bottom: 20%; right: 5%; }
 }
+
