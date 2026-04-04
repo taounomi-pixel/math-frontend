@@ -1,214 +1,404 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { PlayCircle, Bookmark, Play, Heart, Loader2, Trash2, Code, Tag, FolderOpen, Eye } from 'lucide-react';
+import { PlayCircle, Bookmark, Play, Heart, Loader2, Trash2, Code, Tag, FolderOpen } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { API_BASE } from '../utils/api';
-const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
-const navigate = useNavigate();
-const location = useLocation();
-const handleOpenVideo = () => {
-// Navigate with backgroundLocation for modal overlay
-// Also pass videoData to eliminate loading flicker
-navigate(`/video/${video.id}`, { state: { backgroundLocation: location, videoData: video } });
-};
-return (
-<motion.div 
-layoutId={`video-card-${video.id}`}
-className="group relative flex flex-col bg-white rounded-[40px] border border-slate-100 shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-700 overflow-hidden"
-whileHover={{ y: -12 }}
->
-{/* Thumbnail Section */}
-<div 
-onClick={handleOpenVideo}
-className="relative aspect-video w-full overflow-hidden cursor-pointer bg-slate-900"
->
-<motion.img 
-layoutId={`video-visual-${video.id}`}
-src={video.thumbnail_url || `https://pub-728b746849b244799047b198b17eb10b.r2.dev/placeholder.webp`}
-className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
-alt={video.title}
-loading="lazy"
-/>
-{/* Play Overlay */}
-<div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-500 flex items-center justify-center opacity-0 group-hover:opacity-100">
-<div className="w-16 h-16 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/40 transform scale-75 group-hover:scale-100 transition-all duration-500 shadow-2xl">
-<Play fill="white" className="text-white ml-1" size={28} />
-</div>
-</div>
-{/* Category Badge */}
-<div className="absolute top-4 left-4 px-3 py-1 bg-white/20 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-[0.1em] rounded-full border border-white/30 shadow-xl opacity-0 group-hover:opacity-100 mt-2 transition-all duration-500 transform -translate-y-2 group-hover:translate-y-0">
-{t(video.category_l1) || video.category_l1}
-</div>
-</div>
-{/* Content Area */}
-<div className="p-7 flex flex-col gap-4">
-<div className="flex items-start justify-between gap-4">
-<h3 
-onClick={handleOpenVideo}
-className="text-2xl font-black text-slate-900 leading-tight cursor-pointer hover:text-blue-600 transition-colors line-clamp-2 leading-[1.1]"
->
-{video.title}
-</h3>
-<div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-2xl border border-slate-100 group-hover:border-pink-100 group-hover:bg-pink-50 transition-all duration-300">
-<Heart 
-size={18} 
-className={`cursor-pointer transition-all duration-300 hover:scale-125 ${video._liked || video.is_liked_by_me ? 'text-pink-500 fill-pink-500' : 'text-slate-400'}`}
-onClick={(e) => { e.stopPropagation(); handleLike(video.id); }}
-/>
-<span className={`text-sm font-black ${(video._liked || video.is_liked_by_me) ? 'text-pink-600' : 'text-slate-500'}`}>
-{video.like_count}
-</span>
-</div>
-</div>
-{/* Tags */}
-<div className="flex flex-wrap gap-2">
-{(Array.isArray(video.tags) ? video.tags : (video.tags ? video.tags.split(',') : [])).slice(0, 3).map(tag => (
-<span key={tag} className="text-[11px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 transition-colors hover:bg-white hover:text-blue-500 hover:border-blue-100">
-#{t(tag) || tag}
-</span>
-))}
-</div>
-{/* Bottom Meta */}
-<div className="flex items-center justify-between mt-2 pt-5 border-t border-slate-50">
-<div className="flex items-center gap-3">
-<div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-xs font-black text-white shadow-lg shadow-blue-100">
-{video.uploader_username?.[0]?.toUpperCase()}
-</div>
-<div className="flex flex-col">
-<span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('uploadedBy')}</span>
-<span className="text-sm font-black text-slate-700">@{video.uploader_username}</span>
-</div>
-</div>
-<div className="flex items-center gap-1.5">
-{isOwner && (
-<button 
-onClick={(e) => { e.stopPropagation(); handleDelete(video.id); }}
-className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-title={t('btnDelete')}
->
-<Trash2 size={18} />
-</button>
-)}
-<button 
-onClick={handleOpenVideo}
-className="p-2 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
->
-<Eye size={18} />
-</button>
-</div>
-</div>
-</div>
-</motion.div>
-);
-};
+
 const TheoremCard = ({ searchQuery = "" }) => {
-const { t } = useLanguage();
-const { categoryL1, categoryL2 } = useParams();
-const [videos, setVideos] = useState([]);
-const [isLoading, setIsLoading] = useState(true);
-const [error, setError] = useState('');
-const [showWakingMessage, setShowWakingMessage] = useState(false);
-const fetchVideos = async () => {
-setIsLoading(true);
-setShowWakingMessage(false);
-const timer = setTimeout(() => setShowWakingMessage(true), 3000);
-const token = localStorage.getItem('access_token');
-const headers = {};
-if (token) headers['Authorization'] = `Bearer ${token}`;
-try {
-const response = await fetch(`${API_BASE}/videos`, { headers });
-if (!response.ok) throw new Error('Failed to fetch videos');
-const data = await response.json();
-setVideos(data);
-} catch (err) {
-setError(err.message);
-} finally {
-clearTimeout(timer);
-setIsLoading(false);
-}
-};
-useEffect(() => {
-fetchVideos();
-window.addEventListener('videoUploaded', fetchVideos);
-return () => window.removeEventListener('videoUploaded', fetchVideos);
-}, []);
-const currentUserId = localStorage.getItem('user_id') ? parseInt(localStorage.getItem('user_id'), 10) : null;
-const currentUsername = localStorage.getItem('username');
-const handleDelete = async (videoId) => {
-if (!window.confirm(t('deleteConfirm'))) return;
-const token = localStorage.getItem('access_token');
-try {
-const response = await fetch(`${API_BASE}/videos/${videoId}`, {
-method: 'DELETE',
-headers: { 'Authorization': `Bearer ${token}` }
-});
-if (!response.ok) throw new Error(t('errDeleteFail'));
-setVideos(prev => prev.filter(v => v.id !== videoId));
-} catch (err) {
-alert(err.message);
-}
-};
-const handleLike = async (videoId) => {
-const token = localStorage.getItem('access_token');
-if (!token) { alert(t('loginToLike')); return; }
-try {
-const res = await fetch(`${API_BASE}/videos/${videoId}/like`, {
-method: 'POST',
-headers: { 'Authorization': `Bearer ${token}` }
-});
-if (!res.ok) throw new Error('Action failed');
-const data = await res.json();
-setVideos(prev => prev.map(v => 
-v.id === videoId ? { ...v, like_count: data.like_count, _liked: data.action === 'liked' } : v
-));
-} catch (err) { console.error(err); }
-};
-if (isLoading && videos.length === 0) {
-return (
-<div className="flex flex-col items-center justify-center py-32 gap-6">
-<Loader2 className="animate-spin text-blue-500" size={48} />
-{showWakingMessage && <p className="text-slate-400 font-bold animate-pulse">{t('wakingUp')}</p>}
-</div>
-);
-}
-if (error) return <div className="p-8 text-red-500 bg-red-50 rounded-2xl border border-red-100 m-8 text-center font-bold">{error}</div>;
-const decodedL1 = categoryL1 ? decodeURIComponent(categoryL1) : null;
-const decodedL2 = categoryL2 ? decodeURIComponent(categoryL2) : null;
-const lowerQuery = searchQuery.toLowerCase().trim();
-let filteredVideos = videos.filter(v => (!decodedL1 || v.category_l1 === decodedL1) && (!decodedL2 || v.category_l2 === decodedL2));
-if (lowerQuery) {
-filteredVideos = filteredVideos.filter(v => 
-(v.title || "").toLowerCase().includes(lowerQuery) || 
-(v.uploader_username || "").toLowerCase().includes(lowerQuery) || 
-(Array.isArray(v.tags) ? v.tags : (v.tags ? v.tags.split(',') : [])).some(tag => tag.toLowerCase().includes(lowerQuery))
-);
-}
-if (filteredVideos.length === 0) {
-return (
-<div className="text-center py-32 px-8 bg-slate-50 rounded-[40px] border-4 border-dashed border-slate-100 m-8">
-<FolderOpen size={64} className="mx-auto text-slate-200 mb-6" />
-<h3 className="text-slate-800 font-black text-2xl mb-2">{t('noRecords')}</h3>
-<p className="text-slate-400 font-medium">{t('loginToUploadDesc')}</p>
-</div>
-);
-}
-  return (
-    <div className="max-w-[1600px] mx-auto py-12 px-4 md:px-8">
-      {/* 2-column Grid - Restoring strict layout from original design */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16 md:gap-y-32">
-        {filteredVideos.map(video => (
-          <VideoItem 
-            key={video.id} 
-            video={video} 
-            handleLike={handleLike} 
-            handleDelete={handleDelete}
-            isOwner={currentUserId === video.uploader_id || currentUsername === video.uploader_username || localStorage.getItem('is_admin') === 'true'}
-            t={t} 
-          />
-        ))}
+  const { t } = useLanguage();
+  const { categoryL1, categoryL2 } = useParams();
+  const [videos, setVideos] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const [showWakingMessage, setShowWakingMessage] = useState(false);
+  
+  const fetchVideos = async () => {
+    setIsLoading(true);
+    setShowWakingMessage(false);
+    
+    // Timer to show "Waking up..." message after 3 seconds
+    const timer = setTimeout(() => {
+      setShowWakingMessage(true);
+    }, 3000);
+
+    const token = localStorage.getItem('access_token');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    try {
+      const response = await fetch(`${API_BASE}/videos`, { headers });
+      if (!response.ok) throw new Error('Failed to fetch videos');
+      const data = await response.json();
+      setVideos(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      clearTimeout(timer);
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVideos();
+    
+    // Listen for upload success events triggered by Header > UploadModal
+    window.addEventListener('videoUploaded', fetchVideos);
+    return () => {
+      window.removeEventListener('videoUploaded', fetchVideos);
+    };
+  }, []);
+
+  const currentUserId = localStorage.getItem('user_id') ? parseInt(localStorage.getItem('user_id'), 10) : null;
+  const currentUsername = localStorage.getItem('username');
+
+  const handleDelete = async (videoId) => {
+    if (!window.confirm(t('deleteConfirm'))) return;
+
+    const token = localStorage.getItem('access_token');
+    try {
+      const fullUrl = `${API_BASE}/videos/${videoId}`;
+      console.log(`[DEBUG] Attempting DELETE at: ${fullUrl}`);
+      const response = await fetch(fullUrl, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        let errorMsg = t('errDeleteFail');
+        try {
+          const errorData = await response.json();
+          if (errorData.detail) errorMsg += `: ${errorData.detail}`;
+        } catch (e) {
+          // ignore parsing error
+        }
+        throw new Error(errorMsg);
+      }
+
+      // Remove from state
+      setVideos(prev => prev.filter(v => v.id !== videoId));
+      alert(t('deleteSuccess'));
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleLike = async (videoId) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      alert(t('loginToLike'));
+      return;
+    }
+    
+    try {
+      const res = await fetch(`${API_BASE}/videos/${videoId}/like`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!res.ok) throw new Error('Action failed');
+      const data = await res.json();
+      
+      // Update UI optimistically
+      setVideos(prev => prev.map(v => 
+        v.id === videoId 
+          ? { ...v, like_count: data.like_count, _liked: data.action === 'liked' } 
+          : v
+      ));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (isLoading && videos.length === 0) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px', gap: '16px' }}>
+        <Loader2 className="spinning" size={32} color="var(--primary)" />
+        {showWakingMessage && (
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', animation: 'fadeIn 0.5s ease' }}>
+            {t('wakingUp')}
+          </p>
+        )}
       </div>
+    );
+  }
+
+  if (error) {
+    return <div className="error-message" style={{ margin: '32px' }}>{error}</div>;
+  }
+
+  // Fallback to static if no database entries yet
+  if (videos.length === 0) {
+    return (
+      <div style={{ 
+        textAlign: 'center', padding: '64px', margin: '32px 0',
+        background: 'var(--bg-secondary)', borderRadius: '16px', border: '1px dashed var(--border-color)'
+      }}>
+        <h3 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>{t('noRecords')}</h3>
+        <p style={{ color: 'var(--text-secondary)' }}>{t('loginToUploadDesc')}</p>
+      </div>
+    );
+  }
+
+  // --- Filter by category from URL params ---
+  const decodedL1 = categoryL1 ? decodeURIComponent(categoryL1) : null;
+  const decodedL2 = categoryL2 ? decodeURIComponent(categoryL2) : null;
+
+  let filteredVideos = videos;
+
+  // Apply category filter
+  if (decodedL1) {
+    filteredVideos = filteredVideos.filter(v => v.category_l1 === decodedL1);
+  }
+  if (decodedL2) {
+    filteredVideos = filteredVideos.filter(v => v.category_l2 === decodedL2);
+  }
+
+  // Apply search text filter
+  const lowerQuery = searchQuery.toLowerCase().trim();
+  if (lowerQuery) {
+    filteredVideos = filteredVideos.filter(video => {
+      const titleMatch = (video.title || "").toLowerCase().includes(lowerQuery);
+      const uploaderMatch = (video.uploader_username || "").toLowerCase().includes(lowerQuery);
+      const tags = video.tags || [];
+      const tagsMatch = tags.some(tag => tag.toLowerCase().includes(lowerQuery));
+      return titleMatch || uploaderMatch || tagsMatch;
+    });
+  }
+
+  // Category header
+  const categoryHeader = decodedL2 
+    ? `${decodedL1} › ${decodedL2}` 
+    : decodedL1 || null;
+
+  if (filteredVideos.length === 0) {
+    return (
+      <div style={{ textAlign: 'center', margin: '32px 0', padding: '64px', background: 'var(--bg-secondary)', borderRadius: '16px' }}>
+        {categoryHeader && (
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '12px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <Tag size={16} /> {t(decodedL1)} {decodedL2 ? ` › ${t(decodedL2)}` : ''}
+          </p>
+        )}
+        <h3 style={{ color: 'var(--text-primary)' }}>
+          {searchQuery 
+            ? `${t('noResultsFor')} "${searchQuery}"` 
+            : t('noRecords')
+          }
+        </h3>
+        <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>{t('loginToUploadDesc')}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '48px', margin: '24px 0' }}>
+      {categoryHeader && (
+        <div style={{ 
+          padding: '12px 20px', 
+          background: 'linear-gradient(135deg, var(--bg-secondary), var(--bg-primary))',
+          borderRadius: '12px', 
+          border: '1px solid var(--border-color)',
+          fontSize: '16px',
+          fontWeight: '600',
+          color: 'var(--text-primary)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <FolderOpen size={18} /> {t(decodedL1)} {decodedL2 ? ` › ${t(decodedL2)}` : ''}
+          <span style={{ fontSize: '13px', fontWeight: '400', color: 'var(--text-secondary)', marginLeft: 'auto' }}>
+            {filteredVideos.length} {t('resultsCount')}
+          </span>
+        </div>
+      )}
+      {filteredVideos.map(video => (
+        <VideoItem 
+          key={video.id} 
+          video={video} 
+          handleLike={handleLike} 
+          handleDelete={handleDelete}
+          isOwner={
+            currentUserId === video.uploader_id || 
+            (currentUsername && currentUsername === video.uploader_username) ||
+            localStorage.getItem('is_admin') === 'true'
+          }
+          t={t} 
+        />
+      ))}
     </div>
   );
 };
+
+const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
+  const finalCategoryLabel = [
+    video.category_l1 ? t(video.category_l1) : null,
+    video.category_l2 ? t(video.category_l2) : null
+  ].filter(Boolean).join(' › ');
+  
+  const [showCode, setShowCode] = useState(false);
+  const [codeContent, setCodeContent] = useState('');
+  const [codeLoading, setCodeLoading] = useState(false);
+
+  const handleViewSourceCode = async (url) => {
+    setShowCode(true);
+    if (codeContent) return;
+    setCodeLoading(true);
+    try {
+      const res = await fetch(url);
+      const text = await res.text();
+      setCodeContent(text);
+    } catch(e) {
+      setCodeContent('Error loading code: ' + e.message);
+    } finally {
+      setCodeLoading(false);
+    }
+  };
+
+  return (
+    <section className="hero-section" style={{ minHeight: 'auto', padding: '32px', gap: '32px' }}>
+      <div className="hero-content">
+        <span className="badge">{t('uploadedBy')} @{video.uploader_username}</span>
+        <h2 className="hero-title" style={{ fontSize: '32px', margin: '16px 0' }}>{video.title}</h2>
+        {video.tags && video.tags.length > 0 && (
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+            {video.tags.map(tag => (
+              <span key={tag} style={{ 
+                padding: '4px 10px', 
+                borderRadius: '16px', 
+                background: 'var(--bg-tertiary)', 
+                fontSize: '13px', 
+                color: 'var(--text-secondary)',
+                border: '1px solid var(--border-color)'
+              }}>
+                #{t(tag) || tag}
+              </span>
+            ))}
+          </div>
+        )}
+        {finalCategoryLabel && (
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Tag size={14} /> {finalCategoryLabel}
+          </p>
+        )}
+        <p className="hero-desc" style={{ fontSize: '15px' }}>
+          {t('uploadedOn')} {new Date(video.upload_time).toLocaleDateString()}
+        </p>
+        <div className="hero-actions" style={{ marginTop: '24px' }}>
+          <button 
+            className={`btn-primary ${video._liked ? 'liked' : ''}`} 
+            onClick={() => handleLike(video.id)} 
+            style={video._liked ? { 
+              display: 'flex', gap: '8px', alignItems: 'center',
+              backgroundColor: '#ec4899',
+              borderColor: '#ec4899',
+              transition: 'background 0.2s'
+            } : {
+              display: 'flex', gap: '8px', alignItems: 'center',
+              transition: 'background 0.2s'
+            }}
+          >
+            <Heart size={20} fill={video._liked ? "currentColor" : "none"} /> 
+            {video.like_count}
+          </button>
+          
+          {video.manim_source_url && (
+            <button 
+              className="btn-ghost" 
+              onClick={() => handleViewSourceCode(video.manim_source_url)}
+              style={{ 
+                display: 'flex', gap: '8px', alignItems: 'center', 
+                padding: '8px 16px', border: '1px solid var(--border-color)', 
+                borderRadius: '8px', color: 'var(--text-primary)' 
+              }}
+            >
+              <Code size={18} />
+              {t('viewCode')}
+            </button>
+          )}
+          
+          {isOwner && (
+            <button 
+              className="btn-ghost" 
+              onClick={() => handleDelete(video.id)}
+              style={{ 
+                display: 'flex', gap: '8px', alignItems: 'center', 
+                color: '#ef4444', padding: '8px 16px',
+                border: '1px solid #fecaca', borderRadius: '8px'
+              }}
+            >
+              <Trash2 size={18} />
+              {t('btnDelete')}
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="hero-visual" style={{ flex: '1 1 50%' }}>
+        <div style={{ borderRadius: '16px', overflow: 'hidden', background: '#000', width: '100%', aspectRatio: '16/9', boxShadow: 'var(--shadow-md)' }}>
+          <video 
+            src={video.video_url.startsWith('http') ? video.video_url : `${API_BASE.replace('/api', '')}${video.video_url}`}
+            controls 
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            preload="metadata"
+          >
+            Your browser does not support HTML video.
+          </video>
+        </div>
+      </div>
+      
+      {showCode && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ background: 'var(--bg-primary)', width: '90%', maxWidth: '800px', height: '80vh', borderRadius: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+            <div style={{ 
+              padding: '16px 24px', 
+              borderBottom: '1px solid var(--border-color)', 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              backgroundColor: 'var(--bg-secondary)',
+              borderTopLeftRadius: '16px',
+              borderTopRightRadius: '16px'
+            }}>
+              <h3 style={{ margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', fontWeight: '600' }}>
+                <Code size={20} color="var(--primary)" /> {video.title} - {t('viewCode')}
+              </h3>
+              <button 
+                onClick={() => setShowCode(false)} 
+                className="close-button-p"
+                style={{ 
+                  background: 'rgba(0, 0, 0, 0.05)', 
+                  border: 'none', 
+                  cursor: 'pointer', 
+                  fontSize: '24px', 
+                  color: 'var(--text-primary)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  width: '36px', 
+                  height: '36px', 
+                  borderRadius: '50%',
+                  transition: 'all 0.2s'
+                }}
+              >
+                &times;
+              </button>
+            </div>
+            <div style={{ padding: '24px', overflowY: 'auto', flex: 1, backgroundColor: '#1e1e1e', color: '#d4d4d4' }}>
+              {codeLoading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                  <Loader2 className="spinning" size={32} color="var(--primary)" />
+                </div>
+              ) : (
+                <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: '14px', whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{codeContent}</pre>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+};
+
 export default TheoremCard;

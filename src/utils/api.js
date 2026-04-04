@@ -1,6 +1,6 @@
-﻿/**
+/**
  * Centralized API base URL.
- * Priority: VITE_API_URL env var 鈫?known Render production URL
+ * Priority: VITE_API_URL env var → known Render production URL
  *
  * The old fallback `http://${hostname}:8000/api` is intentionally removed:
  * it produces an HTTP request inside an HTTPS page, which browsers block

@@ -7,7 +7,7 @@ import { API_BASE } from '../utils/api';
 const allPossibleTags = Object.values(CATEGORIES).flat();
 
 const UploadModal = ({ onClose, onSuccess }) => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const [title, setTitle] = useState('');
   const [categoryL1, setCategoryL1] = useState('');
   const [categoryL2, setCategoryL2] = useState('');
@@ -16,7 +16,6 @@ const UploadModal = ({ onClose, onSuccess }) => {
   const [sourceFile, setSourceFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState('');
   const [fileSizeError, setFileSizeError] = useState('');
   const fileInputRef = useRef(null);
@@ -125,41 +124,17 @@ const UploadModal = ({ onClose, onSuccess }) => {
 
     xhr.onload = () => {
       xhrRef.current = null;
-      console.log(`DEBUG: Upload XHR finished. Status: ${xhr.status}`);
-      
-      // UI Response based on strict HTTP 200 OK
-      if (xhr.status === 200) {
-        console.log("✅ DEBUG: Upload Success (200). Starting 2s synchronization delay...");
-        setUploadProgress(100);
-        setIsSyncing(true);
-        // Do NOT set isUploading to false here, keep it true to disable the button permanently
-        
-        // Execute the 2s pause only on absolute success
-        setTimeout(() => {
-          console.log("🏅 DEBUG: 2s delay finished. Executing final hardware-reload redirect.");
-          if (onSuccess) onSuccess();
-          if (onClose) onClose();
-          
-          // Force a clean reload/redirect to clear state and URL hashes (#)
-          const target = window.location.origin + "/";
-          window.location.href = target;
-        }, 2000);
+      if (xhr.status >= 200 && xhr.status < 300) {
+        onSuccess && onSuccess();
+        onClose();
       } else {
-        console.error(`❌ DEBUG: Upload Failure (${xhr.status}). Text: ${xhr.responseText}`);
-        // Handle 500, 401, 413 or other non-OK status codes
         try {
-          if (xhr.status === 500) {
-            setError(lang === 'zh' ? '服务器内部错误：R2 存储配置失效 (s3_client is NONE)。请检查 Render 环境变量。' : 'Backend Error: R2 storage disabled (s3_client is NONE). Check Render Env Vars.');
-          } else {
-            const response = JSON.parse(xhr.responseText);
-            setError(response.detail || t('errUploadFail'));
-          }
+          const response = JSON.parse(xhr.responseText);
+          setError(response.detail || t('errUploadFail'));
         } catch (e) {
           setError(t('errUploadFail'));
         } finally {
-          setIsUploading(false); // Reset allows retry ONLY on failure
-          setUploadProgress(0);
-          setIsSyncing(false);
+          setIsUploading(false);
         }
       }
     };
@@ -497,14 +472,11 @@ const UploadModal = ({ onClose, onSuccess }) => {
                 {isUploading ? (
                   <span style={{ display: 'flex', alignItems: 'center' }}>
                     <Loader2 size={18} className="spinning" style={{ marginRight: '8px' }} /> 
-                    {isSyncing 
-                      ? (lang === 'zh' ? '上传成功，正在同步...' : 'Upload successful, syncing...') 
-                      : (uploadProgress === 100 ? (lang === 'zh' ? '服务器处理中...' : 'Server processing...') : `${uploadProgress}%`)
-                    }
+                    {uploadProgress}%
                   </span>
                 ) : (
                   <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <Upload size={18} style={{ marginRight: '8px' }} />
+                    <CheckCircle size={18} style={{ marginRight: '8px' }} />
                     {t('btnUpload')}
                   </span>
                 )}

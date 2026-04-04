@@ -27,11 +27,18 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="sidebar-container container mx-auto px-4" style={{ marginBottom: '24px' }}>
+    <div className="sidebar-container" style={{ width: '100%', marginBottom: '24px' }}>
       <div className="topics-filter" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
         <NavLink 
           to="/"
           className={({ isActive }) => `topic-btn ${isActive ? 'active' : ''}`}
+          style={({ isActive }) => ({ 
+            ...(isActive ? {} : { background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)' }),
+            fontWeight: 'bold', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '6px' 
+          })}
           end
         >
           <LayoutGrid size={16} />
@@ -45,6 +52,7 @@ const Sidebar = () => {
               key={cat}
               to={`/c/${encodeURIComponent(cat)}`}
               className={`topic-btn ${isActive ? 'active' : ''}`}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               <CategoryIcon name={cat} />
               {t(cat) || cat}
@@ -77,6 +85,7 @@ const Sidebar = () => {
                 key={sub}
                 to={`/c/${encodeURIComponent(cat)}/${encodeURIComponent(sub)}`}
                 className={({ isActive }) => `topic-btn ${isActive ? 'active' : ''}`}
+                style={{ fontSize: '13px', padding: '6px 14px' }}
                 end
               >
                 {t(sub) || sub}
