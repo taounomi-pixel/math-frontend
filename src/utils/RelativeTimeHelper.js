@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Converts a date string into a relative time string (e.g., "4 days ago").
  * Lightweight implementation without external dependencies.
  */
@@ -15,7 +15,7 @@ export const getRelativeTime = (dateString, lang = 'zh') => {
   const diffInSec = Math.floor(diffInMs / 1000);
   
   // Future dates (sanity check)
-  if (diffInSec < 0) return lang === 'zh' ? '鍒氬垰' : 'Just now';
+  if (diffInSec < 0) return lang === 'zh' ? '刚刚' : 'Just now';
 
   const diffInMin = Math.floor(diffInSec / 60);
   const diffInHour = Math.floor(diffInMin / 60);
@@ -24,12 +24,12 @@ export const getRelativeTime = (dateString, lang = 'zh') => {
   const diffInYear = Math.floor(diffInMonth / 12);
 
   if (lang === 'zh') {
-    if (diffInSec < 60) return '鍒氬垰';
-    if (diffInMin < 60) return `${diffInMin} 鍒嗛挓鍓峘;
-    if (diffInHour < 24) return `${diffInHour} 灏忔椂鍓峘;
-    if (diffInDay < 30) return `${diffInDay} 澶╁墠`;
-    if (diffInMonth < 12) return `${diffInMonth} 涓湀鍓峘;
-    return `${diffInYear} 骞村墠`;
+    if (diffInSec < 60) return '刚刚';
+    if (diffInMin < 60) return `${diffInMin} 分钟前`;
+    if (diffInHour < 24) return `${diffInHour} 小时前`;
+    if (diffInDay < 30) return `${diffInDay} 天前`;
+    if (diffInMonth < 12) return `${diffInMonth} 个月前`;
+    return `${diffInYear} 年前`;
   } else {
     if (diffInSec < 60) return 'Just now';
     if (diffInMin < 60) return `${diffInMin === 1 ? '1 minute' : diffInMin + ' minutes'} ago`;
