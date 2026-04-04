@@ -26,44 +26,55 @@ const backgroundLocation = location.state?.backgroundLocation;
 useEffect(() => {
 document.title = t('logoText');
 }, [t, location]);
-return (
-<div className="w-full min-h-screen flex flex-col bg-slate-50">
-<Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-<main className="flex-1 relative w-full max-w-[1920px] mx-auto">
-<Sidebar />
-<div className="page-content mt-6 md:mt-8 px-4 md:px-8">
-{/* 
-Background Gallery: Renders for homepage routes OR when we have a backgroundLocation.
-We add a blur filter if a modal (VideoDetail) is active.
-*/}
-<div 
-className="w-full transition-all duration-500 ease-in-out"
-style={{ 
-filter: backgroundLocation ? 'blur(8px) brightness(0.9)' : 'none'
-}}
->
-<Routes location={backgroundLocation || location}>
-<Route path="/" element={<TheoremCard searchQuery={searchQuery} />} />
-<Route path="/videos" element={<TheoremCard searchQuery={searchQuery} />} />
-<Route path="/c/:categoryL1" element={<TheoremCard searchQuery={searchQuery} />} />
-<Route path="/c/:categoryL1/:categoryL2" element={<TheoremCard searchQuery={searchQuery} />} />
-{/* Catch-all for /video/:id to keep the background active as TheoremCard */}
-<Route path="/video/:id" element={<TheoremCard searchQuery={searchQuery} />} />
-<Route path="*" element={<PlaceholderPage title={t("titleNotFound")} description={t("descNotFound")} />} />
-</Routes>
-</div>
-{/* Modal Route: Rendered with AnimatePresence for smooth transitions */}
-<AnimatePresence mode="wait">
-{(backgroundLocation || location.pathname.startsWith('/video/')) && (
-<Routes location={location} key="modal">
-<Route path="/video/:id" element={<VideoDetail />} />
-</Routes>
-)}
-</AnimatePresence>
-</div>
-</main>
-</div>
-);
+    return (
+      <div className="w-full min-h-screen flex flex-col bg-slate-50 bg-fixed">
+        {/* Premium Math Background Vectors */}
+        <div className="bg-vectors fixed inset-0 pointer-events-none opacity-[0.03] z-0 overflow-hidden">
+          <div className="absolute top-[10%] left-[5%] text-[15rem] font-serif select-none rotate-12">π</div>
+          <div className="absolute top-[40%] right-[8%] text-[18rem] font-serif select-none -rotate-12">∫</div>
+          <div className="absolute bottom-[10%] left-[15%] text-[12rem] font-serif select-none rotate-45">∞</div>
+          <div className="absolute top-[60%] left-[40%] text-[10rem] font-serif select-none -rotate-6">∑</div>
+          <div className="absolute bottom-[20%] right-[20%] text-[14rem] font-serif select-none rotate-12">√</div>
+        </div>
+
+        <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        
+        <main className="flex-1 relative w-full max-w-[1920px] mx-auto z-10">
+          <Sidebar />
+          <div className="page-content mt-6 md:mt-8 px-4 md:px-8">
+            {/* 
+              Background Gallery: Renders for homepage routes OR when we have a backgroundLocation.
+              We add a blur filter if a modal (VideoDetail) is active.
+            */}
+            <div 
+              className="w-full transition-all duration-500 ease-in-out"
+              style={{ 
+                filter: backgroundLocation ? 'blur(8px) brightness(0.9)' : 'none'
+              }}
+            >
+              <Routes location={backgroundLocation || location}>
+                <Route path="/" element={<TheoremCard searchQuery={searchQuery} />} />
+                <Route path="/videos" element={<TheoremCard searchQuery={searchQuery} />} />
+                <Route path="/c/:categoryL1" element={<TheoremCard searchQuery={searchQuery} />} />
+                <Route path="/c/:categoryL1/:categoryL2" element={<TheoremCard searchQuery={searchQuery} />} />
+                {/* Catch-all for /video/:id to keep the background active as TheoremCard */}
+                <Route path="/video/:id" element={<TheoremCard searchQuery={searchQuery} />} />
+                <Route path="*" element={<PlaceholderPage title={t("titleNotFound")} description={t("descNotFound")} />} />
+              </Routes>
+            </div>
+
+            {/* Modal Route: Rendered with AnimatePresence for smooth transitions */}
+            <AnimatePresence mode="wait">
+              {(backgroundLocation || (location.pathname && location.pathname.startsWith('/video/'))) && (
+                <Routes location={location} key="modal">
+                  <Route path="/video/:id" element={<VideoDetail />} />
+                </Routes>
+              )}
+            </AnimatePresence>
+          </div>
+        </main>
+      </div>
+    );
 };
 // Main App Router
 export default function App() {
