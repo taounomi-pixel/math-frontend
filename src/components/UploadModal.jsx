@@ -125,8 +125,13 @@ const UploadModal = ({ onClose, onSuccess }) => {
     xhr.onload = () => {
       xhrRef.current = null;
       if (xhr.status >= 200 && xhr.status < 300) {
-        onSuccess && onSuccess();
-        onClose();
+        setUploadProgress(100);
+        // Show success for a moment then reload
+        setTimeout(() => {
+          onSuccess && onSuccess();
+          onClose();
+          window.location.reload(); // Force refresh to show new video
+        }, 1200);
       } else {
         try {
           const response = JSON.parse(xhr.responseText);
@@ -135,6 +140,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
           setError(t('errUploadFail'));
         } finally {
           setIsUploading(false);
+          setUploadProgress(0);
         }
       }
     };
@@ -472,7 +478,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
                 {isUploading ? (
                   <span style={{ display: 'flex', alignItems: 'center' }}>
                     <Loader2 size={18} className="spinning" style={{ marginRight: '8px' }} /> 
-                    {uploadProgress}%
+                    {uploadProgress === 100 ? (lang === 'zh' ? '正在处理...' : 'Processing...') : `${uploadProgress}%`}
                   </span>
                 ) : (
                   <span style={{ display: 'flex', alignItems: 'center' }}>
