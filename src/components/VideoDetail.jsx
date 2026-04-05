@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Code, Trash2, Tag, ArrowLeft, X } from 'lucide-react';
+import { Heart, Code, Trash2, Tag, ArrowLeft, X, Play } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { API_BASE } from '../utils/api';
 import CommentSection from './CommentSection';
@@ -22,6 +23,30 @@ const VideoDetail = () => {
   
   const token = localStorage.getItem('access_token');
   const currentUserId = localStorage.getItem('user_id');
+
+  // Code Modal State
+  const [showCode, setShowCode] = useState(false);
+  const [codeContent, setCodeContent] = useState('');
+  const [codeLoading, setCodeLoading] = useState(false);
+
+  const handleViewCode = async () => {
+    setShowCode(true);
+    if (!codeContent && video?.manim_source_url) {
+      setCodeLoading(true);
+      try {
+        const url = video.manim_source_url.startsWith('http') 
+          ? video.manim_source_url 
+          : `${API_BASE.replace('/api', '')}${video.manim_source_url}`;
+        const response = await fetch(url);
+        const text = await response.text();
+        setCodeContent(text);
+      } catch (error) {
+        setCodeContent('Error loading source code: ' + error.message);
+      } finally {
+        setCodeLoading(false);
+      }
+    }
+  };
 
   const fetchVideo = async () => {
     try {
@@ -196,7 +221,7 @@ const VideoDetail = () => {
                           padding: '12px 24px', borderRadius: '24px', border: '1px solid var(--border-color)',
                           display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px', fontWeight: '600'
                         }}
-                        onClick={() => window.open(video.manim_source_url, '_blank')}
+                        onClick={handleViewCode}
                       >
                         <Code size={20} /> {t('viewCode')}
                       </button>
@@ -213,6 +238,96 @@ const VideoDetail = () => {
           )}
         </div>
       </motion.div>
+
+      {/* Reused Code Modal Portal implementation */}
+      {createPortal(
+        <AnimatePresence>
+          {showCode && (
+            <div 
+              key="code-modal-container" 
+              style={{ 
+                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+                zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                padding: '24px' 
+              }}
+            >
+              <motion.div 
+                key="code-modal-backdrop"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => setShowCode(false)}
+                style={{ 
+                  position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                  background: 'rgba(255, 255, 255, 0.5)', 
+                  backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)'
+                }}
+              />
+              <motion.div 
+                key="code-modal-content"
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                onClick={(e) => e.stopPropagation()}
+                style={{ 
+                  width: '100%', maxWidth: '1000px', maxHeight: '85vh', 
+                  background: 'white', borderRadius: '32px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
+                  display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', border: '1px solid rgba(0,0,0,0.05)'
+                }}
+              >
+                <motion.button 
+                  onClick={() => setShowCode(false)} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                  style={{
+                    position: 'absolute', top: '24px', right: '24px', zIndex: 20, width: '40px', height: '40px', borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', color: '#1d1d1f'
+                  }}
+                >
+                  <X size={20} />
+                </motion.button>
+                <div style={{ padding: '32px 32px 20px', display: 'flex', alignItems: 'center', gap: '16px', borderBottom: '1px solid rgba(0,0,0,0.05)', background: '#fafafa' }}>
+                  <div style={{ background: 'rgba(0,0,0,0.05)', padding: '12px', borderRadius: '20px' }}><Code size={24} color="#1d1d1f" /></div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '22px', fontWeight: 'bold', color: '#1d1d1f', letterSpacing: '-0.5px' }}>{video?.title}</h3>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#86868b', fontWeight: '500' }}>Source Code</p>
+                  </div>
+                </div>
+                <div className="hide-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '32px', background: '#f5f5f7', position: 'relative' }}>
+                  {codeLoading ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px' }}><GeometricLoader size={60} showText={true} /></div>
+                  ) : (
+                    <div style={{ position: 'relative' }}>
+                      <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
+                        <button 
+                          onClick={() => { navigator.clipboard.writeText(codeContent); alert('代码已复制！'); }}
+                          style={{
+                            padding: '8px 16px', background: 'white', color: '#1d1d1f', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold',
+                            border: '1px solid rgba(0,0,0,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                          }}
+                        >
+                          <Play size={12} fill="currentColor" /> 复制
+                        </button>
+                      </div>
+                      <pre style={{ margin: 0, color: '#1d1d1f', fontSize: '14px', lineHeight: '1.6', fontFamily: '"JetBrains Mono", "Fira Code", monospace', tabSize: 4, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                        {codeContent}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+                <div style={{ padding: '16px 32px', background: '#fafafa', borderTop: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                   <div style={{ display: 'flex', gap: '8px' }}>
+                     <span style={{ padding: '4px 10px', background: 'white', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '8px', fontSize: '12px', color: '#86868b' }}>Python</span>
+                     <span style={{ padding: '4px 10px', background: 'white', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '8px', fontSize: '12px', color: '#86868b' }}>Manim</span>
+                   </div>
+                   <button onClick={() => setShowCode(false)} style={{ background: 'transparent', border: 'none', color: '#0066cc', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
+                     完成
+                   </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
     </div>
   );
 };
