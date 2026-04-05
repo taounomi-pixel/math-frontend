@@ -1,4 +1,0 @@
-Checking d:\Desktop\数学可视化平台\math-frontend\src\App.jsx
-NO FIX: d:\Desktop\数学可视化平台\math-frontend\src\App.jsx
-Checking d:\Desktop\数学可视化平台\math-frontend\src\components\VideoDetail.jsx
-NO FIX: d:\Desktop\数学可视化平台\math-frontend\src\components\VideoDetail.jsx

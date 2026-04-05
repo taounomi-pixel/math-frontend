@@ -4,3 +4,5 @@ dist
 .env.local
 .DS_Store
 build_error*.txt
+
+.legacy_scripts
