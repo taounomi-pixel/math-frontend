@@ -13,6 +13,20 @@ const CommentSection = ({ videoId }) => {
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const getTotalCommentsCount = (items) => {
+    let count = 0;
+    const traverse = (list) => {
+      list.forEach(item => {
+        count++;
+        if (item.replies && item.replies.length > 0) {
+          traverse(item.replies);
+        }
+      });
+    };
+    traverse(items);
+    return count;
+  };
+
   const currentUserId = localStorage.getItem('user_id');
   const token = localStorage.getItem('access_token');
 
@@ -70,7 +84,7 @@ const CommentSection = ({ videoId }) => {
     <div className="comment-section" style={{ maxWidth: '800px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
         <h2 style={{ fontSize: '24px', fontWeight: '700', margin: 0 }}>
-          {comments.length} {t('commentsCount')}
+          {getTotalCommentsCount(comments)} {t('commentsCount')}
         </h2>
       </div>
 
