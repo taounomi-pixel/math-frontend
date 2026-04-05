@@ -897,9 +897,9 @@ kbd {
 .loader-shape-t, .loader-shape-r, .loader-shape-p {
   transform-origin: 60px 30px; 
 }
-.loader-shape-t { animation: triangleLifecycle 12s infinite; }
-.loader-shape-r { animation: rectLifecycle 12s infinite; }
-.loader-shape-p { animation: pentagonLifecycle 12s infinite; }
+.loader-shape-t { animation: triangleLifecycle 8s infinite; }
+.loader-shape-r { animation: rectLifecycle 8s infinite; }
+.loader-shape-p { animation: pentagonLifecycle 8s infinite; }
 
 @keyframes triangleLifecycle {
   /* 0-3.0s: Single-Point Peak (Burst -> Singularity -> Fall) */
@@ -945,10 +945,10 @@ kbd {
   76%, 100% { opacity: 0; transform: translateY(150px); }
 }
 
-/* 🌊 MATHEMATICAL SINE WAVES (3s Interaction Sub-cycles) */
-.loader-wave-main { animation: waveDeformationMain 3s infinite; }
-.loader-wave-depth-1 { animation: waveDeformationDepth1 3s infinite -0.5s; }
-.loader-wave-depth-2 { animation: waveDeformationDepth2 3s infinite -1s; }
+/* 🌊 MATHEMATICAL SINE WAVES (2s Interaction Sub-cycles) */
+.loader-wave-main { animation: waveDeformationMain 2s infinite; }
+.loader-wave-depth-1 { animation: waveDeformationDepth1 2s infinite -0.33s; }
+.loader-wave-depth-2 { animation: waveDeformationDepth2 2s infinite -0.66s; }
 
 @keyframes waveDeformationMain {
   0%      { d: path("M 0 100 Q 60 70 120 100"); opacity: 1; stroke-width: 3px; } /* Burst Up */
@@ -972,8 +972,8 @@ kbd {
 }
 
 /* 💥 RIPPLE ANIMATIONS (Burst & Impact) */
-.loader-ripple-1 { animation: rippleActive 3s infinite 0s; }
-.loader-ripple-2 { animation: rippleActive 3s infinite 2.52s; }
+.loader-ripple-1 { animation: rippleActive 2s infinite 0s; }
+.loader-ripple-2 { animation: rippleActive 2s infinite 1.68s; }
 
 @keyframes rippleActive {
   0%   { r: 0; opacity: 1; stroke-width: 1.5; }
