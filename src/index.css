@@ -868,38 +868,47 @@ kbd {
   opacity: 0;
 }
 
-/* 涟漪元素的公共样式 */
-.loader-ripple {
+/* 🔴 THE CORE FIX: The Animated Water Surface Path 🔴 */
+.loader-water-surface {
   transform-origin: 60px 100px;
-  filter: url(#premium-glow);
-  opacity: 0;
+  animation: waterSurfaceRipple 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
-
-/* 精确对齐时间：在三角形砸中水面的 38% 时刻激活涟漪 */
-.loader-ripple-1 { animation: waterRipple 3s ease-out infinite; animation-delay: 0.05s; }
-.loader-ripple-2 { animation: waterRipple 3s ease-out infinite; animation-delay: 0.25s; }
 
 @keyframes shapeDrop {
   0%   { transform: translateY(-40px) rotate(0deg) scale(0.8); opacity: 0; }
   10%  { opacity: 1; transform: translateY(-30px) rotate(45deg) scale(1); }
-  38%  { transform: translateY(45px) rotate(180deg) scale(1); opacity: 1; }
-  48%  { transform: translateY(65px) rotate(220deg) scale(0.5); opacity: 0; }
+  38%  { transform: translateY(45px) rotate(180deg) scale(1); opacity: 1; } /* Hits water */
+  45%  { transform: translateY(60px) rotate(220deg) scale(0.5); opacity: 0; }
   100% { opacity: 0; }
-}
-
-@keyframes waterRipple {
-  0%, 36% { transform: scale(0.3); opacity: 0; stroke-width: 3px; }
-  38%     { opacity: 0.8; } /* 🔴 激活：向外扩散，逐渐变淡 🔴 */
-  55%     { transform: scale(4.5); opacity: 0; stroke-width: 0.5px; }
-  100%    { opacity: 0; }
 }
 
 @keyframes shapeRise {
   0%, 40% { transform: translateY(40px) rotate(45deg) scale(0.5); opacity: 0; }
-  46%     { opacity: 1; transform: translateY(-5px) rotate(90deg) scale(1.2); }
+  46%     { opacity: 1; transform: translateY(-5px) rotate(90deg) scale(1.2); } /* Breaks surface */
   80%     { transform: translateY(-55px) rotate(225deg) scale(1); opacity: 1; }
   92%     { transform: translateY(-65px) rotate(270deg) scale(0.8); opacity: 0; }
   100%    { opacity: 0; }
+}
+
+/* 🔴 KEYFRAME: Water Surface Path Mutation (Replacing old ellipse ripple) 🔴
+   精准咬合时序：三角形砸入(38%)时激荡，菱形升起(42%)时平复 
+*/
+@keyframes waterSurfaceRipple {
+  0%, 36% { /* 静止：Q指令顶点坐标 (30, 100) / (30, 108) */
+            d: path("M 0 100 Q 30 108 60 100 T 120 100"); 
+            opacity: 0.3; }
+  38%     { /* 🔴 激活：三角形砸中 Q顶点向下弯曲 (30, 115) 🔴 */
+            d: path("M 0 100 Q 30 115 60 100 T 120 100"); 
+            opacity: 0.8; stroke-width: 2.5px; }
+  42%     { /* 扩散：Q顶点向上弯曲 (30, 92) 🔴 */
+            d: path("M 0 100 Q 30 92 60 100 T 120 100"); 
+            stroke-width: 2px; }
+  48%     { /* 扩散：更宽的波幅 Q (30, 105) 🔴 */
+            d: path("M 0 100 Q 30 105 60 100 T 120 100"); }
+  65%     { /* 平复：回到初始 Q (30, 108) 🔴 */
+            d: path("M 0 100 Q 30 108 60 100 T 120 100"); 
+            opacity: 0.3; stroke-width: 1.5px; }
+  100%    { d: path("M 0 100 Q 30 108 60 100 T 120 100"); opacity: 0.3; }
 }
 
 /* Custom Utilities for Narrative Loader */
