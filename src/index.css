@@ -932,46 +932,76 @@ kbd {
 .loader-splash-6 { animation: splashArc6 3s ease-out infinite; }
 
 @keyframes triangleLifecycle {
-  0%   { transform: translateY(-40px) rotate(0deg); opacity: 0; }
-  2%   { opacity: 1; transform: translateY(-30px) rotate(45deg); }
-  9.5% { transform: translateY(45px) rotate(180deg); opacity: 1; }
-  11%  { transform: translateY(65px) rotate(220deg); opacity: 0; }
-  25%, 75% { opacity: 0; transform: translateY(40px); }
-  85%  { opacity: 1; transform: translateY(-5px) rotate(90deg) scale(1.2); }
-  94%  { transform: translateY(-55px) rotate(225deg) scale(1); opacity: 1; }
-  98%  { transform: translateY(-65px) rotate(270deg) scale(0.8); opacity: 0; }
-  100% { opacity: 0; }
+  /* 0-1.14s: Fall (Phase 1 Start) */
+  0%    { transform: translateY(-50px) rotate(0deg); opacity: 0; }
+  2%    { opacity: 1; transform: translateY(-30px) rotate(45deg); }
+  9.5%  { transform: translateY(45px) rotate(180deg); opacity: 1; }
+  12%   { transform: translateY(65px) rotate(220deg); opacity: 0; }
+  
+  /* 1.14s - 10.14s: Submerged/Hidden */
+  13%, 83% { opacity: 0; transform: translateY(100px); }
+
+  /* 10.14s - 12s: Rise (Phase 4 End) */
+  84.5% { opacity: 0; transform: translateY(40px) rotate(0deg); }
+  86%   { opacity: 1; transform: translateY(-5px) rotate(45deg) scale(1.2); }
+  94%   { transform: translateY(-55px) rotate(180deg) scale(1); opacity: 1; }
+  98%   { transform: translateY(-65px) rotate(225deg) scale(0.8); opacity: 0; }
+  100%  { opacity: 0; }
 }
 
 @keyframes rectLifecycle {
-  0%   { opacity: 0; }
-  10%  { opacity: 1; transform: translateY(-5px) rotate(90deg) scale(1.2); }
-  19%  { transform: translateY(-55px) rotate(225deg) scale(1); opacity: 1; }
-  23%  { transform: translateY(-65px) rotate(270deg) scale(0.8); opacity: 0; }
-  25%  { opacity: 0; transform: translateY(-40px); }
-  27%  { opacity: 1; transform: translateY(-30px) rotate(45deg); }
-  34.5%{ transform: translateY(45px) rotate(180deg); opacity: 1; }
-  36%  { transform: translateY(65px) rotate(220deg); opacity: 0; }
-  60%  { opacity: 1; transform: translateY(-5px) rotate(90deg) scale(1.2); }
-  69%  { transform: translateY(-55px) rotate(225deg) scale(1); opacity: 1; }
-  73%  { transform: translateY(-65px) rotate(270deg) scale(0.8); opacity: 0; }
-  75%  { opacity: 0; transform: translateY(-40px); }
-  77%  { opacity: 1; transform: translateY(-30px) rotate(45deg); }
-  84.5%{ transform: translateY(45px) rotate(180deg); opacity: 1; }
-  86%  { transform: translateY(65px) rotate(220deg); opacity: 0; }
-  100% { opacity: 0; }
+  /* 0-1.14s: Submerged */
+  0%, 8%  { opacity: 0; transform: translateY(100px); }
+
+  /* 1.14s - 3s: Rise (Phase 1 End) */
+  9.5%    { opacity: 0; transform: translateY(40px) rotate(0deg); }
+  11%     { opacity: 1; transform: translateY(-5px) rotate(45deg) scale(1.2); }
+  19%     { transform: translateY(-55px) rotate(180deg) scale(1); opacity: 1; }
+  23%     { transform: translateY(-65px) rotate(225deg) scale(0.8); opacity: 0; }
+  
+  /* 3s - 4.14s: Fall (Phase 2 Start) */
+  25%     { transform: translateY(-40px) rotate(0deg); opacity: 0; }
+  27%     { opacity: 1; transform: translateY(-30px) rotate(45deg); }
+  34.5%   { transform: translateY(45px) rotate(180deg); opacity: 1; }
+  36%     { transform: translateY(65px) rotate(220deg); opacity: 0; }
+
+  /* 4.14s - 7.14s: Submerged */
+  37%, 58% { opacity: 0; transform: translateY(100px); }
+
+  /* 7.14s - 9s: Rise (Phase 3 End) */
+  59.5%   { opacity: 0; transform: translateY(40px) rotate(0deg); }
+  61%     { opacity: 1; transform: translateY(-5px) rotate(45deg) scale(1.2); }
+  69%     { transform: translateY(-55px) rotate(180deg) scale(1); opacity: 1; }
+  73%     { transform: translateY(-65px) rotate(225deg) scale(0.8); opacity: 0; }
+
+  /* 9s - 10.14s: Fall (Phase 4 Start) */
+  75%     { transform: translateY(-40px) rotate(0deg); opacity: 0; }
+  77%     { opacity: 1; transform: translateY(-30px) rotate(45deg); }
+  84.5%   { transform: translateY(45px) rotate(180deg); opacity: 1; }
+  86%     { transform: translateY(65px) rotate(220deg); opacity: 0; }
+
+  /* 10.14s - 12s: Submerged */
+  87%, 100% { opacity: 0; transform: translateY(100px); }
 }
 
 @keyframes pentagonLifecycle {
-  0%, 25% { opacity: 0; transform: translateY(40px); }
-  35%  { opacity: 1; transform: translateY(-5px) rotate(90deg) scale(1.2); }
-  44%  { transform: translateY(-55px) rotate(225deg) scale(1); opacity: 1; }
-  48%  { transform: translateY(-65px) rotate(270deg) scale(0.8); opacity: 0; }
-  50%  { opacity: 0; transform: translateY(-40px); }
-  52%  { opacity: 1; transform: translateY(-30px) rotate(45deg); }
-  59.5%{ transform: translateY(45px) rotate(180deg); opacity: 1; }
-  61%  { transform: translateY(65px) rotate(220deg); opacity: 0; }
-  75%, 100% { opacity: 0; }
+  /* 0-4.14s: Submerged */
+  0%, 33% { opacity: 0; transform: translateY(100px); }
+  
+  /* 4.14s - 6s: Rise (Phase 2 End) */
+  34.5%   { opacity: 0; transform: translateY(40px) rotate(0deg); }
+  36%     { opacity: 1; transform: translateY(-5px) rotate(45deg) scale(1.2); }
+  44%     { transform: translateY(-55px) rotate(180deg) scale(1); opacity: 1; }
+  48%     { transform: translateY(-65px) rotate(225deg) scale(0.8); opacity: 0; }
+
+  /* 6s - 7.14s: Fall (Phase 3 Start) */
+  50%     { transform: translateY(-40px) rotate(0deg); opacity: 0; }
+  52%     { opacity: 1; transform: translateY(-30px) rotate(45deg); }
+  59.5%   { transform: translateY(45px) rotate(180deg); opacity: 1; }
+  61%     { transform: translateY(65px) rotate(220deg); opacity: 0; }
+
+  /* 7.14s - 12s: Submerged */
+  62%, 100% { opacity: 0; transform: translateY(100px); }
 }
 
 /* 🌊 WATER SURFACE PATH MUTATION (COLLISION REACTION) */
