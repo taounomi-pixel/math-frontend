@@ -34,11 +34,11 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
     }
   };
 
-  const isActive = location.pathname === `/video/${video.id}`;
+  const isActive = window.location.pathname === `/video/${video.id}`;
   
   return (
     <div style={{ position: 'relative' }}>
-      {/* High-Fidelity Ghost Card Placeholder to maintain content structure */}
+      {/* High-Fidelity Ghost Card Placeholder (V3) to match global URL state */}
       {isActive && (
         <div 
           className="video-card ghost"
@@ -48,19 +48,19 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
             background: 'var(--bg-primary)',
             borderRadius: '16px',
             border: '1px solid var(--border-color)',
-            opacity: 0.2,
+            opacity: 0.4,
             zIndex: 0,
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column'
           }}
         >
-          {/* Static Ghost Thumbnail */}
-          <div className="aspect-video w-full bg-slate-100" />
+          {/* Static Ghost Thumbnail (to maintain visual through blur) */}
+          <div className="aspect-video w-full bg-slate-200" />
           {/* Static Ghost Content */}
           <div style={{ padding: '20px', flex: 1 }}>
-            <div style={{ height: '16px', width: '70%', background: 'var(--text-secondary)', opacity: 0.3, borderRadius: '4px', marginBottom: '10px' }} />
-            <div style={{ height: '12px', width: '40%', background: 'var(--text-secondary)', opacity: 0.2, borderRadius: '4px' }} />
+            <div style={{ height: '16px', width: '70%', background: 'var(--text-secondary)', opacity: 0.4, borderRadius: '4px', marginBottom: '10px' }} />
+            <div style={{ height: '12px', width: '40%', background: 'var(--text-secondary)', opacity: 0.3, borderRadius: '4px' }} />
           </div>
         </div>
       )}
