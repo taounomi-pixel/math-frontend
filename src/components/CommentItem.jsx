@@ -17,8 +17,8 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
 
   const handleLike = async () => {
     if (!token) {
-       alert(t('loginToLike') || (lang === 'zh' ? '璇峰厛鐧诲綍鍚庣偣璧? : 'Please login to like'));
-       return;
+      alert(t('loginToLike') || (lang === 'zh' ? '璇峰厛鐧诲綍鍚庣偣璧?' : 'Please login to like'));
+      return;
     }
     setIsLiking(true);
     try {
@@ -66,9 +66,9 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
   };
 
   const handleDelete = async () => {
-    const confirmText = lang === 'zh' ? '纭畾瑕佸垹闄よ繖鏉¤瘎璁哄悧锛? : 'Are you sure you want to delete this comment?';
+    const confirmText = lang === 'zh' ? '纭畾瑕佸垹闄よ繖鏉¤瘎璁哄悧锛? ' : 'Are you sure you want to delete this comment?';
     if (!window.confirm(confirmText)) return;
-    
+
     try {
       const res = await fetch(`${API_BASE}/comments/${comment.id}`, {
         method: 'DELETE',
@@ -80,17 +80,17 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
       alert(e.message);
     }
   };
-  
+
   const replies = comment.replies || [];
 
   return (
     <div style={{ display: 'flex', gap: '12px', marginTop: isReply ? '16px' : '0' }}>
       {/* Avatar Placeholder */}
-      <div style={{ 
-        width: isReply ? '32px' : '40px', 
-        height: isReply ? '32px' : '40px', 
-        borderRadius: '50%', 
-        background: 'linear-gradient(135deg, var(--primary), #a855f7)', 
+      <div style={{
+        width: isReply ? '32px' : '40px',
+        height: isReply ? '32px' : '40px',
+        borderRadius: '50%',
+        background: 'linear-gradient(135deg, var(--primary), #a855f7)',
         color: 'white',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: isReply ? '14px' : '18px', fontWeight: '700', flexShrink: 0,
@@ -111,20 +111,20 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
         </div>
 
         {/* Comment Content */}
-        <p style={{ 
-          margin: '4px 0', fontSize: '15px', color: 'var(--text-primary)', 
-          lineHeight: '1.6', whiteSpace: 'pre-wrap' 
+        <p style={{
+          margin: '4px 0', fontSize: '15px', color: 'var(--text-primary)',
+          lineHeight: '1.6', whiteSpace: 'pre-wrap'
         }}>
           {comment.content}
         </p>
 
         {/* Action Bar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '8px' }}>
-          <button 
+          <button
             onClick={handleLike}
             disabled={isLiking}
-            style={{ 
-              display: 'flex', alignItems: 'center', gap: '6px', 
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
               background: 'none', border: 'none', cursor: 'pointer',
               color: comment.is_liked ? '#ec4899' : 'var(--text-secondary)',
               fontSize: '13px', padding: 0, transition: 'transform 0.1s'
@@ -136,9 +136,9 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
             <span style={{ fontWeight: '600' }}>{comment.likes_count > 0 ? comment.likes_count : ''}</span>
           </button>
 
-          <button 
+          <button
             onClick={() => setIsReplying(!isReplying)}
-            style={{ 
+            style={{
               background: 'none', border: 'none', cursor: 'pointer',
               color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '600'
             }}
@@ -147,9 +147,9 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
           </button>
 
           {currentUserId && parseInt(currentUserId) === comment.user_id && (
-            <button 
+            <button
               onClick={handleDelete}
-              style={{ 
+              style={{
                 background: 'none', border: 'none', cursor: 'pointer',
                 color: '#ef4444', fontSize: '13px', marginLeft: 'auto'
               }}
@@ -168,24 +168,24 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
               value={replyContent}
               onChange={(e) => setReplyContent(e.target.value)}
               placeholder={lang === 'zh' ? '鍐欎笅浣犵殑鍥炲...' : 'Add a reply...'}
-              style={{ 
-                flex: 1, border: 'none', borderBottom: '2px solid var(--primary)', 
+              style={{
+                flex: 1, border: 'none', borderBottom: '2px solid var(--primary)',
                 background: 'transparent', padding: '6px 0', minHeight: '32px',
                 resize: 'none', fontSize: '14px', outline: 'none'
               }}
             />
             <div style={{ display: 'flex', gap: '8px', alignSelf: 'flex-end' }}>
-               <button type="button" onClick={() => setIsReplying(false)} className="btn-ghost" style={{ fontSize: '12px', padding: '6px 12px' }}>
-                 {lang === 'zh' ? '鍙栨秷' : 'Cancel'}
-               </button>
-               <button 
-                 type="submit" 
-                 disabled={!replyContent.trim() || isSubmittingReply} 
-                 className="btn-primary" 
-                 style={{ fontSize: '12px', padding: '6px 16px', borderRadius: '18px' }}
-               >
-                 {isSubmittingReply ? <Loader2 size={14} className="spinning" /> : (lang === 'zh' ? '鍥炲' : 'Reply')}
-               </button>
+              <button type="button" onClick={() => setIsReplying(false)} className="btn-ghost" style={{ fontSize: '12px', padding: '6px 12px' }}>
+                {lang === 'zh' ? '鍙栨秷' : 'Cancel'}
+              </button>
+              <button
+                type="submit"
+                disabled={!replyContent.trim() || isSubmittingReply}
+                className="btn-primary"
+                style={{ fontSize: '12px', padding: '6px 16px', borderRadius: '18px' }}
+              >
+                {isSubmittingReply ? <Loader2 size={14} className="spinning" /> : (lang === 'zh' ? '鍥炲' : 'Reply')}
+              </button>
             </div>
           </form>
         )}
@@ -193,33 +193,33 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
         {/* Recursive Replies Section */}
         {replies.length > 0 && (
           <div style={{ marginTop: '12px' }}>
-            <button 
+            <button
               onClick={() => setShowReplies(!showReplies)}
-              style={{ 
+              style={{
                 background: 'none', border: 'none', cursor: 'pointer',
                 color: 'var(--primary)', fontSize: '14px', fontWeight: '700',
                 display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 0'
               }}
             >
               {showReplies ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-              {showReplies 
+              {showReplies
                 ? (lang === 'zh' ? '闅愯棌鍥炲' : 'Hide replies')
-                : (lang === 'zh' ? `鏌ョ湅 ${replies.length} 鏉″洖澶峘 : `View ${replies.length} replies`)
+                : (lang === 'zh' ? `鏌ョ湅 ${replies.length} 鏉″洖澶峘?` : `View ${replies.length} replies`)
               }
             </button>
-            
+
             {showReplies && (
-              <div style={{ 
-                borderLeft: '2px solid var(--border-color)', 
+              <div style={{
+                borderLeft: '2px solid var(--border-color)',
                 paddingLeft: '20px', marginLeft: '4px', marginTop: '8px'
               }}>
                 {replies.map(reply => (
-                  <CommentItem 
-                    key={reply.id} 
-                    comment={reply} 
-                    videoId={videoId} 
-                    onRefresh={onRefresh} 
-                    isReply={true} 
+                  <CommentItem
+                    key={reply.id}
+                    comment={reply}
+                    videoId={videoId}
+                    onRefresh={onRefresh}
+                    isReply={true}
                   />
                 ))}
               </div>
