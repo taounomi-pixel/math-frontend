@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Play, Heart, Code, Trash2, Tag, X } from 'lucide-react';
@@ -33,6 +34,16 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
       setCodeLoading(false);
     }
   };
+
+  // Scroll lock when code is open
+  useEffect(() => {
+    if (showCode) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [showCode]);
 
   const isActive = window.location.pathname === `/video/${video.id}`;
   
@@ -158,67 +169,83 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
         </div>
       </motion.div>
         
-      {/* Source Code Modal */}
-      {showCode && (
+      {/* Source Code Modal (Using Portal to prevent card layout stretching) */}
+      {showCode && createPortal(
         <div 
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
           onClick={(e) => { e.stopPropagation(); setShowCode(false); }}
         >
           <motion.div 
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ opacity: 0, scale: 0.9, y: 40 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            exit={{ opacity: 0, scale: 0.9, y: 40 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
             style={{ 
               background: 'var(--bg-primary)', 
-              width: '100%', 
-              maxWidth: '900px', 
-              maxHeight: '85vh', 
-              borderRadius: '20px', 
+              width: '95vw', 
+              maxWidth: '1000px', 
+              maxHeight: '90vh', 
+              borderRadius: '24px', 
               display: 'flex', 
               flexDirection: 'column', 
               overflow: 'hidden', 
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)' 
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+              border: '1px solid rgba(255,255,255,0.1)'
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ 
-              padding: '16px 24px', 
+              padding: '20px 28px', 
               borderBottom: '1px solid var(--border-color)', 
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center',
               backgroundColor: 'var(--bg-secondary)'
             }}>
-              <h3 className="flex items-center gap-3 font-semibold text-lg" style={{ margin: 0, color: 'var(--text-primary)' }}>
-                <div className="bg-primary/10 p-2 rounded-lg">
-                  <Code size={20} className="text-primary" />
+              <div className="flex items-center gap-3">
+                <div className="bg-primary/10 p-2.5 rounded-xl">
+                  <Code size={22} className="text-primary" />
                 </div>
-                <span className="truncate max-w-[400px]">{video.title}</span>
-              </h3>
+                <div>
+                  <h3 className="font-bold text-lg" style={{ margin: 0, color: 'var(--text-primary)' }}>
+                    {video.title}
+                  </h3>
+                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>Source Code Viewer</p>
+                </div>
+              </div>
               <button 
                 onClick={() => setShowCode(false)} 
-                className="p-2 rounded-full hover:bg-black/5 transition-colors text-2xl leading-none"
+                className="p-2 rounded-full hover:bg-black/10 transition-colors text-3xl leading-none"
+                style={{ color: 'var(--text-secondary)' }}
               >
                 &times;
               </button>
             </div>
             
-            <div style={{ padding: '24px', overflowY: 'auto', flex: 1, backgroundColor: '#0f172a', color: '#e2e8f0' }}>
+            <div 
+              className="hide-scrollbar"
+              style={{ padding: '32px', overflowY: 'auto', flex: 1, backgroundColor: '#0f172a', color: '#e2e8f0' }}
+            >
               {codeLoading ? (
-                <GeometricLoader size={48} showText={true} className="h-full" />
+                <div className="flex flex-col items-center justify-center h-64 gap-4">
+                  <GeometricLoader size={60} showText={true} />
+                </div>
               ) : (
-                <div className="relative group">
-                  <button 
-                    onClick={() => {
-                      navigator.clipboard.writeText(codeContent);
-                      alert('Copied to clipboard!');
-                    }}
-                    className="absolute top-0 right-0 p-2 bg-slate-800 rounded-md text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity text-xs hover:bg-slate-700"
-                  >
-                    Copy code
-                  </button>
+                <div className="relative">
+                  <div className="absolute top-0 right-0 flex gap-2">
+                    <button 
+                      onClick={() => {
+                        navigator.clipboard.writeText(codeContent);
+                        // Using a more subtle notification would be better but keeping simple alert for now
+                        alert('Copied!');
+                      }}
+                      className="px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-slate-300 text-xs font-medium border border-slate-700 transition-all backdrop-blur-sm"
+                    >
+                      Copy
+                    </button>
+                  </div>
                   <pre 
-                    className="m-0 font-mono text-sm leading-relaxed whitespace-pre-wrap outline-none"
+                    className="m-0 font-mono text-[14px] leading-relaxed whitespace-pre"
                     style={{ 
                       fontFamily: '"JetBrains Mono", "Fira Code", monospace',
                       tabSize: 4
@@ -230,7 +257,8 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
               )}
             </div>
           </motion.div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
