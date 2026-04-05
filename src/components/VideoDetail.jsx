@@ -152,27 +152,27 @@ const VideoDetail = () => {
           </div>
         </div>
 
-        {/* Info Area */}
-        <div className="p-8 lg:p-10 flex flex-col gap-8 bg-white">
+        {/* Info Area (Figure 4 Style: Glassmorphism & Pill Buttons) */}
+        <div className="mx-4 md:mx-8 -mt-6 mb-8 p-8 lg:p-10 flex flex-col gap-8 glass-effect rounded-[40px] shadow-2xl relative z-20">
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-            <div className="flex-1 space-y-4">
+            <div className="flex-1 space-y-5">
               <div className="flex flex-wrap gap-2">
-                <span className="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg border border-blue-100 uppercase tracking-widest">
+                <span className="px-3 py-1 bg-blue-500/10 text-blue-600 text-[10px] font-black rounded-full border border-blue-200/50 uppercase tracking-[0.1em]">
                   {t(video.category_l1) || video.category_l1}
                 </span>
                 {video.category_l2 && (
-                  <span className="px-3 py-1 bg-slate-50 text-slate-500 text-xs font-bold rounded-lg border border-slate-100 uppercase tracking-widest">
+                  <span className="px-3 py-1 bg-slate-500/10 text-slate-500 text-[10px] font-black rounded-full border border-slate-200/50 uppercase tracking-[0.1em]">
                     {t(video.category_l2) || video.category_l2}
                   </span>
                 )}
               </div>
-              <h1 className="text-3xl font-black text-slate-900 leading-tight">
+              <h1 className="text-4xl font-black text-slate-900 leading-tight tracking-tight">
                 {video.title}
               </h1>
 
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2.5">
                 {(Array.isArray(video.tags) ? video.tags : (video.tags ? video.tags.split(',') : [])).map(tag => (
-                  <span key={tag} className="text-sm font-semibold text-slate-400 hover:text-blue-500 cursor-pointer transition-colors">
+                  <span key={tag} className="px-4 py-1.5 bg-slate-50 text-slate-400 text-xs font-bold rounded-full border border-slate-100 hover:bg-white hover:text-blue-500 hover:border-blue-100 cursor-pointer transition-all">
                     #{t(tag) || tag}
                   </span>
                 ))}
@@ -182,49 +182,51 @@ const VideoDetail = () => {
             <div className="flex flex-row md:flex-col gap-3 min-w-max">
               <button
                 onClick={toggleLike}
-                className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all transform active:scale-95 ${video._liked || video.is_liked_by_me
-                    ? 'bg-pink-500 text-white shadow-lg shadow-pink-200 hover:bg-pink-600'
-                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-100'
+                className={`flex items-center gap-3 px-8 py-3.5 rounded-full font-black transition-all transform active:scale-95 shadow-xl ${video._liked || video.is_liked_by_me
+                    ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-pink-200 hover:brightness-110'
+                    : 'bg-white/80 hover:bg-white text-slate-600 border border-slate-100'
                   }`}
               >
                 <Heart size={20} className={(video._liked || video.is_liked_by_me) ? 'fill-white' : ''} />
                 <span>{video.like_count}</span>
               </button>
-              <button className="flex items-center justify-center p-3 bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-100 rounded-2xl transition-all">
+              
+              <button className="flex items-center justify-center p-3.5 bg-white/80 hover:bg-white text-slate-600 border border-slate-100 rounded-full transition-all shadow-lg active:scale-95">
                 <Share2 size={20} />
               </button>
+
               {video.manim_source_url && (
                 <button
                   onClick={() => window.open(video.manim_source_url, '_blank')}
-                  className="flex items-center justify-center gap-2 p-3 bg-slate-900 text-white hover:bg-black rounded-2xl transition-all shadow-lg shadow-slate-200"
+                  className="flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-900 text-white hover:bg-black rounded-full transition-all shadow-xl shadow-slate-200 active:scale-95"
                 >
                   <Code size={20} />
-                  <span className="hidden md:inline text-sm font-bold">{t('viewCode')}</span>
+                  <span className="hidden md:inline text-sm font-black">{t('viewCode')}</span>
                 </button>
               )}
             </div>
           </div>
 
-          {/* User & Meta */}
-          <div className="flex flex-wrap items-center justify-between gap-6 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+          {/* User & Meta (Integrated into glass container) */}
+          <div className="flex flex-wrap items-center justify-between gap-6 p-6 bg-white/40 rounded-[32px] border border-white/60">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white text-xl font-black shadow-lg shadow-blue-100">
                 {video.uploader_username?.[0]?.toUpperCase()}
               </div>
               <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('uploadedBy') || 'Uploaded by'}</p>
-                <p className="text-lg font-bold text-slate-800">@{video.uploader_username}</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em] mb-0.5">{t('uploadedBy') || 'Uploaded by'}</p>
+                <p className="text-lg font-black text-slate-800 tracking-tight">@{video.uploader_username}</p>
               </div>
             </div>
 
             <div className="flex gap-8">
               <div className="text-center">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{t('viewsCount') || 'Views'}</p>
-                <p className="text-lg font-black text-slate-800">{video.view_count || 0}</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em] mb-1">{t('viewsCount') || 'Views'}</p>
+                <p className="text-lg font-black text-slate-800 tracking-tight">{video.view_count || 0}</p>
               </div>
-              <div className="text-center border-l border-slate-200 pl-8">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{t('uploadedDate') || 'Date'}</p>
-                <p className="text-lg font-black text-slate-800">
+              <div className="text-center border-l border-slate-200/50 pl-8">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em] mb-1">{t('uploadedDate') || 'Date'}</p>
+                <p className="text-lg font-black text-slate-800 tracking-tight">
                   {video.upload_time ? new Date(video.upload_time).toLocaleDateString() : '--'}
                 </p>
               </div>
