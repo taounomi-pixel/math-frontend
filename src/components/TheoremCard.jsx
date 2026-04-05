@@ -38,19 +38,31 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
   
   return (
     <div style={{ position: 'relative' }}>
-      {/* Ghost Card Placeholder to prevent layout pop */}
+      {/* High-Fidelity Ghost Card Placeholder to maintain content structure */}
       {isActive && (
         <div 
+          className="video-card ghost"
           style={{ 
             position: 'absolute', 
             inset: 0, 
             background: 'var(--bg-primary)',
             borderRadius: '16px',
             border: '1px solid var(--border-color)',
-            opacity: 0.15,
-            zIndex: 0
+            opacity: 0.2,
+            zIndex: 0,
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column'
           }}
-        />
+        >
+          {/* Static Ghost Thumbnail */}
+          <div className="aspect-video w-full bg-slate-100" />
+          {/* Static Ghost Content */}
+          <div style={{ padding: '20px', flex: 1 }}>
+            <div style={{ height: '16px', width: '70%', background: 'var(--text-secondary)', opacity: 0.3, borderRadius: '4px', marginBottom: '10px' }} />
+            <div style={{ height: '12px', width: '40%', background: 'var(--text-secondary)', opacity: 0.2, borderRadius: '4px' }} />
+          </div>
+        </div>
       )}
       
       <motion.div 
