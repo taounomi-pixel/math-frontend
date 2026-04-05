@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Play, Heart, Code, Trash2, Tag, X } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
