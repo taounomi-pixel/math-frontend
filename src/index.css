@@ -868,11 +868,29 @@ kbd {
   opacity: 0;
 }
 
-/* 🔴 THE CORE FIX: The Animated Water Surface Path 🔴 */
-.loader-water-surface {
+/* =========================================
+   The Core Water Narrative (Keyframes synced to 38%)
+   ========================================= */
+
+/* 🔴 THE DYNAMIC WAVE SURFACES 🔴 */
+.loader-wave-main, .loader-wave-depth-1, .loader-wave-depth-2 {
   transform-origin: 60px 100px;
-  animation: waterSurfaceRipple 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
+.loader-wave-main {
+  animation: waveDeformationMain 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.loader-wave-depth-1 { animation: waveDeformationDepth1 3s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.loader-wave-depth-2 { animation: waveDeformationDepth2 3s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+
+/* The concentric ripple rings */
+.loader-ripple-1, .loader-ripple-2 {
+  transform-origin: 60px 100px;
+  filter: url(#premium-glow);
+  opacity: 0;
+}
+.loader-ripple-1 { animation: waterRippleMain 3s ease-out infinite; animation-delay: 0.05s; }
+.loader-ripple-2 { animation: waterRippleMain 3s ease-out infinite; animation-delay: 0.3s; }
 
 @keyframes shapeDrop {
   0%   { transform: translateY(-40px) rotate(0deg) scale(0.8); opacity: 0; }
@@ -890,25 +908,42 @@ kbd {
   100%    { opacity: 0; }
 }
 
-/* 🔴 KEYFRAME: Water Surface Path Mutation (Replacing old ellipse ripple) 🔴
-   精准咬合时序：三角形砸入(38%)时激荡，菱形升起(42%)时平复 
-*/
-@keyframes waterSurfaceRipple {
-  0%, 36% { /* 静止：Q指令顶点坐标 (30, 100) / (30, 108) */
-            d: path("M 0 100 Q 30 108 60 100 T 120 100"); 
-            opacity: 0.3; }
-  38%     { /* 🔴 激活：三角形砸中 Q顶点向下弯曲 (30, 115) 🔴 */
-            d: path("M 0 100 Q 30 115 60 100 T 120 100"); 
-            opacity: 0.8; stroke-width: 2.5px; }
-  42%     { /* 扩散：Q顶点向上弯曲 (30, 92) 🔴 */
-            d: path("M 0 100 Q 30 92 60 100 T 120 100"); 
-            stroke-width: 2px; }
-  48%     { /* 扩散：更宽的波幅 Q (30, 105) 🔴 */
-            d: path("M 0 100 Q 30 105 60 100 T 120 100"); }
-  65%     { /* 平复：回到初始 Q (30, 108) 🔴 */
-            d: path("M 0 100 Q 30 108 60 100 T 120 100"); 
-            opacity: 0.3; stroke-width: 1.5px; }
-  100%    { d: path("M 0 100 Q 30 108 60 100 T 120 100"); opacity: 0.3; }
+/* 🔴 THE DYNAMIC PATH DEFORMATIONS (Align with collision 38%) 🔴 */
+@keyframes waveDeformationMain {
+  0%, 36% { d: path("M 0 100 Q 30 108 60 100 T 120 100"); opacity: 0.6; }
+  38%     { /* Collision: Main wave deforms deeply downward */
+            d: path("M 0 100 Q 30 120 60 100 T 120 100"); opacity: 0.9; stroke-width: 2.5px; }
+  42%     { /* Initial rebound upward */
+            d: path("M 0 100 Q 30 90 60 100 T 120 100"); stroke-width: 2px; }
+  48%     { /* Main wave spreads wider with subtle ripple texture */
+            d: path("M 0 100 Q 30 110 60 100 T 120 100"); }
+  65%     { /* Settles back to resting wave */
+            d: path("M 0 100 Q 30 108 60 100 T 120 100"); opacity: 0.6; stroke-width: 2px; }
+  100%    { opacity: 0.6; }
+}
+
+@keyframes waveDeformationDepth1 {
+  0%, 36% { d: path("M 0 100 Q 30 115 60 100 T 120 100"); }
+  38%     { /* 🔴 Collision: Depth wave deforms subtly, differently from main wave 🔴 */
+            d: path("M 0 100 Q 30 118 60 100 T 120 100"); }
+  65%     { d: path("M 0 100 Q 30 115 60 100 T 120 100"); }
+  100%    { opacity: 0.3; }
+}
+
+@keyframes waveDeformationDepth2 {
+  0%, 36% { d: path("M 0 100 Q 30 125 60 100 T 120 100"); }
+  38%     { /* Subtle texture wave deforms minimally */
+            d: path("M 0 100 Q 30 128 60 100 T 120 100"); }
+  65%     { d: path("M 0 100 Q 30 125 60 100 T 120 100"); }
+  100%    { opacity: 0.15; }
+}
+
+/* The ripple ring animation (crucial: expand from collision) */
+@keyframes waterRippleMain {
+  0%, 36% { transform: scale(0.3); opacity: 0; stroke-width: 3px; }
+  38%     { opacity: 0.8; }
+  55%     { transform: scale(4.0); opacity: 0; stroke-width: 0.5px; }
+  100%    { opacity: 0; }
 }
 
 /* Custom Utilities for Narrative Loader */
