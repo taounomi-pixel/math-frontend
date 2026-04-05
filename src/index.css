@@ -856,135 +856,55 @@ kbd {
 }
 
 /* =========================================
-   Ultra-Premium Geometric Loader (iOS-Style)
+   Geometric Narrative Loader Animations
    ========================================= */
-.geometric-loader-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: visible;
-  padding: 20px;
+.loader-shape-a {
+  transform-origin: 60px 45px; /* Center of triangle */
+  animation: shapeDrop 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-.loader-shape {
-  fill: none;
-  stroke: var(--accent-primary);
-  stroke-width: 2.5; /* Bolder */
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transform-origin: center;
-  filter: drop-shadow(0 0 12px var(--accent-primary-light)); /* Glow */
-}
-
-/* /* =========================================
-   Ultra-Premium Geometric Loader (iOS-Style)
-   ========================================= */
-.geometric-loader-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: visible;
-  padding: 40px;
-  background: radial-gradient(circle, rgba(2, 132, 199, 0.05) 0%, transparent 70%); /* Subtle stage focus */
-  border-radius: 50%;
-}
-
-.loader-shape {
-  fill: none;
-  stroke: var(--accent-primary);
-  stroke-width: 3.5; /* Bolder for impact */
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transform-origin: center;
-  /* Multi-layered glow for visibility on white */
-  filter: drop-shadow(0 0 4px rgba(2, 132, 199, 0.4)) drop-shadow(0 0 12px rgba(2, 132, 199, 0.2)); 
-}
-
-/* Animation 1: Fall (Shape A) */
-.shape-fall {
-  animation: fallAndRotate 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-
-@keyframes fallAndRotate {
-  0% { transform: translateY(-130%) rotateX(0deg) rotateY(0deg) scale(0.6); opacity: 0; }
-  15% { opacity: 1; transform: translateY(-100%) scale(1); }
-  35% { transform: translateY(0) rotateX(180deg) rotateY(180deg) rotateZ(45deg); opacity: 1; }
-  45%, 100% { transform: translateY(20%) scale(0.8); opacity: 0; }
-}
-
-/* Animation 2: Splash Particles */
-.loader-splash-particle {
-  fill: var(--accent-primary);
-  opacity: 0;
-  animation: splashParticle 3s ease-out infinite;
-  filter: drop-shadow(0 0 4px var(--accent-primary));
-}
-
-@keyframes splashParticle {
-  0%, 34% { transform: translate(0, 0) scale(0); opacity: 0; }
-  35% { opacity: 1; transform: translate(0, 0) scale(1.5); }
-  45%, 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0); }
-}
-
-/* Animation 3: Ripple */
 .loader-ripple {
-  stroke: var(--accent-primary);
-  stroke-width: 2.5;
-  fill: none;
+  transform-origin: 60px 100px;
   opacity: 0;
-  transform-origin: center;
-  animation: waterRipple 3s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+.loader-ripple-1 { animation: waterRipple 3s ease-out infinite; animation-delay: 0.05s; }
+.loader-ripple-2 { animation: waterRipple 3s ease-out infinite; animation-delay: 0.2s; }
+
+.loader-shape-b {
+  transform-origin: 60px 100px; /* Center of rect */
+  animation: shapeRise 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  opacity: 0;
+}
+
+@keyframes shapeDrop {
+  0%   { transform: translateY(-40px) rotate(0deg) scale(0.8); opacity: 0; }
+  10%  { opacity: 1; transform: translateY(-20px) rotate(45deg) scale(1); }
+  38%  { transform: translateY(45px) rotate(180deg) scale(1); opacity: 1; } /* Hits water */
+  45%  { transform: translateY(60px) rotate(220deg) scale(0.5); opacity: 0; } /* Sinks and fades */
+  100% { opacity: 0; }
 }
 
 @keyframes waterRipple {
-  0%, 34% { transform: scale(0); opacity: 0; }
-  35% { transform: scale(0); opacity: 1; }
-  60%, 100% { transform: scale(4.5); opacity: 0; }
+  0%, 36% { transform: scale(0.3); opacity: 0; stroke-width: 3px; }
+  38%     { opacity: 0.8; }
+  55%     { transform: scale(3.5); opacity: 0; stroke-width: 0.5px; }
+  100%    { opacity: 0; }
 }
 
-/* Animation 4: Rise (Shape B) */
-.shape-rise {
-  animation: riseAndRotate 3s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+@keyframes shapeRise {
+  0%, 42% { transform: translateY(30px) rotate(45deg) scale(0.5); opacity: 0; }
+  48%     { opacity: 1; transform: translateY(0px) rotate(90deg) scale(1.2); } /* Breaks surface */
+  85%     { transform: translateY(-55px) rotate(225deg) scale(1); opacity: 1; } /* Apex */
+  95%     { transform: translateY(-65px) rotate(270deg) scale(0.8); opacity: 0; } /* Fades in air */
+  100%    { opacity: 0; }
 }
 
-@keyframes riseAndRotate {
-  0%, 52% { transform: translateY(50%) rotateY(0deg) scale(0.4); opacity: 0; }
-  65% { opacity: 1; transform: translateY(0) rotateY(180deg) scale(1.1); }
-  88% { opacity: 1; transform: translateY(-120%) rotateY(360deg) scale(1); }
-  95%, 100% { transform: translateY(-150%) scale(0.8); opacity: 0; }
+/* Custom Utilities for Narrative Loader */
+.text-blue-500 { color: var(--accent-primary); }
+.animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
 }
-
-/* Minimal Spinner Mode */
-.loader-minimal {
-  animation: minimalSpin 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  stroke-dasharray: 80;
-  stroke-dashoffset: 0;
-}
-
-@keyframes minimalSpin {
-  0% { transform: rotate(0deg); stroke-dashoffset: 80; }
-  50% { transform: rotate(180deg); stroke-dashoffset: 20; }
-  100% { transform: rotate(360deg); stroke-dashoffset: 80; }
-}
-
-.loader-text {
-  font-family: inherit;
-  font-weight: 700;
-  letter-spacing: 0.5em; /* Extreme tracking for premium feel */
-  text-transform: uppercase;
-  font-size: 10px;
-  color: var(--accent-primary);
-  margin-top: 32px;
-  opacity: 0.9;
-  animation: pulseFade 2s infinite ease-in-out;
-}
-
-@keyframes pulseFade {
-  0%, 100% { opacity: 0.4; letter-spacing: 0.4em; }
-  50% { opacity: 1; letter-spacing: 0.6em; }
-}
+.tracking-\[0\.3em\] { letter-spacing: 0.3em; }
 
