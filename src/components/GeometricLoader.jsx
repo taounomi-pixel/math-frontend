@@ -23,40 +23,63 @@ const GeometricLoader = ({ size = 64, className = "" }) => {
   return (
     <div 
       className={`geometric-loader-container ${className}`} 
-      style={{ width: size, height: size }}
+      style={{ width: size, minHeight: size + 40 }}
     >
-      <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
-        {/* Waterfall/Waterline Effect (Subtle) */}
-        <line x1="20" y1="50" x2="80" y2="50" stroke="var(--accent-primary)" strokeWidth="0.5" opacity="0.15" strokeDasharray="1 1" />
+      <svg 
+        viewBox="0 0 100 100" 
+        className="w-full overflow-visible"
+        style={{ height: size }}
+      >
+        <defs>
+          <linearGradient id="waterlineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="transparent" />
+            <stop offset="50%" stopColor="var(--accent-primary)" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="transparent" />
+          </linearGradient>
+        </defs>
 
-        {/* Animation 1: Shape A (Pyramid/Falling) */}
-        <g className="shape-fall">
+        <rect x="0" y="49.5" width="100" height="1" fill="url(#waterlineGradient)" />
+        <line x1="10" y1="50" x2="90" y2="50" stroke="var(--accent-primary)" strokeWidth="0.5" opacity="0.2" strokeDasharray="2 2" />
+
+        <g className="shape-fall" style={{ transformBox: 'fill-box' }}>
           <path 
             className="loader-shape"
-            d="M 50,15 L 25,45 L 75,45 Z" 
+            d="M 50,15 L 20,45 L 80,45 Z" 
           />
-          <line x1="50" y1="15" x2="50" y2="45" className="loader-shape" opacity="0.6" />
+          <path 
+            className="loader-shape" 
+            d="M 50,15 L 50,45" 
+            opacity="0.5"
+            strokeWidth="1.5"
+          />
         </g>
 
-        {/* Animation 2: Splash Particles */}
-        <circle className="loader-splash-particle" cx="50" cy="50" r="1.5" style={{ '--dx': '-15px', '--dy': '-20px', '--dx2': '-30px', '--dy2': '-5px' }} />
-        <circle className="loader-splash-particle" cx="50" cy="50" r="1" style={{ '--dx': '15px', '--dy': '-20px', '--dx2': '30px', '--dy2': '-5px' }} />
-        <circle className="loader-splash-particle" cx="50" cy="50" r="2" style={{ '--dx': '0px', '--dy': '-30px', '--dx2': '0px', '--dy2': '-45px' }} />
+        <circle className="loader-splash-particle" cx="50" cy="50" r="2.5" style={{ '--dx': '-25px', '--dy': '-20px' }} />
+        <circle className="loader-splash-particle" cx="50" cy="50" r="1.8" style={{ '--dx': '25px', '--dy': '-20px' }} />
+        <circle className="loader-splash-particle" cx="50" cy="50" r="3" style={{ '--dx': '0px', '--dy': '-35px' }} />
         
-        {/* Animation 3: Ripple */}
-        <circle className="loader-ripple" cx="50" cy="50" r="6" />
-        <circle className="loader-ripple" cx="50" cy="50" r="6" style={{ animationDelay: '0.2s' }} />
+        <circle className="loader-ripple" cx="50" cy="50" r="5" />
+        <circle className="loader-ripple" cx="50" cy="50" r="5" style={{ animationDelay: '0.15s' }} />
 
-        {/* Animation 4: Shape B (Diamond/Rising) */}
-        <g className="shape-rise">
+        <g className="shape-rise" style={{ transformBox: 'fill-box' }}>
           <path 
             className="loader-shape"
-            d="M 50,10 L 70,30 L 50,50 L 30,30 Z" 
+            d="M 50,10 L 75,35 L 50,60 L 25,35 Z" 
           />
-          <line x1="30" y1="30" x2="70" y2="30" className="loader-shape" opacity="0.4" />
-          <line x1="50" y1="10" x2="50" y2="50" className="loader-shape" opacity="0.4" />
+          <path 
+            className="loader-shape" 
+            d="M 25,35 L 75,35 M 50,10 L 50,60" 
+            opacity="0.4"
+            strokeWidth="1.5"
+          />
         </g>
       </svg>
+      
+      {!isSmall && (
+        <div className="loader-text">
+          Loading
+        </div>
+      )}
     </div>
   );
 };

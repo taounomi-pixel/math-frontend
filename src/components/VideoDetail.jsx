@@ -120,8 +120,8 @@ const VideoDetail = () => {
           </button>
 
           {!video ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>
-              <GeometricLoader size={64} />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '120px 0', gap: '24px' }}>
+              <GeometricLoader size={120} />
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

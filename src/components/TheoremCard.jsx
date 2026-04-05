@@ -305,11 +305,10 @@ const TheoremCard = ({ searchQuery = "" }) => {
       console.error(err);
     }
   };
-
   if (isLoading && videos.length === 0) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '100px 64px', gap: '24px' }}>
-        <GeometricLoader size={64} />
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '120px 64px', gap: '32px' }}>
+        <GeometricLoader size={96} />
         {showWakingMessage && (
           <p style={{ color: 'var(--text-secondary)', fontSize: '15px' }} className="animate-pulse">
             {t('wakingUp')}
