@@ -102,12 +102,17 @@ const VideoDetail = () => {
         style={{ height: 'fit-content', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}
       >
         {/* Close Button */}
-        <button 
+        <motion.button 
           onClick={handleBack}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          whileHover={{ scale: 1.1, backgroundColor: 'rgba(255, 255, 255, 1)' }}
+          whileTap={{ scale: 0.9 }}
           style={{ position: 'absolute', top: '24px', right: '24px', zIndex: 10, background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(8px)', border: '1px solid var(--border-color)', borderRadius: '50%', padding: '8px', cursor: 'pointer', color: 'var(--text-secondary)' }}
         >
           <X size={24} />
-        </button>
+        </motion.button>
 
         <div className="p-6 md:p-10">
           {/* Back Label */}
