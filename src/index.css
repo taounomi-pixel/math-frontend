@@ -994,3 +994,12 @@ kbd {
 }
 .tracking-\[0\.3em\] { letter-spacing: 0.3em; }
 
+
+/* Hide scrollbar utility */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

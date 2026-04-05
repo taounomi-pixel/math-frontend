@@ -85,7 +85,7 @@ const VideoDetail = () => {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto', padding: '40px 20px' }}>
+    <div className="hide-scrollbar" style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto', padding: '40px 20px' }}>
       {/* Backdrop */}
       <motion.div 
         initial={{ opacity: 0 }}
@@ -98,7 +98,7 @@ const VideoDetail = () => {
       {/* Modal Content */}
       <motion.div 
         layoutId={`video-card-${id}`}
-        className="w-full max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl relative"
+        className="w-full max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl relative hide-scrollbar"
         style={{ height: 'fit-content', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}
       >
         {/* Close Button */}
