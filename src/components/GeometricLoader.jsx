@@ -56,21 +56,16 @@ const GeometricLoader = ({ size = 'full', className = '' }) => {
           />
         </g>
 
-        {/* =========================================
-           WINDING WATER SURFACE (Surface only, no fill)
-           ========================================= */}
-        <path 
-          d="M 0 100 Q 30 108 60 100 T 120 100" 
-          fill="none" stroke="currentColor" strokeWidth="2" 
-          opacity="0.8" 
-          filter="url(#premium-glow)" 
-          className="loader-wave-main" 
-        />
-        <path d="M 0 100 Q 30 115 60 100 T 120 100" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.3" className="loader-wave-depth-1" />
-        <path d="M 0 100 Q 30 125 60 100 T 120 100" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.15" className="loader-wave-depth-2" />
+        {/* 🌊 Interactive Liquid Surface (Sine Waves) */}
+        <path d="M 0 100 Q 30 100 60 100 T 120 100" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.8" filter="url(#premium-glow)" className="loader-wave-main" />
+        <path d="M 0 100 Q 30 100 60 100 T 120 100" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.3" className="loader-wave-depth-1" />
+        <path d="M 0 100 Q 30 100 60 100 T 120 100" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.15" className="loader-wave-depth-2" />
 
-        {/* Splash Particles */}
-        <g className="loader-splashes">
+        {/* 💥 Kinetic Feedback: Ripples & Splashes */}
+        <g className="loader-feedback">
+          <circle cx="60" cy="100" r="0" fill="none" stroke="currentColor" strokeWidth="1" opacity="0" className="loader-ripple loader-ripple-1" />
+          <circle cx="60" cy="100" r="0" fill="none" stroke="currentColor" strokeWidth="1" opacity="0" className="loader-ripple loader-ripple-2" />
+          
           {[...Array(6)].map((_, i) => (
             <circle key={i} cx="60" cy="100" r="1.5" fill="currentColor" className={`loader-splash loader-splash-${i + 1}`} />
           ))}
