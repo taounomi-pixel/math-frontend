@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import { Upload, X, Loader2, FileText, ChevronDown, CheckCircle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { CATEGORIES } from '../constants/categories';
@@ -26,7 +26,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
     // Lock body scroll when modal opens
     const originalStyle = window.getComputedStyle(document.body).overflow;
     document.body.style.overflow = 'hidden';
-    
+
     return () => {
       // Restore body scroll when modal closes
       document.body.style.overflow = originalStyle;
@@ -37,7 +37,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
     if (tag === categoryL2) {
       setCategoryL2('');
     }
-    setSelectedTags(prev => 
+    setSelectedTags(prev =>
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
     );
   };
@@ -126,30 +126,30 @@ const UploadModal = ({ onClose, onSuccess }) => {
     xhr.onload = () => {
       xhrRef.current = null;
       console.log(`DEBUG: Upload XHR finished. Status: ${xhr.status}`);
-      
+
       // UI Response based on strict HTTP 200 OK
       if (xhr.status === 200) {
-        console.log("✅ DEBUG: Upload Success (200). Starting 2s synchronization delay...");
+        console.log("鉁?DEBUG: Upload Success (200). Starting 2s synchronization delay...");
         setUploadProgress(100);
         setIsSyncing(true);
         // Do NOT set isUploading to false here, keep it true to disable the button permanently
-        
+
         // Execute the 2s pause only on absolute success
         setTimeout(() => {
-          console.log("🏁 DEBUG: 2s delay finished. Executing final hardware-reload redirect.");
+          console.log("馃弫 DEBUG: 2s delay finished. Executing final hardware-reload redirect.");
           if (onSuccess) onSuccess();
           if (onClose) onClose();
-          
+
           // Force a clean reload/redirect to clear state and URL hashes (#)
           const target = window.location.origin + "/";
           window.location.href = target;
         }, 2000);
       } else {
-        console.error(`❌ DEBUG: Upload Failure (${xhr.status}). Text: ${xhr.responseText}`);
+        console.error(`鉂?DEBUG: Upload Failure (${xhr.status}). Text: ${xhr.responseText}`);
         // Handle 500, 401, 413 or other non-OK status codes
         try {
           if (xhr.status === 500) {
-            setError(lang === 'zh' ? '服务器内部错误：R2 存储配置失效 (s3_client is NONE)。请检查 Render 环境变量。' : 'Backend Error: R2 storage disabled (s3_client is NONE). Check Render Env Vars.');
+            setError(lang === 'zh' ? '鏈嶅姟鍣ㄥ唴閮ㄩ敊璇細R2 瀛樺偍閰嶇疆澶辨晥 (s3_client is NONE)銆傝妫€鏌?Render 鐜鍙橀噺銆? ' : 'Backend Error: R2 storage disabled (s3_client is NONE). Check Render Env Vars.');
           } else {
             const response = JSON.parse(xhr.responseText);
             setError(response.detail || t('errUploadFail'));
@@ -361,9 +361,9 @@ const UploadModal = ({ onClose, onSuccess }) => {
           </div>
 
           {(error || fileSizeError) && (
-            <div style={{ 
-              marginBottom: '24px', padding: '12px 16px', 
-              borderRadius: '12px', background: '#FEF2F2', 
+            <div style={{
+              marginBottom: '24px', padding: '12px 16px',
+              borderRadius: '12px', background: '#FEF2F2',
               color: '#B91C1C', fontSize: '14px', fontWeight: '500',
               border: '1px solid #FECACA', display: 'flex', gap: '8px', alignItems: 'center'
             }}>
@@ -374,9 +374,9 @@ const UploadModal = ({ onClose, onSuccess }) => {
           <form onSubmit={handleUpload}>
             <div style={{ marginBottom: '24px' }}>
               <label className="form-label">{t('title')}</label>
-              <input 
-                type="text" 
-                className="form-input" 
+              <input
+                type="text"
+                className="form-input"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={t('titlePlaceholder')}
@@ -388,7 +388,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
               <div style={{ flex: 1 }}>
                 <label className="form-label">{t('labelL1')}</label>
                 <div className="select-wrapper">
-                  <select 
+                  <select
                     className="form-select"
                     value={categoryL1}
                     onChange={(e) => {
@@ -408,7 +408,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
               <div style={{ flex: 1 }}>
                 <label className="form-label">{t('labelL2')}</label>
                 <div className="select-wrapper">
-                  <select 
+                  <select
                     className="form-select"
                     value={categoryL2}
                     onChange={(e) => setCategoryL2(e.target.value)}
@@ -430,7 +430,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
                 {allPossibleTags.map(tag => {
                   const isActive = selectedTags.includes(tag);
                   return (
-                    <button 
+                    <button
                       key={tag}
                       type="button"
                       onClick={() => toggleTag(tag)}
@@ -448,8 +448,8 @@ const UploadModal = ({ onClose, onSuccess }) => {
               <div style={{ flex: 1 }}>
                 <label className="form-label">{t('videoFile')}</label>
                 <div className="dropzone-refined" onClick={() => fileInputRef.current?.click()}>
-                  <input 
-                    type="file" accept="video/mp4" ref={fileInputRef} 
+                  <input
+                    type="file" accept="video/mp4" ref={fileInputRef}
                     onChange={handleFileChange} style={{ display: 'none' }} disabled={isUploading}
                   />
                   <Upload size={24} style={{ color: 'var(--accent-primary)', margin: '0 auto 12px' }} />
@@ -461,9 +461,9 @@ const UploadModal = ({ onClose, onSuccess }) => {
               <div style={{ flex: 1 }}>
                 <label className="form-label">{t('manimSource')}</label>
                 <input type="file" accept=".py" onChange={handleSourceChange} style={{ display: 'none' }} id="src-upload" disabled={isUploading} />
-                <label 
-                  htmlFor="src-upload" 
-                  className="dropzone-refined" 
+                <label
+                  htmlFor="src-upload"
+                  className="dropzone-refined"
                   style={{ display: 'block', padding: '32px 16px' }}
                 >
                   <FileText size={24} style={{ color: sourceFile ? 'var(--accent-primary)' : 'var(--text-tertiary)', margin: '0 auto 12px' }} />
@@ -475,20 +475,20 @@ const UploadModal = ({ onClose, onSuccess }) => {
             </div>
 
             <div className="btn-row">
-              <button 
-                type="button" 
-                className="btn-outline" 
+              <button
+                type="button"
+                className="btn-outline"
                 onClick={onClose}
                 disabled={isUploading}
                 style={{ flex: 1, padding: '14px', borderRadius: '14px' }}
               >
                 {t('btnCancel')}
               </button>
-              <button 
-                type="submit" 
-                className="btn-primary" 
+              <button
+                type="submit"
+                className="btn-primary"
                 disabled={isUploading || fileSizeError || !title || !file}
-                style={{ 
+                style={{
                   flex: 1.5, padding: '14px', borderRadius: '14px',
                   opacity: (fileSizeError || !title || !file) ? 0.6 : 1,
                   cursor: (fileSizeError || !title || !file) ? 'not-allowed' : 'pointer'
@@ -496,10 +496,10 @@ const UploadModal = ({ onClose, onSuccess }) => {
               >
                 {isUploading ? (
                   <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <Loader2 size={18} className="spinning" style={{ marginRight: '8px' }} /> 
-                    {isSyncing 
-                      ? (lang === 'zh' ? '上传成功，正在同步...' : 'Upload successful, syncing...') 
-                      : (uploadProgress === 100 ? (lang === 'zh' ? '服务器处理中...' : 'Server processing...') : `${uploadProgress}%`)
+                    <Loader2 size={18} className="spinning" style={{ marginRight: '8px' }} />
+                    {isSyncing
+                      ? (lang === 'zh' ? '涓婁紶鎴愬姛锛屾鍦ㄥ悓姝?..' : 'Upload successful, syncing...')
+                      : (uploadProgress === 100 ? (lang === 'zh' ? '鏈嶅姟鍣ㄥ鐞嗕腑...' : 'Server processing...') : `${uploadProgress}%`)
                     }
                   </span>
                 ) : (

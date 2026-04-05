@@ -1,15 +1,15 @@
-import React from 'react';
+﻿import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutGrid, Variable, Shapes, Activity, Hash, Dice3 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { CATEGORIES } from '../constants/categories';
 
 const CATEGORY_ICONS = {
-  '代数': Variable,
-  '几何': Shapes,
-  '分析': Activity,
-  '数论': Hash,
-  '概率': Dice3,
+  '浠ｆ暟': Variable,
+  '鍑犱綍': Shapes,
+  '鍒嗘瀽': Activity,
+  '鏁拌': Hash,
+  '姒傜巼': Dice3,
 };
 
 const Sidebar = () => {
@@ -29,26 +29,26 @@ const Sidebar = () => {
   return (
     <div className="sidebar-container container mx-auto px-4" style={{ marginBottom: '24px' }}>
       <div className="topics-filter" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-        <NavLink 
+        <NavLink
           to="/"
           className={({ isActive }) => `topic-btn ${isActive ? 'active' : ''}`}
-          style={({ isActive }) => ({ 
+          style={({ isActive }) => ({
             ...(isActive ? {} : { background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)' }),
-            fontWeight: 'bold', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '6px' 
+            fontWeight: 'bold',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
           })}
           end
         >
           <LayoutGrid size={16} />
-          {t('allVideos') || '所有'}
+          {t('allVideos') || '鎵€鏈?'}
         </NavLink>
-        
+
         {Object.keys(CATEGORIES).map(cat => {
           const isActive = isCategoryActive(cat);
           return (
-            <NavLink 
+            <NavLink
               key={cat}
               to={`/c/${encodeURIComponent(cat)}`}
               className={`topic-btn ${isActive ? 'active' : ''}`}
@@ -60,28 +60,28 @@ const Sidebar = () => {
           );
         })}
       </div>
-      
+
       {/* Show subcategories of the active category */}
       {Object.keys(CATEGORIES).map(cat => {
         if (!isCategoryActive(cat)) return null;
         return (
-          <div 
-            key={`${cat}-subs`} 
-            className="subtopics-filter" 
-            style={{ 
-              display: 'flex', 
-              flexWrap: 'wrap', 
-              gap: '8px', 
-              marginTop: '16px', 
-              padding: '12px 16px', 
-              background: 'var(--bg-secondary)', 
+          <div
+            key={`${cat}-subs`}
+            className="subtopics-filter"
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '8px',
+              marginTop: '16px',
+              padding: '12px 16px',
+              background: 'var(--bg-secondary)',
               borderRadius: '12px',
               border: '1px dashed var(--border-color)',
               animation: 'fadeIn 0.2s ease'
             }}
           >
             {CATEGORIES[cat].map(sub => (
-              <NavLink 
+              <NavLink
                 key={sub}
                 to={`/c/${encodeURIComponent(cat)}/${encodeURIComponent(sub)}`}
                 className={({ isActive }) => `topic-btn ${isActive ? 'active' : ''}`}

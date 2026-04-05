@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Loader2, Send, MessageCircle } from 'lucide-react';
 import { API_BASE } from '../utils/api';
 import { formatRelativeTime } from '../utils/timeHelper';
@@ -104,7 +104,7 @@ const CommentSection = ({ videoId }) => {
                 className="btn-primary" 
                 style={{ padding: '8px 20px', borderRadius: '20px', fontSize: '14px' }}
               >
-                {isSubmitting ? <Loader2 className="spinning" size={16} /> : (t('commonSubmit') || (lang === 'zh' ? '评论' : 'Comment'))}
+                {isSubmitting ? <Loader2 className="spinning" size={16} /> : (t('commonSubmit') || (lang === 'zh' ? '璇勮' : 'Comment'))}
               </button>
             </div>
           </div>
@@ -115,7 +115,7 @@ const CommentSection = ({ videoId }) => {
           borderRadius: '12px', marginBottom: '40px', border: '1px solid var(--border-color)'
         }}>
           <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
-            {t('loginToComment') || (lang === 'zh' ? '登录后即可发表评论' : 'Log in to leave a comment')}
+            {t('loginToComment') || (lang === 'zh' ? '鐧诲綍鍚庡嵆鍙彂琛ㄨ瘎璁? : 'Log in to leave a comment')}
           </p>
         </div>
       )}
