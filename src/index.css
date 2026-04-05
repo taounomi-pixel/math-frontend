@@ -859,8 +859,8 @@ kbd {
    Geometric Narrative Loader Animations
    ========================================= */
 .loader-shape-a {
-  transform-origin: 60px 45px; /* Center of triangle */
-  animation: shapeDrop 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  transform-origin: 60px 45px; 
+  animation: shapeDrop 3s infinite; /* 移除全局 easing */
 }
 
 .loader-ripple {
@@ -872,15 +872,19 @@ kbd {
 
 .loader-shape-b {
   transform-origin: 60px 100px; /* Center of rect */
-  animation: shapeRise 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: shapeRise 3s infinite; /* 移除全局 easing */
   opacity: 0;
 }
 
 @keyframes shapeDrop {
   0%   { transform: translateY(-40px) rotate(0deg) scale(0.8); opacity: 0; }
-  10%  { opacity: 1; transform: translateY(-20px) rotate(45deg) scale(1); }
-  38%  { transform: translateY(45px) rotate(180deg) scale(1); opacity: 1; } /* Hits water */
-  45%  { transform: translateY(60px) rotate(220deg) scale(0.5); opacity: 0; } /* Sinks and fades */
+  10%  { opacity: 1; transform: translateY(-30px) rotate(45deg) scale(1); 
+         /* 自由落体：重力加速向下 (ease-in) */
+         animation-timing-function: cubic-bezier(0.55, 0.085, 0.68, 0.53); }
+  38%  { transform: translateY(45px) rotate(180deg) scale(1); opacity: 1; 
+         /* 砸入水中：水阻力导致急速减速 (ease-out) */
+         animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+  48%  { transform: translateY(65px) rotate(220deg) scale(0.5); opacity: 0; }
   100% { opacity: 0; }
 }
 
@@ -892,10 +896,14 @@ kbd {
 }
 
 @keyframes shapeRise {
-  0%, 42% { transform: translateY(30px) rotate(45deg) scale(0.5); opacity: 0; }
-  48%     { opacity: 1; transform: translateY(0px) rotate(90deg) scale(1.2); } /* Breaks surface */
-  85%     { transform: translateY(-55px) rotate(225deg) scale(1); opacity: 1; } /* Apex */
-  95%     { transform: translateY(-65px) rotate(270deg) scale(0.8); opacity: 0; } /* Fades in air */
+  0%, 40% { transform: translateY(40px) rotate(45deg) scale(0.5); opacity: 0; 
+            /* 水下浮力：急速向上窜出 (ease-out) */
+            animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+  46%     { opacity: 1; transform: translateY(-5px) rotate(90deg) scale(1.2); 
+            /* 冲出水面：动能耗尽，到达最高点前减速 */
+            animation-timing-function: cubic-bezier(0.21, 0.85, 0.32, 1); }
+  80%     { transform: translateY(-55px) rotate(225deg) scale(1); opacity: 1; }
+  92%     { transform: translateY(-65px) rotate(270deg) scale(0.8); opacity: 0; }
   100%    { opacity: 0; }
 }
 

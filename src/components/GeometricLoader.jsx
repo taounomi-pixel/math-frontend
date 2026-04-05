@@ -26,8 +26,22 @@ const GeometricLoader = ({ size = 'full', className = '' }) => {
           </filter>
         </defs>
 
-        {/* Water Surface Line */}
-        <line x1="10" y1="100" x2="110" y2="100" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" opacity="0.3" />
+        {/* Authentic Water Waves (Replacing the dashed line) */}
+        <path 
+          d="M 0 100 Q 30 108 60 100 T 120 100" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="1.5" 
+          opacity="0.5" 
+          filter="url(#premium-glow)"
+        />
+        <path 
+          d="M 0 100 Q 30 92 60 100 T 120 100" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="1" 
+          opacity="0.2" 
+        />
 
         {/* Shape A: Falling Triangle */}
         <polygon
