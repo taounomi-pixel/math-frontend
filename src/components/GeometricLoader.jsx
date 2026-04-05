@@ -26,22 +26,15 @@ const GeometricLoader = ({ size = 'full', className = '' }) => {
           </filter>
         </defs>
 
-        {/* Authentic Water Waves (Replacing the dashed line) */}
-        <path 
-          d="M 0 100 Q 30 108 60 100 T 120 100" 
-          fill="none" 
-          stroke="currentColor" 
-          strokeWidth="1.5" 
-          opacity="0.5" 
-          filter="url(#premium-glow)"
-        />
-        <path 
-          d="M 0 100 Q 30 92 60 100 T 120 100" 
-          fill="none" 
-          stroke="currentColor" 
-          strokeWidth="1" 
-          opacity="0.2" 
-        />
+        {/* Authentic Water Waves (Static Base Layer) */}
+        <path d="M 0 100 Q 30 108 60 100 T 120 100" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3" filter="url(#premium-glow)" />
+        <path d="M 0 100 Q 30 92 60 100 T 120 100" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.1" />
+
+        {/* 🔴 NEW: Dynamic Ripple Layer (Activated on Collision) 🔴 */}
+        <g className="loader-ripple-layer">
+          <ellipse cx="60" cy="100" rx="20" ry="6" fill="none" stroke="currentColor" strokeWidth="3" opacity="0" className="loader-ripple loader-ripple-1" />
+          <ellipse cx="60" cy="100" rx="20" ry="6" fill="none" stroke="currentColor" strokeWidth="2" opacity="0" className="loader-ripple loader-ripple-2" />
+        </g>
 
         {/* Shape A: Falling Triangle */}
         <polygon

@@ -860,48 +860,43 @@ kbd {
    ========================================= */
 .loader-shape-a {
   transform-origin: 60px 45px; 
-  animation: shapeDrop 3s infinite; /* 移除全局 easing */
+  animation: shapeDrop 3s cubic-bezier(0.55, 0.085, 0.68, 0.53) infinite; 
+}
+.loader-shape-b {
+  transform-origin: 60px 100px; 
+  animation: shapeRise 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite; 
+  opacity: 0;
 }
 
+/* 涟漪元素的公共样式 */
 .loader-ripple {
   transform-origin: 60px 100px;
+  filter: url(#premium-glow);
   opacity: 0;
 }
-.loader-ripple-1 { animation: waterRipple 3s ease-out infinite; animation-delay: 0.05s; }
-.loader-ripple-2 { animation: waterRipple 3s ease-out infinite; animation-delay: 0.2s; }
 
-.loader-shape-b {
-  transform-origin: 60px 100px; /* Center of rect */
-  animation: shapeRise 3s infinite; /* 移除全局 easing */
-  opacity: 0;
-}
+/* 精确对齐时间：在三角形砸中水面的 38% 时刻激活涟漪 */
+.loader-ripple-1 { animation: waterRipple 3s ease-out infinite; animation-delay: 0.05s; }
+.loader-ripple-2 { animation: waterRipple 3s ease-out infinite; animation-delay: 0.25s; }
 
 @keyframes shapeDrop {
   0%   { transform: translateY(-40px) rotate(0deg) scale(0.8); opacity: 0; }
-  10%  { opacity: 1; transform: translateY(-30px) rotate(45deg) scale(1); 
-         /* 自由落体：重力加速向下 (ease-in) */
-         animation-timing-function: cubic-bezier(0.55, 0.085, 0.68, 0.53); }
-  38%  { transform: translateY(45px) rotate(180deg) scale(1); opacity: 1; 
-         /* 砸入水中：水阻力导致急速减速 (ease-out) */
-         animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+  10%  { opacity: 1; transform: translateY(-30px) rotate(45deg) scale(1); }
+  38%  { transform: translateY(45px) rotate(180deg) scale(1); opacity: 1; }
   48%  { transform: translateY(65px) rotate(220deg) scale(0.5); opacity: 0; }
   100% { opacity: 0; }
 }
 
 @keyframes waterRipple {
   0%, 36% { transform: scale(0.3); opacity: 0; stroke-width: 3px; }
-  38%     { opacity: 0.8; }
-  55%     { transform: scale(3.5); opacity: 0; stroke-width: 0.5px; }
+  38%     { opacity: 0.8; } /* 🔴 激活：向外扩散，逐渐变淡 🔴 */
+  55%     { transform: scale(4.5); opacity: 0; stroke-width: 0.5px; }
   100%    { opacity: 0; }
 }
 
 @keyframes shapeRise {
-  0%, 40% { transform: translateY(40px) rotate(45deg) scale(0.5); opacity: 0; 
-            /* 水下浮力：急速向上窜出 (ease-out) */
-            animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-  46%     { opacity: 1; transform: translateY(-5px) rotate(90deg) scale(1.2); 
-            /* 冲出水面：动能耗尽，到达最高点前减速 */
-            animation-timing-function: cubic-bezier(0.21, 0.85, 0.32, 1); }
+  0%, 40% { transform: translateY(40px) rotate(45deg) scale(0.5); opacity: 0; }
+  46%     { opacity: 1; transform: translateY(-5px) rotate(90deg) scale(1.2); }
   80%     { transform: translateY(-55px) rotate(225deg) scale(1); opacity: 1; }
   92%     { transform: translateY(-65px) rotate(270deg) scale(0.8); opacity: 0; }
   100%    { opacity: 0; }
