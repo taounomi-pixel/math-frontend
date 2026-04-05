@@ -28,7 +28,7 @@ const Sidebar = () => {
 
   return (
     <div className="sidebar-container container mx-auto px-4" style={{ marginBottom: '24px' }}>
-      <div className="topics-filter" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+      <div className="topics-filter">
         <NavLink
           to="/"
           className={({ isActive }) => `topic-btn ${isActive ? 'active' : ''}`}
@@ -69,9 +69,6 @@ const Sidebar = () => {
             key={`${cat}-subs`}
             className="subtopics-filter"
             style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '8px',
               marginTop: '16px',
               padding: '12px 16px',
               background: 'var(--bg-secondary)',
