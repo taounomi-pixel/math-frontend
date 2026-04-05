@@ -735,6 +735,47 @@ kbd {
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
+@keyframes iosPopIn {
+  0% { opacity: 0; transform: scale(0.9) translateY(-10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes iosPopOut {
+  0% { opacity: 1; transform: scale(1) translateY(0); }
+  100% { opacity: 0; transform: scale(0.9) translateY(-10px); }
+}
+
+.ios-modal-anim {
+  animation: iosPopIn 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.ios-modal-closing {
+  animation: iosPopOut 0.25s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.close-btn-circular {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50% !important;
+  color: var(--text-tertiary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: white;
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+  border: none;
+  outline: none;
+  z-index: 10;
+}
+
+.close-btn-circular:hover {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  transform: rotate(90deg);
+}
+
 .modal-close {
   position: absolute;
   top: 16px;

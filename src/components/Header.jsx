@@ -1055,44 +1055,6 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
   return (
     <>
-      <style>{`
-        @keyframes iosPopIn {
-          0% {
-            opacity: 0;
-            transform: scale(0.9) translateY(-10px);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-        }
-        @keyframes iosPopOut {
-          0% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-          100% {
-            opacity: 0;
-            transform: scale(0.9) translateY(-10px);
-          }
-        }
-        .ios-dropdown-anim {
-          animation: iosPopIn 0.25s cubic-bezier(0.32, 0.72, 0, 1) forwards;
-          transform-origin: top right;
-        }
-        .ios-dropdown-closing {
-          animation: iosPopOut 0.2s cubic-bezier(0.32, 0.72, 0, 1) forwards;
-          transform-origin: top right;
-        }
-        .ios-modal-anim {
-          animation: iosPopIn 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards;
-          transform-origin: center;
-        }
-        .ios-modal-closing {
-          animation: iosPopOut 0.25s cubic-bezier(0.32, 0.72, 0, 1) forwards;
-          transform-origin: center;
-        }
-      `}</style>
       <header className="header">
         <div className="header-inner container">
           <a href="/" className="logo">
@@ -1477,16 +1439,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
               </h2>
               <button 
                 onClick={handleCloseAuthModal} 
-                style={{ 
-                  background: '#f1f5f9', border: 'none', cursor: 'pointer', 
-                  width: '32px', height: '32px', borderRadius: '8px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'var(--text-secondary)', transition: 'background 0.15s'
-                }}
-                onMouseOver={e => e.currentTarget.style.background = '#e2e8f0'}
-                onMouseOut={e => e.currentTarget.style.background = '#f1f5f9'}
+                className="close-btn-circular"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
             
@@ -1907,16 +1862,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
               </h2>
               <button 
                 onClick={handleCloseAuthModal} 
-                style={{ 
-                  background: '#f1f5f9', border: 'none', cursor: 'pointer', 
-                  width: '32px', height: '32px', borderRadius: '8px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'var(--text-secondary)', transition: 'background 0.15s'
-                }}
-                onMouseOver={e => e.currentTarget.style.background = '#e2e8f0'}
-                onMouseOut={e => e.currentTarget.style.background = '#f1f5f9'}
+                className="close-btn-circular"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
             
@@ -2103,9 +2051,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
               </h2>
               <button 
                 onClick={() => { setAuthModal(null); setPendingSupabaseToken(null); }} 
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                className="close-btn-circular"
               >
-                <X size={24} />
+                <X size={18} />
               </button>
             </div>
 
@@ -2187,14 +2135,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
               </div>
               <button
                 onClick={handleCloseBindModal}
-                style={{
-                  background: '#f1f5f9', border: 'none', cursor: 'pointer',
-                  width: '32px', height: '32px', borderRadius: '8px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'var(--text-secondary)', transition: 'background 0.15s'
-                }}
-                onMouseOver={e => e.currentTarget.style.background = '#e2e8f0'}
-                onMouseOut={e => e.currentTarget.style.background = '#f1f5f9'}
+                className="close-btn-circular"
               >
                 <X size={18} />
               </button>

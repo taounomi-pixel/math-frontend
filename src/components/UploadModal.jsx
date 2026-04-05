@@ -22,6 +22,15 @@ const UploadModal = ({ isOpen, onClose, onRefresh }) => {
   const [fileSizeError, setFileSizeError] = useState('');
   const fileInputRef = useRef(null);
   const xhrRef = useRef(null);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleLocalClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+      setIsClosing(false);
+    }, 280);
+  };
 
   React.useEffect(() => {
     // Lock body scroll when modal opens
@@ -175,13 +184,8 @@ const UploadModal = ({ isOpen, onClose, onRefresh }) => {
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={handleLocalClose}>
       <style>{`
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-30px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        
         .modal-overlay {
           position: fixed;
           top: 0; left: 0; right: 0; bottom: 0;
@@ -202,8 +206,7 @@ const UploadModal = ({ isOpen, onClose, onRefresh }) => {
           border-radius: 24px;
           position: relative;
           box-shadow: var(--shadow-glass);
-          animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-          overflow: hidden; /* Clip everything to rounded corners */
+          overflow: hidden;
           border: 1px solid rgba(255, 255, 255, 0.5);
           display: flex;
           flex-direction: column;
@@ -213,7 +216,7 @@ const UploadModal = ({ isOpen, onClose, onRefresh }) => {
           overflow-y: auto;
           padding: 40px;
           flex: 1;
-          overscroll-behavior: contain; /* Prevent scroll chaining */
+          overscroll-behavior: contain;
           background-image: 
             radial-gradient(var(--border-color) 1px, transparent 1px);
           background-size: 32px 32px;
@@ -230,23 +233,6 @@ const UploadModal = ({ isOpen, onClose, onRefresh }) => {
         }
         .modal-scroll-area::-webkit-scrollbar-track {
           background: transparent;
-        }
-
-        .close-btn {
-          position: absolute;
-          top: 16px; right: 16px;
-          color: var(--text-tertiary);
-          transition: all 0.2s;
-          padding: 8px;
-          border-radius: 12px;
-          z-index: 10;
-          background: rgba(255,255,255,0.8);
-          backdrop-filter: blur(4px);
-        }
-        .close-btn:hover {
-          background: var(--bg-tertiary);
-          color: var(--text-primary);
-          transform: rotate(90deg);
         }
 
         .form-label {
@@ -346,8 +332,16 @@ const UploadModal = ({ isOpen, onClose, onRefresh }) => {
         }
       `}</style>
 
-      <div className="modal-card" onClick={e => e.stopPropagation()}>
-        <button className="close-btn" onClick={onClose} disabled={isUploading}>
+      <div 
+        className={`modal-card ${isClosing ? 'ios-modal-closing' : 'ios-modal-anim'}`} 
+        onClick={e => e.stopPropagation()}
+      >
+        <button 
+          className="close-btn-circular" 
+          style={{ position: 'absolute', top: '16px', right: '16px' }}
+          onClick={handleLocalClose} 
+          disabled={isUploading}
+        >
           <X size={18} />
         </button>
 
