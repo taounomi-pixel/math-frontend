@@ -172,8 +172,15 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
       {createPortal(
         <AnimatePresence>
           {showCode && (
-            <div key="code-modal-container" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999999 }}>
-              {/* Backdrop: Matching VideoDetail's high-blur white overlay */}
+            <div 
+              key="code-modal-container" 
+              style={{ 
+                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+                zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                padding: '24px' 
+              }}
+            >
+              {/* Backdrop */}
               <motion.div 
                 key="code-modal-backdrop"
                 initial={{ opacity: 0 }}
@@ -183,103 +190,130 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
                 style={{ 
                   position: 'absolute',
                   top: 0, left: 0, right: 0, bottom: 0,
-                  background: 'rgba(255, 255, 255, 0.7)', 
-                  backdropFilter: 'blur(16px)'
+                  background: 'rgba(255, 255, 255, 0.5)', 
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)'
                 }}
               />
 
-              {/* Modal Window: High-fidelity spring expansion */}
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', pointerEvents: 'none' }}>
-                <motion.div 
-                  key="code-modal-content"
-                  initial={{ opacity: 0, scale: 0.9, y: 30 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                  transition={{ type: "spring", stiffness: 350, damping: 35 }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-full max-w-5xl bg-white rounded-[32px] shadow-2xl relative overflow-hidden flex flex-col border border-border-color"
-                  style={{ maxHeight: '90vh', pointerEvents: 'auto' }}
+              {/* Modal Window */}
+              <motion.div 
+                key="code-modal-content"
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                onClick={(e) => e.stopPropagation()}
+                style={{ 
+                  width: '100%', 
+                  maxWidth: '1000px',
+                  maxHeight: '85vh', 
+                  background: 'white', 
+                  borderRadius: '32px',
+                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  overflow: 'hidden',
+                  position: 'relative',
+                  border: '1px solid rgba(0,0,0,0.05)'
+                }}
+              >
+                {/* Close Button */}
+                <motion.button 
+                  onClick={() => setShowCode(false)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  style={{
+                    position: 'absolute', top: '24px', right: '24px', zIndex: 20,
+                    width: '40px', height: '40px', borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.05)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    border: 'none', cursor: 'pointer', color: '#1d1d1f'
+                  }}
                 >
-                  {/* Close Button: Sync with VideoDetail Behavior */}
-                  <motion.button 
-                    onClick={() => setShowCode(false)}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    whileHover={{ scale: 1.1, backgroundColor: 'rgba(255, 255, 255, 1)' }}
-                    whileTap={{ scale: 0.9 }}
-                    className="absolute top-6 right-6 z-20 p-2.5 bg-white/80 backdrop-blur-md border border-border-color rounded-full shadow-lg text-text-secondary hover:text-text-primary transition-all cursor-pointer"
-                  >
-                    <X size={24} />
-                  </motion.button>
+                  <X size={20} />
+                </motion.button>
 
-                  {/* Header Section */}
-                  <div className="p-8 pb-4 flex items-center gap-5 border-b border-border-color bg-gray-50/30">
-                    <div className="bg-primary/10 p-3.5 rounded-[20px]">
-                      <Code size={26} className="text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-2xl text-text-primary tracking-tight">
-                        {video.title}
-                      </h3>
-                      <p className="text-sm text-text-secondary font-medium">Source Code Viewer & Code Analysis</p>
-                    </div>
+                {/* Header */}
+                <div style={{ padding: '32px 32px 20px', display: 'flex', alignItems: 'center', gap: '16px', borderBottom: '1px solid rgba(0,0,0,0.05)', background: '#fafafa' }}>
+                  <div style={{ background: 'rgba(0,0,0,0.05)', padding: '12px', borderRadius: '20px' }}>
+                    <Code size={24} color="#1d1d1f" />
                   </div>
-                  
-                  {/* Scrollable Content: Code Reader */}
-                  <div 
-                    className="flex-1 overflow-y-auto hide-scrollbar bg-[#0f172a]"
-                    style={{ padding: '32px' }}
-                  >
-                    {codeLoading ? (
-                      <div className="flex flex-col items-center justify-center min-h-[400px] gap-8">
-                        <GeometricLoader size={80} showText={true} />
-                      </div>
-                    ) : (
-                      <div className="relative group">
-                        <div className="absolute top-0 right-0 z-10 flex items-center gap-3">
-                          <button 
-                            onClick={() => {
-                              navigator.clipboard.writeText(codeContent);
-                              alert('Code copied to clipboard!');
-                            }}
-                            className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-100 rounded-xl text-xs font-bold border border-slate-700 shadow-xl transition-all flex items-center gap-2"
-                          >
-                            <Play size={14} className="fill-current" /> Copy to Clipboard
-                          </button>
-                        </div>
-
-                        <pre 
-                          className="m-0 text-[15px] font-mono leading-relaxed"
-                          style={{ 
-                            color: '#e2e8f0',
-                            fontFamily: '"JetBrains Mono", "Fira Code", monospace',
-                            tabSize: 4,
-                            whiteSpace: 'pre-wrap',
-                            wordBreak: 'break-all'
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '22px', fontWeight: 'bold', color: '#1d1d1f', letterSpacing: '-0.5px' }}>
+                      {video.title}
+                    </h3>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#86868b', fontWeight: '500' }}>Source Code</p>
+                  </div>
+                </div>
+                
+                {/* Scrollable Content */}
+                <div 
+                  className="hide-scrollbar"
+                  style={{ 
+                    flex: 1, 
+                    overflowY: 'auto', 
+                    padding: '32px', 
+                    background: '#f5f5f7', // Light gray background for code
+                    position: 'relative'
+                  }}
+                >
+                  {codeLoading ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px' }}>
+                      <GeometricLoader size={60} showText={true} />
+                    </div>
+                  ) : (
+                    <div style={{ position: 'relative' }}>
+                      <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(codeContent);
+                            alert('代码已复制！');
+                          }}
+                          style={{
+                            padding: '8px 16px', background: 'white', color: '#1d1d1f',
+                            borderRadius: '12px', fontSize: '12px', fontWeight: 'bold',
+                            border: '1px solid rgba(0,0,0,0.1)', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
                           }}
                         >
-                          {codeContent}
-                        </pre>
+                          <Play size={12} fill="currentColor" /> 复制
+                        </button>
                       </div>
-                    )}
-                  </div>
 
-                  {/* Footer Section */}
-                  <div className="px-8 py-5 flex justify-between items-center bg-gray-50 border-t border-border-color">
-                     <div className="flex gap-2">
-                       <span className="px-3 py-1 bg-white border border-border-color rounded-lg text-xs font-medium text-text-secondary">Markdown</span>
-                       <span className="px-3 py-1 bg-white border border-border-color rounded-lg text-xs font-medium text-text-secondary">v1.2.0</span>
-                     </div>
-                     <button 
-                      onClick={() => setShowCode(false)}
-                      className="text-sm font-semibold text-primary hover:underline px-2 py-1"
-                     >
-                       Done
-                     </button>
-                  </div>
-                </motion.div>
-              </div>
+                      <pre 
+                        style={{ 
+                          margin: 0, 
+                          color: '#1d1d1f', // Dark text for light mode
+                          fontSize: '14px',
+                          lineHeight: '1.6',
+                          fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+                          tabSize: 4,
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'break-all'
+                        }}
+                      >
+                        {codeContent}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer */}
+                <div style={{ padding: '16px 32px', background: '#fafafa', borderTop: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                   <div style={{ display: 'flex', gap: '8px' }}>
+                     <span style={{ padding: '4px 10px', background: 'white', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '8px', fontSize: '12px', color: '#86868b' }}>Python</span>
+                     <span style={{ padding: '4px 10px', background: 'white', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '8px', fontSize: '12px', color: '#86868b' }}>Manim</span>
+                   </div>
+                   <button 
+                    onClick={() => setShowCode(false)}
+                    style={{ background: 'transparent', border: 'none', color: '#0066cc', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}
+                   >
+                     完成
+                   </button>
+                </div>
+              </motion.div>
             </div>
           )}
         </AnimatePresence>,
