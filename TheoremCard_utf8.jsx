@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PlayCircle, Bookmark, Play, Heart, Loader2, Trash2, Code, Tag, FolderOpen } from 'lucide-react';
@@ -11,7 +11,7 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
   const finalCategoryLabel = [
     video.category_l1 ? t(video.category_l1) : null,
     video.category_l2 ? t(video.category_l2) : null
-  ].filter(Boolean).join(' › ');
+  ].filter(Boolean).join(' 鈥?');
   
   const [showCode, setShowCode] = useState(false);
   const [codeContent, setCodeContent] = useState('');
@@ -362,7 +362,7 @@ const TheoremCard = ({ searchQuery = "" }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 container mx-auto px-4 max-w-5xl py-12">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 container mx-auto px-4 max-w-7xl py-12">
       {filteredVideos.map(video => (
         <VideoItem 
           key={video.id} 

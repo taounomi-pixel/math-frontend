@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Code, Trash2, Tag, ArrowLeft, Loader2, X } from 'lucide-react';
@@ -96,23 +96,23 @@ const VideoDetail = () => {
       {/* Modal Content */}
       <motion.div 
         layoutId={`video-card-${id}`}
-        className="w-full max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl relative"
-        style={{ height: 'fit-content', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}
+        className="w-full max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden relative"
+        style={{ height: 'fit-content', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}
       >
         {/* Close Button */}
         <button 
           onClick={handleBack}
-          style={{ position: 'absolute', top: '24px', right: '24px', zIndex: 10, background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(8px)', border: '1px solid var(--border-color)', borderRadius: '50%', padding: '8px', cursor: 'pointer', color: 'var(--text-secondary)' }}
+          style={{ position: 'absolute', top: '24px', right: '24px', zIndex: 10, background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '50%', padding: '8px', cursor: 'pointer', color: 'var(--text-secondary)' }}
         >
           <X size={24} />
         </button>
 
-        <div className="p-6 md:p-10">
+        <div className="p-8">
           {/* Back Label */}
           <button 
             onClick={handleBack}
             className="btn-ghost"
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', color: 'var(--text-secondary)', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '15px', fontWeight: '500' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '32px', color: 'var(--text-secondary)', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '16px', fontWeight: '500' }}
           >
             <ArrowLeft size={18} /> {t('backToGallery')}
           </button>
@@ -123,17 +123,16 @@ const VideoDetail = () => {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              {/* Responsive Video Player */}
+              {/* Massive Video Player */}
               <motion.div 
                 layoutId={`video-visual-${video.id}`}
-                className="aspect-video w-full rounded-2xl overflow-hidden shadow-2xl mb-8 bg-black"
-                style={{ maxHeight: '60vh', background: '#000' }}
+                className="aspect-video w-full rounded-2xl overflow-hidden shadow-xl mb-10 bg-black"
               >
                 <video 
                   src={video.video_url.startsWith('http') ? video.video_url : `${API_BASE.replace('/api', '')}${video.video_url}`}
                   controls 
                   autoPlay
-                  className="w-full h-full object-contain aspect-video"
+                  className="w-full h-full object-cover aspect-video"
                 />
               </motion.div>
 
@@ -146,7 +145,7 @@ const VideoDetail = () => {
                          {t('uploadedBy')} @{video.uploader_username}
                        </span>
                     </div>
-                    <h1 style={{ fontSize: '28px', margin: '0 0 12px 0', fontWeight: '800', lineHeight: '1.2', color: 'var(--text-primary)' }}>
+                    <h1 style={{ fontSize: '36px', margin: '0 0 16px 0', fontWeight: '800', lineHeight: '1.2', color: 'var(--text-primary)' }}>
                       {video.title}
                     </h1>
                     
@@ -189,7 +188,7 @@ const VideoDetail = () => {
                   </div>
                 </div>
 
-                <div style={{ height: '1px', background: 'var(--border-color)', margin: '24px 0' }} />
+                <div style={{ height: '1px', background: 'var(--border-color)', margin: '40px 0' }} />
 
                 {/* Comment Section */}
                 <CommentSection videoId={video.id} />
