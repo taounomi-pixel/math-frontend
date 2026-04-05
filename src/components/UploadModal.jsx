@@ -1,12 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { Upload, X, Loader2, FileText, ChevronDown, CheckCircle } from 'lucide-react';
+import { Upload, X, FileText, ChevronDown, CheckCircle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { CATEGORIES } from '../constants/categories';
 import { API_BASE } from '../utils/api';
+import GeometricLoader from './GeometricLoader';
 
 const allPossibleTags = Object.values(CATEGORIES).flat();
 
-const UploadModal = ({ onClose, onSuccess }) => {
+const UploadModal = ({ isOpen, onClose, onRefresh }) => {
   const { t, lang } = useLanguage();
   const [title, setTitle] = useState('');
   const [categoryL1, setCategoryL1] = useState('');
@@ -496,7 +497,7 @@ const UploadModal = ({ onClose, onSuccess }) => {
               >
                 {isUploading ? (
                   <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <Loader2 size={18} className="spinning" style={{ marginRight: '8px' }} />
+                    <GeometricLoader size={18} style={{ marginRight: '8px' }} />
                     {isSyncing
                       ? (lang === 'zh' ? '上传成功，正在同步...' : 'Upload successful, syncing...')
                       : (uploadProgress === 100 ? (lang === 'zh' ? '服务器处理中...' : 'Server processing...') : `${uploadProgress}%`)

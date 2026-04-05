@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { PlayCircle, Bookmark, Play, Heart, Loader2, Trash2, Code, Tag, FolderOpen } from 'lucide-react';
+import { Play, Heart, Code, Trash2, Tag, X } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { API_BASE } from '../utils/api';
+
+import GeometricLoader from './GeometricLoader';
 
 const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
   const navigate = useNavigate();
@@ -174,8 +176,8 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
             
             <div style={{ padding: '24px', overflowY: 'auto', flex: 1, backgroundColor: '#0f172a', color: '#e2e8f0' }}>
               {codeLoading ? (
-                <div className="flex flex-col items-center justify-center h-full gap-4">
-                  <Loader2 className="animate-spin text-primary" size={40} />
+                <div className="flex flex-col items-center justify-center h-full gap-6">
+                  <GeometricLoader size={48} />
                   <p className="text-slate-400 animate-pulse">Loading Source Code...</p>
                 </div>
               ) : (
@@ -306,8 +308,8 @@ const TheoremCard = ({ searchQuery = "" }) => {
 
   if (isLoading && videos.length === 0) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '100px 64px', gap: '16px' }}>
-        <Loader2 className="animate-spin text-primary" size={40} />
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '100px 64px', gap: '24px' }}>
+        <GeometricLoader size={64} />
         {showWakingMessage && (
           <p style={{ color: 'var(--text-secondary)', fontSize: '15px' }} className="animate-pulse">
             {t('wakingUp')}

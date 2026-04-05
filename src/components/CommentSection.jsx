@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Loader2, Send, MessageCircle } from 'lucide-react';
+import { Send, MessageCircle } from 'lucide-react';
 import { API_BASE } from '../utils/api';
 import { formatRelativeTime } from '../utils/timeHelper';
 import { useLanguage } from '../contexts/LanguageContext';
 import CommentItem from './CommentItem';
+
+import GeometricLoader from './GeometricLoader';
 
 const CommentSection = ({ videoId }) => {
   const { t, lang } = useLanguage();
@@ -104,7 +105,7 @@ const CommentSection = ({ videoId }) => {
                 className="btn-primary"
                 style={{ padding: '8px 20px', borderRadius: '20px', fontSize: '14px' }}
               >
-                {isSubmitting ? <Loader2 className="spinning" size={16} /> : (t('commonSubmit') || (lang === 'zh' ? '评论' : 'Comment'))}
+                {isSubmitting ? <GeometricLoader size={16} /> : (t('commonSubmit') || (lang === 'zh' ? '评论' : 'Comment'))}
               </button>
             </div>
           </div>
@@ -123,7 +124,7 @@ const CommentSection = ({ videoId }) => {
       {/* Comment List */}
       {isLoading && comments.length === 0 ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
-          <Loader2 className="spinning" size={24} />
+          <GeometricLoader size={40} />
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>

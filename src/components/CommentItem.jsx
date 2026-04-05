@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Heart, ChevronDown, ChevronUp, Loader2, Trash2 } from 'lucide-react';
+import { Heart, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { getRelativeTime } from '../utils/RelativeTimeHelper';
 import { API_BASE } from '../utils/api';
 import { useLanguage } from '../contexts/LanguageContext';
+import GeometricLoader from './GeometricLoader';
 
 const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
   const { t, lang } = useLanguage();
@@ -184,7 +185,7 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
                 className="btn-primary"
                 style={{ fontSize: '12px', padding: '6px 16px', borderRadius: '18px' }}
               >
-                {isSubmittingReply ? <Loader2 size={14} className="spinning" /> : (lang === 'zh' ? '回复' : 'Reply')}
+                {isSubmittingReply ? <GeometricLoader size={14} /> : (lang === 'zh' ? '回复' : 'Reply')}
               </button>
             </div>
           </form>

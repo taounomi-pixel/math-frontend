@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Code, Trash2, Tag, ArrowLeft, Loader2, X } from 'lucide-react';
+import { Heart, Code, Trash2, Tag, ArrowLeft, X } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { API_BASE } from '../utils/api';
 import CommentSection from './CommentSection';
+
+import GeometricLoader from './GeometricLoader';
 
 const VideoDetail = () => {
   const { id } = useParams();
@@ -119,7 +121,7 @@ const VideoDetail = () => {
 
           {!video ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>
-              <Loader2 className="spinning" size={48} color="var(--primary)" />
+              <GeometricLoader size={64} />
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
