@@ -127,13 +127,21 @@ const VideoDetail = () => {
               <motion.div 
                 layoutId={`video-visual-${video.id}`}
                 className="aspect-video w-full rounded-2xl overflow-hidden shadow-2xl mb-8 bg-black"
-                style={{ maxHeight: '60vh', background: '#000' }}
+                style={{ 
+                  maxHeight: '60vh', 
+                  background: '#000',
+                  position: 'relative', // Stabilize layout flow
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
               >
                 <video 
                   src={video.video_url.startsWith('http') ? video.video_url : `${API_BASE.replace('/api', '')}${video.video_url}`}
                   controls 
                   autoPlay
-                  className="w-full h-full object-contain aspect-video"
+                  className="w-full h-full object-contain"
+                  style={{ display: 'block' }}
                 />
               </motion.div>
 
