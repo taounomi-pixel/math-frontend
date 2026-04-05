@@ -21,52 +21,40 @@ const GeometricLoader = ({ size = 'full', className = '' }) => {
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
 
-          {/* Masking for Submergence Effect */}
-          <clipPath id="clip-above-water">
-            <rect x="-20" y="-50" width="160" height="150" />
-          </clipPath>
-          <clipPath id="clip-below-water">
-            <rect x="-20" y="100" width="160" height="100" />
-          </clipPath>
+          {/* 🔴 NEW: Unified Masking for Perfect Seams 🔴
+              White = Full Opacity (Above Water)
+              Grey #191919 (~10%) = Submerged Opacity
+               meeting exactly at y=100
+          */}
+          <mask id="loader-submergence-mask">
+            <rect x="-20" y="-50" width="160" height="150" fill="white" />
+            <rect x="-20" y="100" width="160" height="100" fill="#222" />
+          </mask>
         </defs>
 
         {/* =========================================
-           SHAPES (Dual-Layered for Submergence)
+           SHAPES (Unified with Masking)
            ========================================= */}
 
-        {/* 1. Falling Triangle (Top Part) */}
-        <polygon
-          points="60,20 80,55 40,55"
-          fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round"
-          filter="url(#premium-glow)"
-          clipPath="url(#clip-above-water)"
-          className="loader-shape-a"
-        />
-        {/* 1. Falling Triangle (Submerged Part - 10% Opacity) */}
-        <polygon
-          points="60,20 80,55 40,55"
-          fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round"
-          opacity="0.1"
-          clipPath="url(#clip-below-water)"
-          className="loader-shape-a"
-        />
+        {/* 1. Falling Triangle (Unified) */}
+        <g mask="url(#loader-submergence-mask)">
+          <polygon
+            points="60,20 80,55 40,55"
+            fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round"
+            filter="url(#premium-glow)"
+            className="loader-shape-a"
+          />
+        </g>
 
-        {/* 2. Rising Diamond (Top Part) */}
-        <rect
-          x="45" y="85" width="30" height="30"
-          fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round"
-          filter="url(#premium-glow)"
-          clipPath="url(#clip-above-water)"
-          className="loader-shape-b"
-        />
-        {/* 2. Rising Diamond (Submerged Part - 10% Opacity) */}
-        <rect
-          x="45" y="85" width="30" height="30"
-          fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round"
-          opacity="0.1"
-          clipPath="url(#clip-below-water)"
-          className="loader-shape-b"
-        />
+        {/* 2. Rising Diamond (Unified) */}
+        <g mask="url(#loader-submergence-mask)">
+          <rect
+            x="45" y="85" width="30" height="30"
+            fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round"
+            filter="url(#premium-glow)"
+            className="loader-shape-b"
+          />
+        </g>
 
         {/* =========================================
            THE SPLASH PARTICLES (Triggered at 38%)
@@ -90,7 +78,7 @@ const GeometricLoader = ({ size = 'full', className = '' }) => {
         <path 
           d="M 0 100 Q 30 108 60 100 T 120 100" 
           fill="none" stroke="currentColor" strokeWidth="2" 
-          opacity="0.7" 
+          opacity="0.8" 
           filter="url(#premium-glow)" 
           className="loader-wave-main" 
         />
