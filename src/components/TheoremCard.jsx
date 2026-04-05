@@ -169,17 +169,27 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
         </div>
       </motion.div>
         
-      {/* Source Code Modal (Using Portal to prevent card layout stretching) */}
+      {/* Source Code Modal (Final Fix: Pure Inline Styles + Portal) */}
       {showCode && createPortal(
         <div 
-          className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
           onClick={(e) => { e.stopPropagation(); setShowCode(false); }}
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 999999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
         >
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9, y: 40 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 40 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          <div 
+            onClick={(e) => e.stopPropagation()}
             style={{ 
               background: 'var(--bg-primary)', 
               width: '95vw', 
@@ -190,32 +200,31 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
               flexDirection: 'column', 
               overflow: 'hidden', 
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-              border: '1px solid rgba(255,255,255,0.1)'
+              border: '1px solid var(--border-color)'
             }}
-            onClick={(e) => e.stopPropagation()}
           >
             <div style={{ 
-              padding: '20px 28px', 
+              padding: '24px 32px', 
               borderBottom: '1px solid var(--border-color)', 
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center',
               backgroundColor: 'var(--bg-secondary)'
             }}>
-              <div className="flex items-center gap-3">
-                <div className="bg-primary/10 p-2.5 rounded-xl">
-                  <Code size={22} className="text-primary" />
+              <div className="flex items-center gap-4">
+                <div className="bg-primary/10 p-3 rounded-2xl">
+                  <Code size={24} className="text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg" style={{ margin: 0, color: 'var(--text-primary)' }}>
+                  <h3 className="font-bold text-xl" style={{ margin: 0, color: 'var(--text-primary)' }}>
                     {video.title}
                   </h3>
-                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>Source Code Viewer</p>
+                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>Source Code Viewer</p>
                 </div>
               </div>
               <button 
                 onClick={() => setShowCode(false)} 
-                className="p-2 rounded-full hover:bg-black/10 transition-colors text-3xl leading-none"
+                className="p-3 rounded-full hover:bg-black/5 transition-colors text-4xl font-light leading-none"
                 style={{ color: 'var(--text-secondary)' }}
               >
                 &times;
@@ -224,30 +233,38 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
             
             <div 
               className="hide-scrollbar"
-              style={{ padding: '32px', overflowY: 'auto', flex: 1, backgroundColor: '#0f172a', color: '#e2e8f0' }}
+              style={{ 
+                padding: '32px', 
+                overflowY: 'auto', 
+                flex: 1, 
+                backgroundColor: '#0f172a', 
+                color: '#e2e8f0',
+                fontFamily: '"JetBrains Mono", "Fira Code", monospace'
+              }}
             >
               {codeLoading ? (
-                <div className="flex flex-col items-center justify-center h-64 gap-4">
+                <div className="flex flex-col items-center justify-center h-64 gap-6">
                   <GeometricLoader size={60} showText={true} />
                 </div>
               ) : (
                 <div className="relative">
-                  <div className="absolute top-0 right-0 flex gap-2">
+                  <div style={{ position: 'absolute', top: 0, right: 0 }}>
                     <button 
                       onClick={() => {
                         navigator.clipboard.writeText(codeContent);
-                        // Using a more subtle notification would be better but keeping simple alert for now
-                        alert('Copied!');
+                        alert('Code Copied!');
                       }}
-                      className="px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-slate-300 text-xs font-medium border border-slate-700 transition-all backdrop-blur-sm"
+                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-200 text-xs font-semibold border border-slate-700 transition-all shadow-lg"
                     >
-                      Copy
+                      Copy Code
                     </button>
                   </div>
                   <pre 
-                    className="m-0 font-mono text-[14px] leading-relaxed whitespace-pre"
                     style={{ 
-                      fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+                      margin: 0, 
+                      fontSize: '14px', 
+                      lineHeight: '1.6', 
+                      whiteSpace: 'pre',
                       tabSize: 4
                     }}
                   >
@@ -256,7 +273,7 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
                 </div>
               )}
             </div>
-          </motion.div>
+          </div>
         </div>,
         document.body
       )}
