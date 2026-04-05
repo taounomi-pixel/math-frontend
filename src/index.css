@@ -902,12 +902,11 @@ kbd {
 .loader-shape-p { animation: pentagonLifecycle 12s infinite; }
 
 @keyframes triangleLifecycle {
-  /* 0-3.0s: Snappy Physics (Burst -> Peak -> Dive) */
-  0%    { transform: translateY(110px) rotate(0deg); opacity: 0; animation-timing-function: cubic-bezier(0.15, 0.85, 0.35, 1); }
+  /* 0-3.0s: Single-Point Peak (Burst -> Singularity -> Fall) */
+  0%    { transform: translateY(110px) rotate(0deg); opacity: 0; animation-timing-function: cubic-bezier(0.2, 0.3, 0.4, 1); }
   1%    { opacity: 1; }
-  9%    { transform: translateY(0px) rotate(90deg); animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1); }
-  11%   { transform: translateY(0px) rotate(100deg); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.5); }
-  21.7% { transform: translateY(50px) rotate(180deg); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0, 0.4, 0.4); }
+  10.2% { transform: translateY(0px) rotate(100deg); animation-timing-function: cubic-bezier(0.4, 0, 1, 1); } /* Peak singularity */
+  21.7% { transform: translateY(50px) rotate(180deg); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0, 0.5, 0.5); }
   25%   { transform: translateY(110px) rotate(210deg); opacity: 0; }
   
   26%, 100% { opacity: 0; transform: translateY(150px); }
@@ -916,34 +915,31 @@ kbd {
 @keyframes rectLifecycle {
   0%, 25% { opacity: 0; transform: translateY(150px); }
 
-  /* Act 2: Snappy Physics */
-  25%   { transform: translateY(110px) rotate(0deg); opacity: 0; animation-timing-function: cubic-bezier(0.15, 0.85, 0.35, 1); }
+  /* Act 2: Singularity Overhaul */
+  25%   { transform: translateY(110px) rotate(0deg); opacity: 0; animation-timing-function: cubic-bezier(0.2, 0.3, 0.4, 1); }
   26%   { opacity: 1; }
-  34%   { transform: translateY(0px) rotate(90deg); animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1); }
-  36%   { transform: translateY(0px) rotate(100deg); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.5); }
-  46.7% { transform: translateY(50px) rotate(180deg); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0, 0.4, 0.4); }
+  35.2% { transform: translateY(0px) rotate(100deg); animation-timing-function: cubic-bezier(0.4, 0, 1, 1); }
+  46.7% { transform: translateY(50px) rotate(180deg); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0, 0.5, 0.5); }
   50%   { transform: translateY(110px) rotate(210deg); opacity: 0; }
 
   51%, 75% { opacity: 0; transform: translateY(150px); }
 
-  /* Act 4: Snappy Physics */
-  75%   { transform: translateY(110px) rotate(0deg); opacity: 0; animation-timing-function: cubic-bezier(0.15, 0.85, 0.35, 1); }
+  /* Act 4: Singularity Overhaul */
+  75%   { transform: translateY(110px) rotate(0deg); opacity: 0; animation-timing-function: cubic-bezier(0.2, 0.3, 0.4, 1); }
   76%   { opacity: 1; }
-  84%   { transform: translateY(0px) rotate(90deg); animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1); }
-  86%   { transform: translateY(0px) rotate(100deg); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.5); }
-  96.7% { transform: translateY(50px) rotate(180deg); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0, 0.4, 0.4); }
+  85.2% { transform: translateY(0px) rotate(100deg); animation-timing-function: cubic-bezier(0.4, 0, 1, 1); }
+  96.7% { transform: translateY(50px) rotate(180deg); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0, 0.5, 0.5); }
   100%  { transform: translateY(110px) rotate(210deg); opacity: 0; }
 }
 
 @keyframes pentagonLifecycle {
   0%, 50% { opacity: 0; transform: translateY(150px); }
 
-  /* Act 3: Snappy Physics */
-  50%   { transform: translateY(110px) rotate(0deg); opacity: 0; animation-timing-function: cubic-bezier(0.15, 0.85, 0.35, 1); }
+  /* Act 3: Singularity Overhaul */
+  50%   { transform: translateY(110px) rotate(0deg); opacity: 0; animation-timing-function: cubic-bezier(0.2, 0.3, 0.4, 1); }
   51%   { opacity: 1; }
-  59%   { transform: translateY(0px) rotate(90deg); animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1); }
-  61%   { transform: translateY(0px) rotate(100deg); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.5); }
-  71.7% { transform: translateY(50px) rotate(180deg); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0, 0.4, 0.4); }
+  60.2% { transform: translateY(0px) rotate(100deg); animation-timing-function: cubic-bezier(0.4, 0, 1, 1); }
+  71.7% { transform: translateY(50px) rotate(180deg); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0, 0.5, 0.5); }
   75%   { transform: translateY(110px) rotate(210deg); opacity: 0; }
 
   76%, 100% { opacity: 0; transform: translateY(150px); }
