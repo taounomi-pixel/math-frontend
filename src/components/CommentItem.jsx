@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Heart, ChevronDown, ChevronUp, Loader2, Trash2 } from 'lucide-react';
 import { getRelativeTime } from '../utils/RelativeTimeHelper';
 import { API_BASE } from '../utils/api';
@@ -17,7 +17,7 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
 
   const handleLike = async () => {
     if (!token) {
-      alert(t('loginToLike') || (lang === 'zh' ? '璇峰厛鐧诲綍鍚庣偣璧?' : 'Please login to like'));
+      alert(t('loginToLike') || (lang === 'zh' ? '请先登录后点赞' : 'Please login to like'));
       return;
     }
     setIsLiking(true);
@@ -66,7 +66,7 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
   };
 
   const handleDelete = async () => {
-    const confirmText = lang === 'zh' ? '纭畾瑕佸垹闄よ繖鏉¤瘎璁哄悧锛? ' : 'Are you sure you want to delete this comment?';
+    const confirmText = lang === 'zh' ? '确定要删除这条评论吗？' : 'Are you sure you want to delete this comment?';
     if (!window.confirm(confirmText)) return;
 
     try {
@@ -143,7 +143,7 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
               color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '600'
             }}
           >
-            {t('commonReply') || (lang === 'zh' ? '鍥炲' : 'Reply')}
+            {t('commonReply') || (lang === 'zh' ? '回复' : 'Reply')}
           </button>
 
           {currentUserId && parseInt(currentUserId) === comment.user_id && (
@@ -167,7 +167,7 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
               autoFocus
               value={replyContent}
               onChange={(e) => setReplyContent(e.target.value)}
-              placeholder={lang === 'zh' ? '鍐欎笅浣犵殑鍥炲...' : 'Add a reply...'}
+              placeholder={lang === 'zh' ? '写下你的回复...' : 'Add a reply...'}
               style={{
                 flex: 1, border: 'none', borderBottom: '2px solid var(--primary)',
                 background: 'transparent', padding: '6px 0', minHeight: '32px',
@@ -176,7 +176,7 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
             />
             <div style={{ display: 'flex', gap: '8px', alignSelf: 'flex-end' }}>
               <button type="button" onClick={() => setIsReplying(false)} className="btn-ghost" style={{ fontSize: '12px', padding: '6px 12px' }}>
-                {lang === 'zh' ? '鍙栨秷' : 'Cancel'}
+                {lang === 'zh' ? '取消' : 'Cancel'}
               </button>
               <button
                 type="submit"
@@ -184,7 +184,7 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
                 className="btn-primary"
                 style={{ fontSize: '12px', padding: '6px 16px', borderRadius: '18px' }}
               >
-                {isSubmittingReply ? <Loader2 size={14} className="spinning" /> : (lang === 'zh' ? '鍥炲' : 'Reply')}
+                {isSubmittingReply ? <Loader2 size={14} className="spinning" /> : (lang === 'zh' ? '回复' : 'Reply')}
               </button>
             </div>
           </form>
@@ -203,8 +203,8 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
             >
               {showReplies ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
               {showReplies
-                ? (lang === 'zh' ? '闅愯棌鍥炲' : 'Hide replies')
-                : (lang === 'zh' ? `鏌ョ湅 ${replies.length} 鏉″洖澶峘?` : `View ${replies.length} replies`)
+                ? (lang === 'zh' ? '隐藏回复' : 'Hide replies')
+                : (lang === 'zh' ? `查看 ${replies.length} 条回复` : `View ${replies.length} replies`)
               }
             </button>
 

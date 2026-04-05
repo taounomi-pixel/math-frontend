@@ -1,15 +1,15 @@
-﻿import React from 'react';
+import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutGrid, Variable, Shapes, Activity, Hash, Dice3 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { CATEGORIES } from '../constants/categories';
 
 const CATEGORY_ICONS = {
-  '浠ｆ暟': Variable,
-  '鍑犱綍': Shapes,
-  '鍒嗘瀽': Activity,
-  '鏁拌': Hash,
-  '姒傜巼': Dice3,
+  '代数': Variable,
+  '几何': Shapes,
+  '分析': Activity,
+  '数论': Hash,
+  '概率': Dice3,
 };
 
 const Sidebar = () => {
@@ -42,7 +42,7 @@ const Sidebar = () => {
           end
         >
           <LayoutGrid size={16} />
-          {t('allVideos') || '鎵€鏈?'}
+          {t('allVideos') || '所有'}
         </NavLink>
 
         {Object.keys(CATEGORIES).map(cat => {
