@@ -160,28 +160,32 @@ const VideoDetail = () => {
           willChange: 'transform, border-radius'
         }}
       >
-        {/* Close Button */}
-        <motion.button 
-          onClick={handleBack}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          whileHover={{ scale: 1.1, backgroundColor: 'rgba(255, 255, 255, 1)' }}
-          whileTap={{ scale: 0.9 }}
-          style={{ position: 'absolute', top: '24px', right: '24px', zIndex: 10, background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(8px)', border: '1px solid var(--border-color)', borderRadius: '50%', padding: '8px', cursor: 'pointer', color: 'var(--text-secondary)' }}
-        >
-          <X size={24} />
-        </motion.button>
-
-        <div className="p-6 md:p-10">
-          {/* Back Label */}
+        {/* Modal Header Controls */}
+        <div className="p-4 md:p-6 w-full flex justify-between items-center" style={{ paddingBottom: 0 }}>
           <button 
-            onClick={handleBack}
-            className="btn-ghost"
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', color: 'var(--text-secondary)', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '15px', fontWeight: '500' }}
+             onClick={handleBack}
+             title={t('backToGallery')}
+             style={{ width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(8px)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', cursor: 'pointer', transition: 'all 0.2s' }}
+             onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.backgroundColor = '#fff'; }}
+             onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'; }}
           >
-            <ArrowLeft size={18} /> {t('backToGallery')}
+             <ArrowLeft size={20} />
           </button>
+
+          <motion.button 
+            onClick={handleBack}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2, type: 'spring', stiffness: 300, damping: 20 }}
+            whileHover={{ scale: 1.1, backgroundColor: 'rgba(255, 255, 255, 1)' }}
+            whileTap={{ scale: 0.9 }}
+            style={{ width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(8px)', border: '1px solid var(--border-color)', cursor: 'pointer', color: 'var(--text-secondary)', willChange: 'transform, opacity' }}
+          >
+            <X size={20} />
+          </motion.button>
+        </div>
+
+        <div className="px-6 pb-6 md:px-10 md:pb-10 pt-4">
 
           {!video ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '120px 0', gap: '24px' }}>
@@ -192,7 +196,7 @@ const VideoDetail = () => {
               {/* Responsive Video Player */}
               <motion.div 
                 layoutId={`video-visual-${video.id}`}
-                className="aspect-video w-full rounded-2xl overflow-hidden shadow-2xl mb-8 bg-black"
+                className="aspect-video w-full rounded-2xl overflow-hidden shadow-2xl mb-6 bg-black"
                 style={{ 
                   maxHeight: '60vh', 
                   background: '#000',
@@ -212,67 +216,67 @@ const VideoDetail = () => {
                 />
               </motion.div>
 
-              {/* Info Container - YouTube style */}
-              <div className="w-full">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', flexWrap: 'wrap', gap: '24px', marginBottom: '32px' }}>
-                  <div style={{ flex: 1, minWidth: '300px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                       <span className="badge" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)', fontWeight: '600' }}>
-                         {t('uploadedBy')} @{video.uploader_username}
-                       </span>
-                    </div>
-                    <h1 style={{ fontSize: '28px', margin: '0 0 12px 0', fontWeight: '800', lineHeight: '1.2', color: 'var(--text-primary)' }}>
-                      {video.title}
-                    </h1>
-                    
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      {(Array.isArray(video.tags) ? video.tags : (video.tags ? video.tags.split(',') : [])).map(tag => (
-                        <span key={tag} className="tag" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '4px 12px', fontSize: '13px' }}>
-                          #{t(tag) || tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+              {/* Action Bar (Uploader, Like, Code) */}
+              <div className="w-full flex justify-between items-center flex-wrap gap-4 mb-8">
+                <span style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {t('uploadedBy')} @{video.uploader_username}
+                </span>
 
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <button 
+                    onClick={toggleLike}
+                    className={`btn-primary ${video.is_liked_by_me ? 'liked' : ''}`} 
+                    style={{ 
+                      padding: '8px 20px', borderRadius: '24px', minWidth: '100px',
+                      background: video.is_liked_by_me ? '#ec4899' : 'var(--bg-secondary)',
+                      color: video.is_liked_by_me ? 'white' : 'var(--text-primary)',
+                      border: '1px solid var(--border-color)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '15px', fontWeight: '600'
+                    }}
+                  >
+                    <Heart size={18} fill={video.is_liked_by_me ? 'currentColor' : 'none'} /> 
+                    {video.like_count}
+                  </button>
+                  {video.manim_source_url && (
                     <button 
-                      onClick={toggleLike}
-                      className={`btn-primary ${video.is_liked_by_me ? 'liked' : ''}`} 
+                      className="btn-ghost" 
                       style={{ 
-                        padding: '12px 24px', borderRadius: '24px',
-                        background: video.is_liked_by_me ? '#ec4899' : 'var(--bg-secondary)',
-                        color: video.is_liked_by_me ? 'white' : 'var(--text-primary)',
-                        border: '1px solid var(--border-color)',
-                        display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px', fontWeight: '600'
+                        padding: '8px 20px', borderRadius: '24px', minWidth: '120px', border: '1px solid var(--border-color)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '15px', fontWeight: '600'
                       }}
+                      onClick={handleViewCode}
                     >
-                      <Heart size={20} fill={video.is_liked_by_me ? 'currentColor' : 'none'} /> 
-                      {video.like_count}
+                      <Code size={18} /> {t('viewCode') || '查看代码'}
                     </button>
-                    {video.manim_source_url && (
-                      <button 
-                        className="btn-ghost" 
-                        style={{ 
-                          padding: '12px 24px', borderRadius: '24px', border: '1px solid var(--border-color)',
-                          display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px', fontWeight: '600'
-                        }}
-                        onClick={handleViewCode}
-                      >
-                        <Code size={20} /> {t('viewCode')}
-                      </button>
-                    )}
-                  </div>
+                  )}
                 </div>
+              </div>
 
-                <div style={{ height: '1px', background: 'var(--border-color)', margin: '24px 0' }} />
+              {/* Info Container - Title & Tags */}
+              <div className="w-full mb-8">
+                <h1 style={{ fontSize: '28px', margin: '0 0 12px 0', fontWeight: '800', lineHeight: '1.2', color: 'var(--text-primary)' }}>
+                  {video.title}
+                </h1>
+                
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {(Array.isArray(video.tags) ? video.tags : (video.tags ? video.tags.split(',') : [])).map(tag => (
+                    <span key={tag} className="tag" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '4px 12px', fontSize: '13px' }}>
+                      #{t(tag) || tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+                <div style={{ height: '1px', background: 'var(--border-color)', margin: '24px 0', width: '100%' }} />
 
                 {/* Comment Section */}
-                <CommentSection videoId={video.id} />
+                <div className="w-full">
+                  <CommentSection videoId={video.id} />
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      </motion.div>
+            )}
+          </div>
+        </motion.div>
 
       {/* Reused Code Modal Portal implementation */}
       {createPortal(

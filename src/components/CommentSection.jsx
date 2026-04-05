@@ -79,9 +79,13 @@ const CommentSection = ({ videoId }) => {
         <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '16px', marginBottom: '48px', alignItems: 'start' }}>
           <div style={{
             width: '40px', height: '40px', borderRadius: '50%',
-            background: 'var(--primary)', color: 'white',
+            background: 'linear-gradient(135deg, rgba(80, 160, 240, 0.3), rgba(168, 85, 247, 0.3))',
+            backdropFilter: 'blur(10px)',
+            border: '2px solid var(--border-color)',
+            color: 'var(--text-primary)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '18px', fontWeight: '600', flexShrink: 0
+            fontSize: '18px', fontWeight: '700', flexShrink: 0,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.08), inset 0 2px 4px rgba(255,255,255,0.6)'
           }}>
             {localStorage.getItem('username')?.charAt(0).toUpperCase()}
           </div>

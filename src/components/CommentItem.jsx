@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Heart, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { getRelativeTime } from '../utils/RelativeTimeHelper';
 import { API_BASE } from '../utils/api';
@@ -16,23 +16,65 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
   const token = localStorage.getItem('access_token');
   const currentUserId = localStorage.getItem('user_id');
 
+  const [tick, setTick] = useState(0);
+
+  // Force re-render periodically so relative time updates dynamically
+  useEffect(() => {
+    // Only set up interval for recent comments (e.g., less than roughly a day old)
+    const commentDate = new Date(comment.created_at + (comment.created_at.includes('Z') ? '' : 'Z'));
+    const isRecent = (Date.now() - commentDate.getTime()) < 86400000;
+    
+    if (isRecent) {
+      const interval = setInterval(() => {
+        setTick((t) => t + 1);
+      }, 10000); // Check every 10 seconds
+      return () => clearInterval(interval);
+    }
+  }, [comment.created_at]);
+
+  const [localLiked, setLocalLiked] = useState(comment.is_liked);
+  const [localLikesCount, setLocalLikesCount] = useState(comment.likes_count);
+  const isLikingRef = useRef(false);
+
+  useEffect(() => {
+    setLocalLiked(comment.is_liked);
+    setLocalLikesCount(comment.likes_count);
+  }, [comment.is_liked, comment.likes_count]);
+
   const handleLike = async () => {
     if (!token) {
       alert(t('loginToLike') || (lang === 'zh' ? '请先登录后点赞' : 'Please login to like'));
       return;
     }
-    setIsLiking(true);
+    
+    if (isLikingRef.current) return;
+    isLikingRef.current = true;
+
+    // Optimistically update UI
+    const originalLiked = localLiked;
+    const originalCount = localLikesCount;
+    setLocalLiked(!originalLiked);
+    setLocalLikesCount(originalCount + (originalLiked ? -1 : 1));
+
     try {
       const res = await fetch(`${API_BASE}/comments/${comment.id}/toggle-like`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Toggle like failed');
-      onRefresh();
+      const data = await res.json();
+      
+      // Update with exact truth from server silently
+      setLocalLiked(data.action === 'liked');
+      setLocalLikesCount(data.like_count);
     } catch (e) {
-      console.error(e);
+      console.error('Like toggle failed:', e);
+      // Revert on failure
+      setLocalLiked(originalLiked);
+      setLocalLikesCount(originalCount);
+      alert(t('networkError') || (lang === 'zh' ? '网络错误，请重试' : 'Network error, please try again'));
     } finally {
-      setIsLiking(false);
+      isLikingRef.current = false;
     }
   };
 
@@ -91,11 +133,13 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
         width: isReply ? '32px' : '40px',
         height: isReply ? '32px' : '40px',
         borderRadius: '50%',
-        background: 'linear-gradient(135deg, var(--primary), #a855f7)',
-        color: 'white',
+        background: 'linear-gradient(135deg, rgba(80, 160, 240, 0.3), rgba(168, 85, 247, 0.3))',
+        backdropFilter: 'blur(10px)',
+        border: '2px solid var(--border-color)',
+        color: 'var(--text-primary)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: isReply ? '14px' : '18px', fontWeight: '700', flexShrink: 0,
-        boxShadow: 'var(--shadow-sm)'
+        boxShadow: '0 4px 12px rgba(0,0,0,0.08), inset 0 2px 4px rgba(255,255,255,0.6)'
       }}>
         {comment.username?.charAt(0).toUpperCase()}
       </div>
@@ -106,7 +150,7 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
           <span style={{ fontWeight: '700', fontSize: '14px', color: 'var(--text-primary)' }}>
             @{comment.username}
           </span>
-          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }} data-tick={tick}>
             {getRelativeTime(comment.created_at, lang)}
           </span>
         </div>
@@ -123,18 +167,17 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '8px' }}>
           <button
             onClick={handleLike}
-            disabled={isLiking}
             style={{
               display: 'flex', alignItems: 'center', gap: '6px',
               background: 'none', border: 'none', cursor: 'pointer',
-              color: comment.is_liked ? '#ec4899' : 'var(--text-secondary)',
+              color: localLiked ? '#ec4899' : 'var(--text-secondary)',
               fontSize: '13px', padding: 0, transition: 'transform 0.1s'
             }}
             onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.9)'}
             onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
-            <Heart size={16} fill={comment.is_liked ? 'currentColor' : 'none'} />
-            <span style={{ fontWeight: '600' }}>{comment.likes_count > 0 ? comment.likes_count : ''}</span>
+            <Heart size={16} fill={localLiked ? 'currentColor' : 'none'} />
+            <span style={{ fontWeight: '600' }}>{localLikesCount > 0 ? localLikesCount : ''}</span>
           </button>
 
           <button
@@ -144,7 +187,7 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
               color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '600'
             }}
           >
-            {t('commonReply') || (lang === 'zh' ? '回复' : 'Reply')}
+            {t('reply') || (lang === 'zh' ? '回复' : 'Reply')}
           </button>
 
           {currentUserId && parseInt(currentUserId) === comment.user_id && (
