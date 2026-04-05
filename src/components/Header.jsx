@@ -44,6 +44,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const [showBindModal, setShowBindModal] = useState(false);
   const [isUserCardOpen, setIsUserCardOpen] = useState(false);
   const cardRef = useRef(null);
+  const langRef = useRef(null);
   const [unbindLoading, setUnbindLoading] = useState(null); // 'github' | 'google' | null
 
   // Verification flow (2FA)
@@ -1027,11 +1028,14 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     }, 280);
   }, [authModal, isAuthModalClosing]);
 
-  // Close card when clicking outside
+  // Close card/dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (cardRef.current && !cardRef.current.contains(event.target)) {
         handleCloseUserCard();
+      }
+      if (langRef.current && !langRef.current.contains(event.target)) {
+        setIsLangDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -1115,30 +1119,67 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           </div>
 
           <nav className="header-actions" style={{ flexWrap: 'nowrap' }}>
-            <div className="dropdown" id="lang-switcher">
+            <div className="dropdown" id="lang-switcher" ref={langRef}>
               <button 
-                className="dropdown-trigger btn-ghost" 
+                className="dropdown-trigger" 
                 aria-haspopup="true" 
                 aria-expanded={isLangDropdownOpen}
                 onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
-                style={{ padding: '8px', whiteSpace: 'nowrap' }}
+                style={{ 
+                  padding: '8px 16px', 
+                  whiteSpace: 'nowrap',
+                  borderRadius: '999px',
+                  height: '38px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-color)',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={e => e.currentTarget.style.background = '#f1f5f9'}
+                onMouseOut={e => e.currentTarget.style.background = 'var(--bg-secondary)'}
               >
                 <Globe size={18} />
-                <span className="current-lang">{lang === 'zh' ? 'CN' : lang.toUpperCase()}</span>
-                <ChevronDown size={14} className="dropdown-arrow" />
+                <span className="current-lang" style={{ fontSize: '14px', fontWeight: 600 }}>{lang === 'zh' ? 'CN' : lang.toUpperCase()}</span>
+                <ChevronDown size={14} className="dropdown-arrow" style={{ transform: isLangDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
               </button>
-              <div className={`dropdown-menu ${isLangDropdownOpen ? 'show' : ''}`}>
+              <div className={`dropdown-menu ${isLangDropdownOpen ? 'show' : ''}`} style={{
+                position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+                background: 'white', borderRadius: '12px', border: '1px solid var(--border-color)',
+                boxShadow: 'var(--shadow-glass)', padding: '6px', zIndex: 1000,
+                visibility: isLangDropdownOpen ? 'visible' : 'hidden',
+                opacity: isLangDropdownOpen ? 1 : 0,
+                transition: 'all 0.2s ease',
+                minWidth: '120px'
+              }}>
                 <button 
                   className={`dropdown-item ${lang === 'en' ? 'active' : ''}`} 
                   onClick={() => { setLang('en'); setIsLangDropdownOpen(false); }}
+                  style={{
+                    width: '100%', padding: '8px 12px', borderRadius: '8px', textAlign: 'left',
+                    fontSize: '14px', background: lang === 'en' ? '#f1f5f9' : 'transparent',
+                    color: lang === 'en' ? 'var(--accent-primary)' : 'var(--text-primary)',
+                    display: 'flex', alignItems: 'center', transition: 'all 0.2s'
+                  }}
+                  onMouseOver={e => e.currentTarget.style.background = '#f1f5f9'}
+                  onMouseOut={e => e.currentTarget.style.background = lang === 'en' ? '#f1f5f9' : 'transparent'}
                 >
-                  {t('langEN')}
+                  English (EN)
                 </button>
                 <button 
                   className={`dropdown-item ${lang === 'zh' ? 'active' : ''}`} 
                   onClick={() => { setLang('zh'); setIsLangDropdownOpen(false); }}
+                  style={{
+                    width: '100%', padding: '8px 12px', borderRadius: '8px', textAlign: 'left',
+                    fontSize: '14px', background: lang === 'zh' ? '#f1f5f9' : 'transparent',
+                    color: lang === 'zh' ? 'var(--accent-primary)' : 'var(--text-primary)',
+                    display: 'flex', alignItems: 'center', transition: 'all 0.2s'
+                  }}
+                  onMouseOver={e => e.currentTarget.style.background = '#f1f5f9'}
+                  onMouseOut={e => e.currentTarget.style.background = lang === 'zh' ? '#f1f5f9' : 'transparent'}
                 >
-                  {t('langZH')}
+                  简体中文 (CN)
                 </button>
               </div>
             </div>
@@ -1154,9 +1195,23 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   className="btn-ghost" 
                   onClick={() => setShowUploadModal(true)} 
                   title={t('upload')} 
-                  style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 10px', background: 'var(--bg-secondary)', borderRadius: '8px', whiteSpace: 'nowrap', flexShrink: 0 }}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '6px', 
+                    padding: '8px 16px', 
+                    background: 'var(--bg-secondary)', 
+                    borderRadius: '999px', 
+                    whiteSpace: 'nowrap', 
+                    flexShrink: 0,
+                    height: '38px',
+                    border: '1px solid var(--border-color)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={e => e.currentTarget.style.background = '#f1f5f9'}
+                  onMouseOut={e => e.currentTarget.style.background = 'var(--bg-secondary)'}
                 >
-                  <Upload size={16} /> <span style={{ fontSize: '14px', fontWeight: 500 }}>{t('upload')}</span>
+                  <Upload size={16} /> <span style={{ fontSize: '14px', fontWeight: 600 }}>{t('upload')}</span>
                 </button>
                 
                 <div 
@@ -1166,17 +1221,18 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     display: 'flex', 
                     alignItems: 'center', 
                     gap: '8px', 
-                    padding: '4px 8px',
-                    paddingRight: '12px',
-                    borderRadius: '10px',
+                    padding: '4px 16px',
+                    paddingLeft: '4px',
+                    borderRadius: '999px',
                     cursor: 'pointer',
-                    background: hasAnyBinding ? 'transparent' : '#f3f4f6',
+                    background: 'var(--bg-secondary)',
                     transition: 'all 0.2s ease',
-                    border: '1px solid transparent',
+                    border: '1px solid var(--border-color)',
+                    height: '38px',
                     maxWidth: '180px'
                   }}
-                  onMouseOver={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                  onMouseOut={e => e.currentTarget.style.borderColor = 'transparent'}
+                  onMouseOver={e => e.currentTarget.style.background = '#f1f5f9'}
+                  onMouseOut={e => e.currentTarget.style.background = 'var(--bg-secondary)'}
                 >
                   <div 
                     style={{ 
