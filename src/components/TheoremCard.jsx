@@ -34,8 +34,25 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
     }
   };
 
+  const isActive = location.pathname === `/video/${video.id}`;
+  
   return (
-    <>
+    <div style={{ position: 'relative' }}>
+      {/* Ghost Card Placeholder to prevent layout pop */}
+      {isActive && (
+        <div 
+          style={{ 
+            position: 'absolute', 
+            inset: 0, 
+            background: 'var(--bg-primary)',
+            borderRadius: '16px',
+            border: '1px solid var(--border-color)',
+            opacity: 0.15,
+            zIndex: 0
+          }}
+        />
+      )}
+      
       <motion.div 
         layoutId={`video-card-${video.id}`}
         className="video-card group" 
@@ -203,7 +220,7 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
           </motion.div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
