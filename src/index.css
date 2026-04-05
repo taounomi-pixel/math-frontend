@@ -664,6 +664,7 @@ kbd {
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -858,21 +859,58 @@ kbd {
 /* =========================================
    Geometric Narrative Loader Animations
    ========================================= */
-.loader-shape-a {
-  transform-origin: 60px 45px; 
-  animation: shapeDrop 3s cubic-bezier(0.55, 0.085, 0.68, 0.53) infinite; 
+/* =========================================
+   Secondary CSS Loader (The Dots Grid)
+   ========================================= */
+.loader {
+  width: 50px;
+  aspect-ratio: 1;
+  display: grid;
 }
-.loader-shape-b {
-  transform-origin: 60px 100px; 
-  animation: shapeRise 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite; 
-  opacity: 0;
+.loader::before,
+.loader::after {    
+  content:"";
+  grid-area: 1/1;
+  --c:no-repeat radial-gradient(farthest-side, #0ea5e9 92%, #0000); 
+  background: 
+    var(--c) 50%  0, 
+    var(--c) 50%  100%, 
+    var(--c) 100% 50%, 
+    var(--c) 0    50%;
+  background-size: 12px 12px;
+  animation: l12 1s infinite;
+}
+.loader::before {
+  margin: 4px;
+  filter: hue-rotate(30deg); 
+  background-size: 8px 8px;
+  animation-timing-function: linear;
+}
+@keyframes l12 { 
+  100%{transform: rotate(.5turn)}
 }
 
 /* =========================================
-   The Water Narrative (Synced to 38% Collision)
+   Geometric Narrative Loader (12s Cycle)
+   ========================================= */
+.loader-shape-t {
+  transform-origin: 60px 45px; 
+  animation: triangleLifecycle 12s infinite; 
+}
+.loader-shape-r {
+  transform-origin: 60px 45px; 
+  animation: rectLifecycle 12s infinite; 
+}
+.loader-shape-p {
+  transform-origin: 60px 45px; 
+  animation: pentagonLifecycle 12s infinite; 
+}
+
+
+/* =========================================
+   The Water Narrative (Synced to 3s Pulses)
    ========================================= */
 
-/* 🌊 SURFACE DYNAMICS (Stroke Only, No Fill) */
 .loader-wave-main, .loader-wave-depth-1, .loader-wave-depth-2 {
   transform-origin: 60px 100px;
 }
@@ -882,13 +920,10 @@ kbd {
 .loader-wave-depth-1 { animation: waveDeformationDepth1 3s infinite; }
 .loader-wave-depth-2 { animation: waveDeformationDepth2 3s infinite; }
 
-/* 💦 SPLASH PARTICLES (Emerge at 38%) */
 .loader-splash {
   opacity: 0;
   scale: 0;
 }
-
-/* Diverse Splash Arcs */
 .loader-splash-1 { animation: splashArc1 3s ease-out infinite; }
 .loader-splash-2 { animation: splashArc2 3s ease-out infinite; }
 .loader-splash-3 { animation: splashArc3 3s ease-out infinite; }
@@ -896,20 +931,47 @@ kbd {
 .loader-splash-5 { animation: splashArc5 3s ease-out infinite; }
 .loader-splash-6 { animation: splashArc6 3s ease-out infinite; }
 
-@keyframes shapeDrop {
+@keyframes triangleLifecycle {
   0%   { transform: translateY(-40px) rotate(0deg); opacity: 0; }
-  10%  { opacity: 1; transform: translateY(-30px) rotate(45deg); }
-  38%  { transform: translateY(45px) rotate(180deg); opacity: 1; } /* Hits water line (y=100) */
-  45%  { transform: translateY(65px) rotate(220deg); opacity: 0; }
+  2%   { opacity: 1; transform: translateY(-30px) rotate(45deg); }
+  9.5% { transform: translateY(45px) rotate(180deg); opacity: 1; }
+  11%  { transform: translateY(65px) rotate(220deg); opacity: 0; }
+  25%, 75% { opacity: 0; transform: translateY(40px); }
+  85%  { opacity: 1; transform: translateY(-5px) rotate(90deg) scale(1.2); }
+  94%  { transform: translateY(-55px) rotate(225deg) scale(1); opacity: 1; }
+  98%  { transform: translateY(-65px) rotate(270deg) scale(0.8); opacity: 0; }
   100% { opacity: 0; }
 }
 
-@keyframes shapeRise {
-  0%, 40% { transform: translateY(40px) rotate(45deg) scale(0.5); opacity: 0; }
-  46%     { opacity: 1; transform: translateY(-5px) rotate(90deg) scale(1.2); } /* Breaks surface */
-  80%     { transform: translateY(-55px) rotate(225deg) scale(1); opacity: 1; }
-  92%     { transform: translateY(-65px) rotate(270deg) scale(0.8); opacity: 0; }
-  100%    { opacity: 0; }
+@keyframes rectLifecycle {
+  0%   { opacity: 0; }
+  10%  { opacity: 1; transform: translateY(-5px) rotate(90deg) scale(1.2); }
+  19%  { transform: translateY(-55px) rotate(225deg) scale(1); opacity: 1; }
+  23%  { transform: translateY(-65px) rotate(270deg) scale(0.8); opacity: 0; }
+  25%  { opacity: 0; transform: translateY(-40px); }
+  27%  { opacity: 1; transform: translateY(-30px) rotate(45deg); }
+  34.5%{ transform: translateY(45px) rotate(180deg); opacity: 1; }
+  36%  { transform: translateY(65px) rotate(220deg); opacity: 0; }
+  60%  { opacity: 1; transform: translateY(-5px) rotate(90deg) scale(1.2); }
+  69%  { transform: translateY(-55px) rotate(225deg) scale(1); opacity: 1; }
+  73%  { transform: translateY(-65px) rotate(270deg) scale(0.8); opacity: 0; }
+  75%  { opacity: 0; transform: translateY(-40px); }
+  77%  { opacity: 1; transform: translateY(-30px) rotate(45deg); }
+  84.5%{ transform: translateY(45px) rotate(180deg); opacity: 1; }
+  86%  { transform: translateY(65px) rotate(220deg); opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes pentagonLifecycle {
+  0%, 25% { opacity: 0; transform: translateY(40px); }
+  35%  { opacity: 1; transform: translateY(-5px) rotate(90deg) scale(1.2); }
+  44%  { transform: translateY(-55px) rotate(225deg) scale(1); opacity: 1; }
+  48%  { transform: translateY(-65px) rotate(270deg) scale(0.8); opacity: 0; }
+  50%  { opacity: 0; transform: translateY(-40px); }
+  52%  { opacity: 1; transform: translateY(-30px) rotate(45deg); }
+  59.5%{ transform: translateY(45px) rotate(180deg); opacity: 1; }
+  61%  { transform: translateY(65px) rotate(220deg); opacity: 0; }
+  75%, 100% { opacity: 0; }
 }
 
 /* 🌊 WATER SURFACE PATH MUTATION (COLLISION REACTION) */
