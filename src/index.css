@@ -891,103 +891,40 @@ kbd {
 }
 
 /* =========================================
-   Geometric Narrative Loader (12s Cycle)
-   T -> R -> P -> R (Sequential Physics)
+   Mathematical Grid Loader (Blue Mix)
    ========================================= */
-.loader-shape-t, .loader-shape-r, .loader-shape-p {
-  transform-origin: 60px 30px; 
-}
-.loader-shape-t { animation: triangleLifecycle 8s infinite; }
-.loader-shape-r { animation: rectLifecycle 8s infinite; }
-.loader-shape-p { animation: pentagonLifecycle 8s infinite; }
-
-@keyframes triangleLifecycle {
-  /* 0-3.0s: Single-Point Peak (Burst -> Singularity -> Fall) */
-  0%    { transform: translateY(110px) rotate(0deg); opacity: 0; animation-timing-function: cubic-bezier(0.2, 0.3, 0.4, 1); }
-  1%    { opacity: 1; }
-  10.2% { transform: translateY(0px) rotate(100deg); animation-timing-function: cubic-bezier(0.4, 0, 1, 1); } /* Peak singularity */
-  21.7% { transform: translateY(50px) rotate(180deg); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0, 0.5, 0.5); }
-  25%   { transform: translateY(110px) rotate(210deg); opacity: 0; }
-  
-  26%, 100% { opacity: 0; transform: translateY(150px); }
+.math-grid-loader {
+  width: 50px;
+  aspect-ratio: 1;
+  display: grid;
+  --c: #0ea5e9 25%, #3b82f6 0 50%, #2563eb 0 75%, #0ea5e9 0;
 }
 
-@keyframes rectLifecycle {
-  0%, 25% { opacity: 0; transform: translateY(150px); }
-
-  /* Act 2: Singularity Overhaul */
-  25%   { transform: translateY(110px) rotate(0deg); opacity: 0; animation-timing-function: cubic-bezier(0.2, 0.3, 0.4, 1); }
-  26%   { opacity: 1; }
-  35.2% { transform: translateY(0px) rotate(100deg); animation-timing-function: cubic-bezier(0.4, 0, 1, 1); }
-  46.7% { transform: translateY(50px) rotate(180deg); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0, 0.5, 0.5); }
-  50%   { transform: translateY(110px) rotate(210deg); opacity: 0; }
-
-  51%, 75% { opacity: 0; transform: translateY(150px); }
-
-  /* Act 4: Singularity Overhaul */
-  75%   { transform: translateY(110px) rotate(0deg); opacity: 0; animation-timing-function: cubic-bezier(0.2, 0.3, 0.4, 1); }
-  76%   { opacity: 1; }
-  85.2% { transform: translateY(0px) rotate(100deg); animation-timing-function: cubic-bezier(0.4, 0, 1, 1); }
-  96.7% { transform: translateY(50px) rotate(180deg); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0, 0.5, 0.5); }
-  100%  { transform: translateY(110px) rotate(210deg); opacity: 0; }
+.math-grid-loader:before,
+.math-grid-loader:after {
+  content: "";
+  background:
+    linear-gradient( 90deg, var(--c)),
+    linear-gradient(-90deg, var(--c));
+  background-size: 400% 52%;
+  background-repeat: no-repeat;
+  animation: l13 2s infinite; 
 }
 
-@keyframes pentagonLifecycle {
-  0%, 50% { opacity: 0; transform: translateY(150px); }
-
-  /* Act 3: Singularity Overhaul */
-  50%   { transform: translateY(110px) rotate(0deg); opacity: 0; animation-timing-function: cubic-bezier(0.2, 0.3, 0.4, 1); }
-  51%   { opacity: 1; }
-  60.2% { transform: translateY(0px) rotate(100deg); animation-timing-function: cubic-bezier(0.4, 0, 1, 1); }
-  71.7% { transform: translateY(50px) rotate(180deg); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0, 0.5, 0.5); }
-  75%   { transform: translateY(110px) rotate(210deg); opacity: 0; }
-
-  76%, 100% { opacity: 0; transform: translateY(150px); }
+@keyframes l13 {
+  0%       { background-position: calc(3*100%/3) 0, calc(0*100%/3) 100%; }
+  23%, 33% { background-position: calc(2*100%/3) 0, calc(1*100%/3) 100%; }
+  56%, 66% { background-position: calc(1*100%/3) 0, calc(2*100%/3) 100%; }
+  90%, 100%{ background-position: calc(0*100%/3) 0, calc(3*100%/3) 100%; }
 }
 
-/* 🌊 MATHEMATICAL SINE WAVES (2s Interaction Sub-cycles) */
-.loader-wave-main { animation: waveDeformationMain 2s infinite; }
-.loader-wave-depth-1 { animation: waveDeformationDepth1 2s infinite -0.33s; }
-.loader-wave-depth-2 { animation: waveDeformationDepth2 2s infinite -0.66s; }
-
-@keyframes waveDeformationMain {
-  0%      { d: path("M 0 100 Q 60 70 120 100"); opacity: 1; stroke-width: 3px; } /* Burst Up */
-  5%      { d: path("M 0 100 Q 30 108 60 100 T 120 100"); opacity: 0.8; stroke-width: 2px; }
-  25%     { d: path("M 0 100 Q 30 92 60 100 T 120 100"); }
-  50%     { d: path("M 0 100 Q 30 108 60 100 T 120 100"); }
-  75%     { d: path("M 0 100 Q 30 92 60 100 T 120 100"); }
-  84%     { d: path("M 0 100 Q 60 135 120 100"); opacity: 1; stroke-width: 3.5px; } /* Impact Down */
-  92%     { d: path("M 0 100 Q 30 85 60 100 T 120 100"); opacity: 0.9; }
-  100%    { d: path("M 0 100 Q 60 70 120 100"); }
+/* Custom Utilities */
+.animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
 }
-
-@keyframes waveDeformationDepth1 {
-  0%, 100% { d: path("M 0 100 Q 30 94 60 100 T 120 100"); }
-  50%      { d: path("M 0 100 Q 30 106 60 100 T 120 100"); }
-}
-
-@keyframes waveDeformationDepth2 {
-  0%, 100% { d: path("M 0 100 Q 30 104 60 100 T 120 100"); }
-  50%      { d: path("M 0 100 Q 30 96 60 100 T 120 100"); }
-}
-
-/* 💥 RIPPLE ANIMATIONS (Burst & Impact) */
-.loader-ripple-1 { animation: rippleActive 2s infinite 0s; }
-.loader-ripple-2 { animation: rippleActive 2s infinite 1.68s; }
-
-@keyframes rippleActive {
-  0%   { r: 0; opacity: 1; stroke-width: 1.5; }
-  30%  { r: 40; opacity: 0; stroke-width: 0.5; }
-  100% { r: 40; opacity: 0; }
-}
-
-/* 💦 SPLASH ARCS (Impact Feedback) */
-@keyframes splashArc1 { 0%, 83% { opacity: 0; transform: translate(0,0); } 84% { opacity: 1; transform: translate(-15px, -30px); scale: 1.5; } 95% { opacity: 0; transform: translate(-30px, 20px); scale: 0.2; } }
-@keyframes splashArc2 { 0%, 83% { opacity: 0; transform: translate(0,0); } 84% { opacity: 1; transform: translate(18px, -35px); scale: 1.2; } 95% { opacity: 0; transform: translate(40px, 25px); scale: 0.1; } }
-@keyframes splashArc3 { 0%, 83% { opacity: 0; transform: translate(0,0); } 84% { opacity: 0.8; transform: translate(-8px, -45px); scale: 1; } 95% { opacity: 0; transform: translate(-15px, 5px); scale: 0.1; } }
-@keyframes splashArc4 { 0%, 83% { opacity: 0; transform: translate(0,0); } 84% { opacity: 1; transform: translate(12px, -20px); scale: 1.6; } 95% { opacity: 0; transform: translate(25px, 40px); scale: 0.3; } }
-@keyframes splashArc5 { 0%, 83% { opacity: 0; transform: translate(0,0); } 84% { opacity: 0.9; transform: translate(-25px, -15px); scale: 1.3; } 95% { opacity: 0; transform: translate(-50px, 30px); scale: 0.2; } }
-@keyframes splashArc6 { 0%, 83% { opacity: 0; transform: translate(0,0); } 84% { opacity: 1; transform: translate(6px, -40px); scale: 1.4; } 95% { opacity: 0; transform: translate(20px, 15px); scale: 0.2; } }
+.tracking-\[0\.3em\] { letter-spacing: 0.3em; }
 
 /* Custom Utilities for Narrative Loader */
 .text-blue-500 { color: var(--accent-primary); }
