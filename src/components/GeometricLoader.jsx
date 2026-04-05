@@ -29,7 +29,7 @@ const GeometricLoader = ({ size = 'full', className = '' }) => {
         {/* 1. Triangle Shape */}
         <g mask="url(#loader-submergence-mask)">
           <polygon
-            points="60,20 80,55 40,55"
+            points="60,15 80,50 40,50"
             fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round"
             filter="url(#premium-glow)"
             className="loader-shape-t"
@@ -39,7 +39,7 @@ const GeometricLoader = ({ size = 'full', className = '' }) => {
         {/* 2. Rect Shape */}
         <g mask="url(#loader-submergence-mask)">
           <rect
-            x="45" y="25" width="30" height="30"
+            x="45" y="15" width="30" height="30"
             fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round"
             filter="url(#premium-glow)"
             className="loader-shape-r"
@@ -49,7 +49,7 @@ const GeometricLoader = ({ size = 'full', className = '' }) => {
         {/* 3. Pentagon Shape */}
         <g mask="url(#loader-submergence-mask)">
           <polygon
-            points="60,20 80,35 73,58 47,58 40,35"
+            points="60,15 80,30 73,53 47,53 40,30"
             fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round"
             filter="url(#premium-glow)"
             className="loader-shape-p"

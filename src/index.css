@@ -892,149 +892,98 @@ kbd {
 
 /* =========================================
    Geometric Narrative Loader (12s Cycle)
+   T -> R -> P -> R (Sequential Physics)
    ========================================= */
-.loader-shape-t {
-  transform-origin: 60px 45px; 
-  animation: triangleLifecycle 12s infinite; 
+.loader-shape-t, .loader-shape-r, .loader-shape-p {
+  transform-origin: 60px 30px; 
 }
-.loader-shape-r {
-  transform-origin: 60px 45px; 
-  animation: rectLifecycle 12s infinite; 
-}
-.loader-shape-p {
-  transform-origin: 60px 45px; 
-  animation: pentagonLifecycle 12s infinite; 
-}
-
-
-/* =========================================
-   The Water Narrative (Synced to 3s Pulses)
-   ========================================= */
-
-.loader-wave-main, .loader-wave-depth-1, .loader-wave-depth-2 {
-  transform-origin: 60px 100px;
-}
-.loader-wave-main {
-  animation: waveDeformationMain 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-.loader-wave-depth-1 { animation: waveDeformationDepth1 3s infinite; }
-.loader-wave-depth-2 { animation: waveDeformationDepth2 3s infinite; }
-
-.loader-splash {
-  opacity: 0;
-  scale: 0;
-}
-.loader-splash-1 { animation: splashArc1 3s ease-out infinite; }
-.loader-splash-2 { animation: splashArc2 3s ease-out infinite; }
-.loader-splash-3 { animation: splashArc3 3s ease-out infinite; }
-.loader-splash-4 { animation: splashArc4 3s ease-out infinite; }
-.loader-splash-5 { animation: splashArc5 3s ease-out infinite; }
-.loader-splash-6 { animation: splashArc6 3s ease-out infinite; }
+.loader-shape-t { animation: triangleLifecycle 12s infinite; }
+.loader-shape-r { animation: rectLifecycle 12s infinite; }
+.loader-shape-p { animation: pentagonLifecycle 12s infinite; }
 
 @keyframes triangleLifecycle {
-  /* 0-1.14s: Fall (Phase 1 Start) */
-  0%    { transform: translateY(-50px) rotate(0deg); opacity: 0; }
-  2%    { opacity: 1; transform: translateY(-30px) rotate(45deg); }
-  9.5%  { transform: translateY(45px) rotate(180deg); opacity: 1; }
-  12%   { transform: translateY(65px) rotate(220deg); opacity: 0; }
+  /* 0-3.0s: Full Cycle (Toss -> Peak -> Fall -> Submerge) */
+  0%    { transform: translateY(110px) rotate(0deg); opacity: 0; animation-timing-function: cubic-bezier(0.1, 0.7, 0.4, 1); }
+  2%    { opacity: 1; }
+  9%    { transform: translateY(0px) rotate(90deg); animation-timing-function: linear; }
+  11.5% { transform: translateY(0px) rotate(100deg); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.5); }
+  21.7% { transform: translateY(50px) rotate(180deg); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0, 0.3, 0.3); }
+  25%   { transform: translateY(110px) rotate(210deg); opacity: 0; }
   
-  /* 1.14s - 10.14s: Submerged/Hidden */
-  13%, 83% { opacity: 0; transform: translateY(100px); }
-
-  /* 10.14s - 12s: Rise (Phase 4 End) */
-  84.5% { opacity: 0; transform: translateY(40px) rotate(0deg); }
-  86%   { opacity: 1; transform: translateY(-5px) rotate(45deg) scale(1.2); }
-  94%   { transform: translateY(-55px) rotate(180deg) scale(1); opacity: 1; }
-  98%   { transform: translateY(-65px) rotate(225deg) scale(0.8); opacity: 0; }
-  100%  { opacity: 0; }
+  /* 3.0s - 12s: Submerged */
+  26%, 100% { opacity: 0; transform: translateY(150px); }
 }
 
 @keyframes rectLifecycle {
-  /* 0-1.14s: Submerged */
-  0%, 8%  { opacity: 0; transform: translateY(100px); }
+  /* 0-3.0s: Submerged */
+  0%, 25% { opacity: 0; transform: translateY(150px); }
 
-  /* 1.14s - 3s: Rise (Phase 1 End) */
-  9.5%    { opacity: 0; transform: translateY(40px) rotate(0deg); }
-  11%     { opacity: 1; transform: translateY(-5px) rotate(45deg) scale(1.2); }
-  19%     { transform: translateY(-55px) rotate(180deg) scale(1); opacity: 1; }
-  23%     { transform: translateY(-65px) rotate(225deg) scale(0.8); opacity: 0; }
-  
-  /* 3s - 4.14s: Fall (Phase 2 Start) */
-  25%     { transform: translateY(-40px) rotate(0deg); opacity: 0; }
-  27%     { opacity: 1; transform: translateY(-30px) rotate(45deg); }
-  34.5%   { transform: translateY(45px) rotate(180deg); opacity: 1; }
-  36%     { transform: translateY(65px) rotate(220deg); opacity: 0; }
+  /* 3.0s - 6.0s: Act 2 */
+  25%   { transform: translateY(110px) rotate(0deg); opacity: 0; animation-timing-function: cubic-bezier(0.1, 0.7, 0.4, 1); }
+  27%   { opacity: 1; }
+  34%   { transform: translateY(0px) rotate(90deg); animation-timing-function: linear; }
+  36.5% { transform: translateY(0px) rotate(100deg); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.5); }
+  46.7% { transform: translateY(50px) rotate(180deg); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0, 0.3, 0.3); }
+  50%   { transform: translateY(110px) rotate(210deg); opacity: 0; }
 
-  /* 4.14s - 7.14s: Submerged */
-  37%, 58% { opacity: 0; transform: translateY(100px); }
+  /* 6.0s - 9.0s: Submerged */
+  51%, 75% { opacity: 0; transform: translateY(150px); }
 
-  /* 7.14s - 9s: Rise (Phase 3 End) */
-  59.5%   { opacity: 0; transform: translateY(40px) rotate(0deg); }
-  61%     { opacity: 1; transform: translateY(-5px) rotate(45deg) scale(1.2); }
-  69%     { transform: translateY(-55px) rotate(180deg) scale(1); opacity: 1; }
-  73%     { transform: translateY(-65px) rotate(225deg) scale(0.8); opacity: 0; }
-
-  /* 9s - 10.14s: Fall (Phase 4 Start) */
-  75%     { transform: translateY(-40px) rotate(0deg); opacity: 0; }
-  77%     { opacity: 1; transform: translateY(-30px) rotate(45deg); }
-  84.5%   { transform: translateY(45px) rotate(180deg); opacity: 1; }
-  86%     { transform: translateY(65px) rotate(220deg); opacity: 0; }
-
-  /* 10.14s - 12s: Submerged */
-  87%, 100% { opacity: 0; transform: translateY(100px); }
+  /* 9.0s - 12s: Act 4 */
+  75%   { transform: translateY(110px) rotate(0deg); opacity: 0; animation-timing-function: cubic-bezier(0.1, 0.7, 0.4, 1); }
+  77%   { opacity: 1; }
+  84%   { transform: translateY(0px) rotate(90deg); animation-timing-function: linear; }
+  86.5% { transform: translateY(0px) rotate(100deg); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.5); }
+  96.7% { transform: translateY(50px) rotate(180deg); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0, 0.3, 0.3); }
+  100%  { transform: translateY(110px) rotate(210deg); opacity: 0; }
 }
 
 @keyframes pentagonLifecycle {
-  /* 0-4.14s: Submerged */
-  0%, 33% { opacity: 0; transform: translateY(100px); }
-  
-  /* 4.14s - 6s: Rise (Phase 2 End) */
-  34.5%   { opacity: 0; transform: translateY(40px) rotate(0deg); }
-  36%     { opacity: 1; transform: translateY(-5px) rotate(45deg) scale(1.2); }
-  44%     { transform: translateY(-55px) rotate(180deg) scale(1); opacity: 1; }
-  48%     { transform: translateY(-65px) rotate(225deg) scale(0.8); opacity: 0; }
+  /* 0-6.0s: Submerged */
+  0%, 50% { opacity: 0; transform: translateY(150px); }
 
-  /* 6s - 7.14s: Fall (Phase 3 Start) */
-  50%     { transform: translateY(-40px) rotate(0deg); opacity: 0; }
-  52%     { opacity: 1; transform: translateY(-30px) rotate(45deg); }
-  59.5%   { transform: translateY(45px) rotate(180deg); opacity: 1; }
-  61%     { transform: translateY(65px) rotate(220deg); opacity: 0; }
+  /* 6.0s - 9.0s: Act 3 */
+  50%   { transform: translateY(110px) rotate(0deg); opacity: 0; animation-timing-function: cubic-bezier(0.1, 0.7, 0.4, 1); }
+  52%   { opacity: 1; }
+  59%   { transform: translateY(0px) rotate(90deg); animation-timing-function: linear; }
+  61.5% { transform: translateY(0px) rotate(100deg); animation-timing-function: cubic-bezier(0.5, 0, 1, 0.5); }
+  71.7% { transform: translateY(50px) rotate(180deg); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0, 0.3, 0.3); }
+  75%   { transform: translateY(110px) rotate(210deg); opacity: 0; }
 
-  /* 7.14s - 12s: Submerged */
-  62%, 100% { opacity: 0; transform: translateY(100px); }
+  /* 9.0s - 12s: Submerged */
+  76%, 100% { opacity: 0; transform: translateY(150px); }
 }
 
 /* 🌊 WATER SURFACE PATH MUTATION (COLLISION REACTION) */
 @keyframes waveDeformationMain {
-  0%, 36% { d: path("M 0 100 Q 30 108 60 100 T 120 100"); opacity: 0.7; }
-  38%     { /* Collision: Surface bends deep down */
-            d: path("M 0 100 Q 30 130 60 100 T 120 100"); opacity: 0.9; stroke-width: 3px; }
-  43%     { /* Elastic rebound snap */
-            d: path("M 0 100 Q 30 85 60 100 T 120 100"); stroke-width: 2.5px; }
-  50%     { d: path("M 0 100 Q 30 115 60 100 T 120 100"); }
-  65%     { d: path("M 0 100 Q 30 108 60 100 T 120 100"); opacity: 0.7; stroke-width: 2px; }
+  0%, 82% { d: path("M 0 100 Q 30 102 60 100 T 120 100"); opacity: 0.7; }
+  84%     { /* Impact: Deep bend */
+            d: path("M 0 100 Q 30 135 60 100 T 120 100"); opacity: 1; stroke-width: 3.5px; }
+  90%     { /* Snap back */
+            d: path("M 0 100 Q 30 80 60 100 T 120 100"); stroke-width: 2.5px; }
+  95%     { d: path("M 0 100 Q 30 110 60 100 T 120 100"); }
   100%    { opacity: 0.7; }
 }
 
 @keyframes waveDeformationDepth1 {
-  0%, 37% { d: path("M 0 100 Q 30 115 60 100 T 120 100"); }
-  39%     { d: path("M 0 120 Q 30 135 60 120 T 120 120"); }
-  55%     { d: path("M 0 100 Q 30 115 60 100 T 120 100"); }
+  0%, 83% { d: path("M 0 100 Q 30 110 60 100 T 120 100"); }
+  85%     { d: path("M 0 115 Q 30 140 60 115 T 120 115"); }
+  100%    { d: path("M 0 100 Q 30 110 60 100 T 120 100"); }
 }
 
 @keyframes waveDeformationDepth2 {
-  0%, 38% { d: path("M 0 100 Q 30 125 60 100 T 120 100"); }
-  41%     { d: path("M 0 130 Q 30 140 60 130 T 120 130"); }
-  60%     { d: path("M 0 100 Q 30 125 60 100 T 120 100"); }
+  0%, 84% { d: path("M 0 100 Q 30 120 60 100 T 120 100"); }
+  86%     { d: path("M 0 125 Q 30 145 60 125 T 120 125"); }
+  100%    { d: path("M 0 100 Q 30 120 60 100 T 120 100"); }
 }
 
-/* 💦 SPLASH ARCS (Physics Simulation) */
-@keyframes splashArc1 { 0%, 37% { opacity: 0; transform: translate(0,0); } 38% { opacity: 1; transform: translate(-10px, -20px); scale: 1.5; } 60% { opacity: 0; transform: translate(-25px, 10px); scale: 0.5; } }
-@keyframes splashArc2 { 0%, 37% { opacity: 0; transform: translate(0,0); } 38% { opacity: 1; transform: translate(12px, -25px); scale: 1.2; } 58% { opacity: 0; transform: translate(30px, 15px); scale: 0.4; } }
-@keyframes splashArc3 { 0%, 37% { opacity: 0; transform: translate(0,0); } 38% { opacity: 0.8; transform: translate(-5px, -35px); scale: 1; } 55% { opacity: 0; transform: translate(-10px, 0); scale: 0.2; } }
-@keyframes splashArc4 { 0%, 37% { opacity: 0; transform: translate(0,0); } 38% { opacity: 1; transform: translate(8px, -15px); scale: 1.4; } 62% { opacity: 0; transform: translate(20px, 30px); scale: 0.6; } }
-@keyframes splashArc5 { 0%, 37% { opacity: 0; transform: translate(0,0); } 38% { opacity: 0.9; transform: translate(-18px, -10px); scale: 1.1; } 56% { opacity: 0; transform: translate(-40px, 20px); scale: 0.3; } }
-@keyframes splashArc6 { 0%, 37% { opacity: 0; transform: translate(0,0); } 38% { opacity: 1; transform: translate(4px, -30px); scale: 1.3; } 59% { opacity: 0; transform: translate(15px, 10px); scale: 0.5; } }
+/* 💦 SPLASH ARCS (Physics Simulation synced to 84%) */
+@keyframes splashArc1 { 0%, 83% { opacity: 0; transform: translate(0,0); } 84% { opacity: 1; transform: translate(-15px, -30px); scale: 1.5; } 95% { opacity: 0; transform: translate(-30px, 20px); scale: 0.2; } }
+@keyframes splashArc2 { 0%, 83% { opacity: 0; transform: translate(0,0); } 84% { opacity: 1; transform: translate(18px, -35px); scale: 1.2; } 95% { opacity: 0; transform: translate(40px, 25px); scale: 0.1; } }
+@keyframes splashArc3 { 0%, 83% { opacity: 0; transform: translate(0,0); } 84% { opacity: 0.8; transform: translate(-8px, -45px); scale: 1; } 95% { opacity: 0; transform: translate(-15px, 5px); scale: 0.1; } }
+@keyframes splashArc4 { 0%, 83% { opacity: 0; transform: translate(0,0); } 84% { opacity: 1; transform: translate(12px, -20px); scale: 1.6; } 95% { opacity: 0; transform: translate(25px, 40px); scale: 0.3; } }
+@keyframes splashArc5 { 0%, 83% { opacity: 0; transform: translate(0,0); } 84% { opacity: 0.9; transform: translate(-25px, -15px); scale: 1.3; } 95% { opacity: 0; transform: translate(-50px, 30px); scale: 0.2; } }
+@keyframes splashArc6 { 0%, 83% { opacity: 0; transform: translate(0,0); } 84% { opacity: 1; transform: translate(6px, -40px); scale: 1.4; } 95% { opacity: 0; transform: translate(20px, 15px); scale: 0.2; } }
 
 /* Custom Utilities for Narrative Loader */
 .text-blue-500 { color: var(--accent-primary); }
