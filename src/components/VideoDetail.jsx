@@ -84,14 +84,40 @@ const VideoDetail = () => {
   const toggleLike = async (e) => {
     e.stopPropagation();
     if (!token) return alert(t('loginToLike') || 'Please login to like');
+    
+    // 1. Optimistic Update
+    const originalVideo = { ...video };
+    const currentlyLiked = video.is_liked_by_me;
+    setVideo(prev => ({
+       ...prev,
+       is_liked_by_me: !currentlyLiked,
+       like_count: currentlyLiked ? Math.max(0, prev.like_count - 1) : prev.like_count + 1
+    }));
+    
+    // Dispatch to update background gallery without network request
+    window.dispatchEvent(new CustomEvent('optimisticLike', { 
+      detail: { videoId: video.id, action: !currentlyLiked ? 'liked' : 'unliked' } 
+    }));
+
     try {
+      // 2. Network request
       const res = await fetch(`${API_BASE}/videos/${video.id}/like`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (res.ok) fetchVideo();
+      if (!res.ok) throw new Error('Like request failed');
+      const data = await res.json();
+      
+      // 3. Sync with source of truth
+      setVideo(prev => ({
+         ...prev,
+         is_liked_by_me: data.action === 'liked',
+         like_count: data.like_count
+      }));
     } catch (e) {
-      console.error(e);
+      console.error('Like toggle failed:', e);
+      // Revert on failure
+      setVideo(originalVideo);
     }
   };
 
@@ -124,7 +150,15 @@ const VideoDetail = () => {
       <motion.div 
         layoutId={`video-card-${id}`}
         className="w-full max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl relative hide-scrollbar"
-        style={{ height: 'fit-content', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}
+        style={{ 
+          height: 'fit-content', 
+          maxHeight: '90vh', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          overflowY: 'auto',
+          WebkitTransform: 'translateZ(0)',
+          willChange: 'transform, border-radius'
+        }}
       >
         {/* Close Button */}
         <motion.button 
@@ -165,7 +199,8 @@ const VideoDetail = () => {
                   position: 'relative', // Stabilize layout flow
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  willChange: 'transform, border-radius'
                 }}
               >
                 <video 

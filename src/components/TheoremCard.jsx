@@ -89,7 +89,9 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
           flexDirection: 'column',
           boxShadow: 'var(--shadow-sm)',
           height: '100%',
-          position: 'relative'
+          position: 'relative',
+          WebkitTransform: 'translateZ(0)', // Force GPU composite
+          willChange: 'transform, border-radius, box-shadow' // Pre-warm compositor
         }}
         onClick={() => navigate(`/video/${video.id}`, { state: { backgroundLocation: location, videoData: video } })}
         whileHover={{ y: -4, boxShadow: 'var(--shadow-lg)' }}
@@ -359,9 +361,31 @@ const TheoremCard = ({ searchQuery = "" }) => {
 
   useEffect(() => {
     fetchVideos();
+    
+    const handleOptimisticLike = (e) => {
+      const { videoId, action } = e.detail;
+      setVideos(prev => prev.map(v => {
+        if (v.id === videoId) {
+          const isLiking = action === 'liked';
+          // Avoid double counting if already in correct state
+          const currentlyLiked = v._liked !== undefined ? v._liked : v.is_liked_by_me;
+          if (isLiking === currentlyLiked) return v;
+          return {
+            ...v,
+            _liked: isLiking,
+            like_count: isLiking ? v.like_count + 1 : Math.max(0, v.like_count - 1)
+          };
+        }
+        return v;
+      }));
+    };
+
     window.addEventListener('videoUploaded', fetchVideos);
+    window.addEventListener('optimisticLike', handleOptimisticLike);
+    
     return () => {
       window.removeEventListener('videoUploaded', fetchVideos);
+      window.removeEventListener('optimisticLike', handleOptimisticLike);
     };
   }, []);
 
@@ -401,7 +425,23 @@ const TheoremCard = ({ searchQuery = "" }) => {
       return;
     }
     
+    // 1. Optimistic Update (Instant UI reaction)
+    const originalVideos = [...videos];
+    setVideos(prev => prev.map(v => {
+      if (v.id === videoId) {
+        // We use v._liked if present, otherwise v.is_liked_by_me
+        const currentlyLiked = v._liked !== undefined ? v._liked : v.is_liked_by_me;
+        return {
+          ...v,
+          _liked: !currentlyLiked,
+          like_count: currentlyLiked ? Math.max(0, v.like_count - 1) : v.like_count + 1
+        };
+      }
+      return v;
+    }));
+
     try {
+      // 2. Network Request
       const res = await fetch(`${API_BASE}/videos/${videoId}/like`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -409,13 +449,17 @@ const TheoremCard = ({ searchQuery = "" }) => {
       if (!res.ok) throw new Error('Action failed');
       const data = await res.json();
       
+      // 3. Sync with Source of Truth
       setVideos(prev => prev.map(v => 
         v.id === videoId 
           ? { ...v, like_count: data.like_count, _liked: data.action === 'liked' } 
           : v
       ));
     } catch (err) {
-      console.error(err);
+      console.error('Like action failed, reverting...', err);
+      // Revert to original state on failure
+      setVideos(originalVideos);
+      // Show subtle error or ignore
     }
   };
   if (isLoading && videos.length === 0) {
