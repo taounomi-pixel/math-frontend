@@ -898,7 +898,7 @@ kbd {
   width: var(--loader-size);
   aspect-ratio: 1;
   display: grid;
-  mask-image: linear-gradient(135deg, #000 70%, transparent); /* Subtle depth mask */
+  /* Removed mask-image which caused bottom-right washout */
   --c: #3b82f6 25%, #93c5fd 0 50%, #2563eb 0 75%, #bfdbfe 0;
 }
 
@@ -918,6 +918,22 @@ kbd {
   23%, 33% { background-position: calc(2*100%/3) 0, calc(1*100%/3) 100%; }
   56%, 66% { background-position: calc(1*100%/3) 0, calc(2*100%/3) 100%; }
   90%, 100%{ background-position: calc(0*100%/3) 0, calc(3*100%/3) 100%; }
+}
+
+/* Dot Cycle Animation (., .., ..., .., .) */
+.math-loading-dots::after {
+  content: ".";
+  display: inline-block;
+  width: 0px;
+  text-align: left;
+  animation: dotCycle 2.5s infinite;
+}
+
+@keyframes dotCycle {
+  0%, 100% { content: "."; }
+  25%      { content: ".."; }
+  50%      { content: "..."; }
+  75%      { content: ".."; }
 }
 
 /* Custom Utilities */

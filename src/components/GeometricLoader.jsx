@@ -4,12 +4,7 @@ import React from 'react';
  * GeometricLoader Component
  * 
  * A simplified mathematical grid-tiling loader.
- * Refined for perfect centering and responsive sizing.
- * 
- * Props:
- * - size: Size of the grid square in px (default 50)
- * - showText: Whether to show the 'Loading' label below (default true)
- * - className: Additional classes for the container
+ * Refined for perfect centering with an animated dot cycle.
  */
 const GeometricLoader = ({ size = 50, showText = true, className = "", ...props }) => {
   return (
@@ -29,14 +24,17 @@ const GeometricLoader = ({ size = 50, showText = true, className = "", ...props 
       
       {/* 
          Standard Platform Support Text 
-         Using negative margin-right to compensate for tracking-[0.4em] centering offset
+         - All caps: LOADING
+         - Tracking compensation: mr-[-0.5em] for tracking-[0.5em]
+         - Mathematical Dot Cycle: 1->2->3->2->1 
       */}
       {showText && (
         <div 
-          className="mt-4 text-[10px] font-black tracking-[0.4em] mr-[-0.4em] opacity-60 animate-pulse uppercase text-center" 
+          className="mt-6 text-[10px] font-bold tracking-[0.5em] mr-[-0.5em] opacity-80 uppercase text-center flex items-center justify-center" 
           style={{ color: 'var(--accent-primary)' }}
         >
-          Loading
+          <span className="animate-pulse">LOADING</span>
+          <span className="math-loading-dots"></span>
         </div>
       )}
     </div>
