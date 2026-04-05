@@ -176,10 +176,7 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
             
             <div style={{ padding: '24px', overflowY: 'auto', flex: 1, backgroundColor: '#0f172a', color: '#e2e8f0' }}>
               {codeLoading ? (
-                <div className="flex flex-col items-center justify-center h-full gap-6">
-                  <GeometricLoader size={48} />
-                  <p className="text-slate-400 animate-pulse">Loading Source Code...</p>
-                </div>
+                <GeometricLoader size={48} showText={true} className="h-full" />
               ) : (
                 <div className="relative group">
                   <button 

@@ -497,7 +497,7 @@ const UploadModal = ({ isOpen, onClose, onRefresh }) => {
               >
                 {isUploading ? (
                   <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <GeometricLoader size={18} style={{ marginRight: '8px' }} />
+                    <GeometricLoader size={18} showText={false} style={{ marginRight: '8px' }} />
                     {isSyncing
                       ? (lang === 'zh' ? '上传成功，正在同步...' : 'Upload successful, syncing...')
                       : (uploadProgress === 100 ? (lang === 'zh' ? '服务器处理中...' : 'Server processing...') : `${uploadProgress}%`)
