@@ -45,15 +45,6 @@ const VideoDetail = () => {
     }
   }, [id, initialVideoData]);
 
-  // Lock background scroll when modal is open
-  useEffect(() => {
-    const originalStyle = window.getComputedStyle(document.body).overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = originalStyle;
-    };
-  }, []);
-
   // Handle ESC key to close
   useEffect(() => {
     const handleEsc = (e) => {
@@ -105,38 +96,18 @@ const VideoDetail = () => {
       {/* Modal Content */}
       <motion.div 
         layoutId={`video-card-${id}`}
-        className="w-full max-w-6xl mx-auto bg-white/90 rounded-3xl shadow-2xl overflow-hidden relative"
-        style={{ 
-          height: 'fit-content', 
-          maxHeight: '92vh', 
-          display: 'flex', 
-          flexDirection: 'column',
-          backdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255, 255, 255, 0.4)',
-          boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)'
-        }}
+        className="w-full max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden relative"
+        style={{ height: 'fit-content', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}
       >
         {/* Close Button */}
         <button 
           onClick={handleBack}
-          style={{ 
-            position: 'absolute', 
-            top: '24px', 
-            right: '24px', 
-            zIndex: 100, 
-            background: 'var(--bg-secondary)', 
-            border: '1px solid var(--border-color)', 
-            borderRadius: '50%', 
-            padding: '8px', 
-            cursor: 'pointer', 
-            color: 'var(--text-secondary)',
-            boxShadow: 'var(--shadow-sm)'
-          }}
+          style={{ position: 'absolute', top: '24px', right: '24px', zIndex: 10, background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '50%', padding: '8px', cursor: 'pointer', color: 'var(--text-secondary)' }}
         >
           <X size={24} />
         </button>
 
-        <div style={{ overflowY: 'auto', flex: 1, padding: '40px' }} className="custom-scrollbar">
+        <div className="p-8">
           {/* Back Label */}
           <button 
             onClick={handleBack}

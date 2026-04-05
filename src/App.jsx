@@ -11,9 +11,16 @@ import VideoDetail from './components/VideoDetail';
 
 // Generic Placeholder Component
 const PlaceholderPage = ({ title, description }) => (
-  <div className="p-12 text-center bg-white rounded-2xl border border-slate-200 shadow-sm">
-    <h2 className="text-2xl font-bold text-slate-900 mb-4">{title}</h2>
-    <p className="text-lg text-slate-600">{description}</p>
+  <div style={{
+    padding: '48px 32px',
+    background: 'white',
+    borderRadius: '16px',
+    border: '1px solid var(--border-color)',
+    boxShadow: 'var(--shadow-sm)',
+    textAlign: 'center'
+  }}>
+    <h2 style={{ fontSize: '28px', color: 'var(--text-primary)', marginBottom: '16px' }}>{title}</h2>
+    <p style={{ color: 'var(--text-secondary)', fontSize: '18px' }}>{description}</p>
   </div>
 );
 
@@ -24,46 +31,47 @@ const LayoutContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // The 'backgroundLocation' state allows us to keep the background page mounted while showing a modal
+  // If we have a background location, use it for the gallery routes
+  // This allows the gallery to stay visible underneath the modal
   const backgroundLocation = location.state?.backgroundLocation;
-
+  
   useEffect(() => {
     document.title = t('logoText');
   }, [t, location]);
 
   return (
-    <div className="w-full min-h-screen flex flex-col bg-slate-50">
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-
-      <main className="flex-1 relative w-full max-w-[1920px] mx-auto">
+      
+      <main style={{ position: 'relative' }} className="w-full flex-1">
         <Sidebar />
-
-        <div className="page-content mt-6 md:mt-8 px-4 md:px-8">
+        
+        <div className="page-content" style={{ flex: 1, marginTop: '24px', position: 'relative' }}>
           {/* 
             Background Gallery: Renders for homepage routes OR when we have a backgroundLocation.
-            We add a blur filter if a modal (VideoDetail) is active.
+            If we access /video/:id directly, backgroundLocation will be null/undefined.
+            We still want the homepage to render behind it.
           */}
-          <div
-            className="w-full transition-all duration-500 ease-in-out"
-            style={{
-              filter: backgroundLocation ? 'blur(8px) brightness(0.9)' : 'none'
+          <div 
+            className="w-full min-h-screen"
+            style={{ 
+              filter: backgroundLocation ? 'blur(4px) brightness(0.9)' : 'none', 
+              transition: 'filter 0.3s ease, brightness 0.3s ease' 
             }}
           >
-            <Routes location={backgroundLocation || location}>
+            <Routes location={backgroundLocation || (location.pathname.startsWith('/video/') ? { ...location, pathname: '/' } : location)}>
               <Route path="/" element={<TheoremCard searchQuery={searchQuery} />} />
               <Route path="/videos" element={<TheoremCard searchQuery={searchQuery} />} />
               <Route path="/c/:categoryL1" element={<TheoremCard searchQuery={searchQuery} />} />
               <Route path="/c/:categoryL1/:categoryL2" element={<TheoremCard searchQuery={searchQuery} />} />
-
-              {/* Catch-all for /video/:id to keep the background active as TheoremCard */}
+              {/* Catch-all for /video/:id to keep the background active */}
               <Route path="/video/:id" element={<TheoremCard searchQuery={searchQuery} />} />
-
               <Route path="*" element={<PlaceholderPage title={t("titleNotFound")} description={t("descNotFound")} />} />
             </Routes>
           </div>
 
-          {/* Modal Route: Rendered with AnimatePresence for smooth transitions */}
-          <AnimatePresence mode="wait">
+          {/* The Overlay */}
+          <AnimatePresence>
             {(backgroundLocation || location.pathname.startsWith('/video/')) && (
               <Routes location={location} key="modal">
                 <Route path="/video/:id" element={<VideoDetail />} />

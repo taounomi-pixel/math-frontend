@@ -81,29 +81,15 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
 
         {/* Info Section */}
         <div className="video-card-content" style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}>
-            <h3 className="video-card-title" style={{ fontSize: '16.5px', fontWeight: '700', color: 'var(--text-primary)', lineHeight: '1.4', margin: 0, flex: 1 }}>
-              {video.title}
-            </h3>
-            {finalCategoryLabel && (
-              <div style={{ 
-                flexShrink: 0, 
-                fontSize: '11px', 
-                color: 'var(--text-secondary)', 
-                background: 'var(--bg-tertiary)', 
-                padding: '3px 10px', 
-                borderRadius: '20px', 
-                border: '1px solid var(--border-color)',
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '4px',
-                marginTop: '2px',
-                fontWeight: '500'
-              }}>
-                <Tag size={10} className="text-primary/70" /> {finalCategoryLabel}
-              </div>
-            )}
-          </div>
+          <h3 className="video-card-title" style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '10px', lineHeight: '1.4' }}>
+            {video.title}
+          </h3>
+          
+          {finalCategoryLabel && (
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Tag size={12} className="text-primary/70" /> {finalCategoryLabel}
+            </div>
+          )}
 
           <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid var(--border-color)', opacity: 0.9 }}>
             <div style={{ display: 'flex', gap: '16px' }}>
