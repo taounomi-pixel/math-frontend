@@ -53,14 +53,25 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
       </div>
 
       {/* Content Area (Figure 3 Style: Title + Icons in one row) */}
-      <div className="p-6 flex flex-col gap-3">
+      <div className="p-6 flex flex-col gap-2">
         <div className="flex items-center justify-between gap-4">
-          <h3
-            onClick={handleOpenVideo}
-            className="text-lg font-black text-slate-800 leading-snug cursor-pointer hover:text-blue-600 transition-colors line-clamp-1"
-          >
-            {video.title}
-          </h3>
+          <div className="flex items-center gap-3 min-w-0">
+            <h3
+              onClick={handleOpenVideo}
+              className="text-lg font-black text-slate-800 leading-snug cursor-pointer hover:text-blue-600 transition-colors line-clamp-1 flex-shrink-0"
+            >
+              {video.title}
+            </h3>
+            
+            {/* Tags - Move to the right of title (per user request) */}
+            <div className="hidden sm:flex flex-wrap gap-1.5 overflow-hidden h-6">
+              {(Array.isArray(video.tags) ? video.tags : (video.tags ? video.tags.split(',') : [])).slice(0, 2).map(tag => (
+                <span key={tag} className="text-[10px] whitespace-nowrap font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100 transition-colors">
+                  #{t(tag) || tag}
+                </span>
+              ))}
+            </div>
+          </div>
           
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 cursor-pointer hover:scale-110 transition-transform" onClick={(e) => { e.stopPropagation(); handleLike(video.id); }}>
@@ -83,15 +94,6 @@ const VideoItem = ({ video, handleLike, handleDelete, isOwner, t }) => {
               </button>
             )}
           </div>
-        </div>
-
-        {/* Tags - Move below title row */}
-        <div className="flex flex-wrap gap-1.5">
-          {(Array.isArray(video.tags) ? video.tags : (video.tags ? video.tags.split(',') : [])).slice(0, 3).map(tag => (
-            <span key={tag} className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100 transition-colors">
-              #{t(tag) || tag}
-            </span>
-          ))}
         </div>
       </div>
     </motion.div>

@@ -56,6 +56,16 @@ const VideoDetail = () => {
     return () => window.removeEventListener('keydown', handleEsc);
   }, [navigate]);
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isModal) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = 'unset';
+      };
+    }
+  }, [isModal]);
+
   const handleClose = () => {
     if (isModal) {
       navigate(-1);
@@ -277,7 +287,7 @@ const VideoDetail = () => {
       {/* Modal Container */}
       <motion.div
         layoutId={`video-card-${id}`}
-        className="relative w-full max-w-5xl bg-white rounded-[40px] shadow-2xl overflow-hidden overflow-y-auto max-h-full scrollbar-hide z-10 border border-white/20"
+        className="relative w-full max-w-5xl bg-white rounded-[40px] shadow-2xl overflow-y-auto max-h-[90vh] scrollbar-hide z-10 border border-white/20"
         onClick={(e) => e.stopPropagation()}
       >
         {renderContent()}
