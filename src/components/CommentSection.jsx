@@ -1,9 +1,9 @@
+import React, { useState, useEffect } from 'react';
 import { Send, MessageCircle } from 'lucide-react';
 import { API_BASE } from '../utils/api';
 import { formatRelativeTime } from '../utils/timeHelper';
 import { useLanguage } from '../contexts/LanguageContext';
 import CommentItem from './CommentItem';
-
 import GeometricLoader from './GeometricLoader';
 
 const CommentSection = ({ videoId }) => {
