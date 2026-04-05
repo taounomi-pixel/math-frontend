@@ -161,7 +161,7 @@ const VideoDetail = () => {
         }}
       >
         {/* Modal Header Controls */}
-        <div className="p-4 md:p-6 w-full flex justify-between items-center" style={{ paddingBottom: 0 }}>
+        <div className="p-4 md:p-6 w-full flex justify-start items-center" style={{ paddingBottom: 0 }}>
           <button 
              onClick={handleBack}
              title={t('backToGallery')}
@@ -171,18 +171,6 @@ const VideoDetail = () => {
           >
              <ArrowLeft size={20} />
           </button>
-
-          <motion.button 
-            onClick={handleBack}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 300, damping: 20 }}
-            whileHover={{ scale: 1.1, backgroundColor: 'rgba(255, 255, 255, 1)' }}
-            whileTap={{ scale: 0.9 }}
-            style={{ width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(8px)', border: '1px solid var(--border-color)', cursor: 'pointer', color: 'var(--text-secondary)', willChange: 'transform, opacity' }}
-          >
-            <X size={20} />
-          </motion.button>
         </div>
 
         <div className="px-6 pb-6 md:px-10 md:pb-10 pt-4">

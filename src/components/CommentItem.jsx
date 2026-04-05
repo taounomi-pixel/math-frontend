@@ -187,7 +187,7 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
               color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '600'
             }}
           >
-            {t('reply') || (lang === 'zh' ? '回复' : 'Reply')}
+            {t('reply')}
           </button>
 
           {currentUserId && parseInt(currentUserId) === comment.user_id && (

@@ -145,6 +145,7 @@ const translations = {
     commentsCount: "Comments",
     addCommentPlace: "Add a comment...",
     commonSubmit: "Post",
+    reply: "Reply",
     loginToComment: "Log in to leave a comment",
 
     // UploadModal
@@ -326,6 +327,7 @@ const translations = {
     commentsCount: "条评论",
     addCommentPlace: "添加评论...",
     commonSubmit: "发布",
+    reply: "回复",
     loginToComment: "登录后即可发表评论",
 
     // UploadModal
