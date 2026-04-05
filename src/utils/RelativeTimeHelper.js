@@ -5,8 +5,13 @@
 export const getRelativeTime = (dateString, lang = 'zh') => {
   if (!dateString) return '';
   
+  let dtStr = dateString;
+  // If the date string lacks timezone info, assume it's UTC from the backend
+  if (typeof dtStr === 'string' && !dtStr.endsWith('Z') && !dtStr.includes('+') && !dtStr.match(/-\d{2}:\d{2}$/)) {
+    dtStr += 'Z';
+  }
   const now = new Date();
-  const past = new Date(dateString);
+  const past = new Date(dtStr);
   
   // Basic validation
   if (isNaN(past.getTime())) return dateString;

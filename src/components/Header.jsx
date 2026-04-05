@@ -1290,11 +1290,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <ShieldCheck size={16} style={{ color: hasAnyBinding ? '#10b981' : 'var(--text-secondary)' }} />
-                          <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>账号设置</span>
+                          <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>{t('accountSettings')}</span>
                           {hasAnyBinding ? (
-                            <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>已绑定</span>
+                            <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>{t('linked')}</span>
                           ) : (
-                            <span style={{ fontSize: '10px', color: '#f59e0b', background: '#fffbeb', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>未绑定</span>
+                            <span style={{ fontSize: '10px', color: '#f59e0b', background: '#fffbeb', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>{t('unlinked')}</span>
                           )}
                         </div>
                         <ExternalLink size={14} style={{ color: 'var(--text-secondary)', opacity: 0.6 }} />
@@ -1313,7 +1313,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         onMouseOver={e => e.currentTarget.style.background = '#ffe4e6'}
                         onMouseOut={e => e.currentTarget.style.background = '#fff1f2'}
                       >
-                        <LogOut size={16} /> 退出登录
+                        <LogOut size={16} /> {t('logout')}
                       </button>
                     </div>
                   )}
@@ -1373,14 +1373,14 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px' }}
                 >
                   <ShieldCheck size={16} style={{ color: hasAnyBinding ? '#10b981' : 'var(--text-secondary)', flexShrink: 0 }} />
-                  {lang === 'zh' ? '账号设置' : 'Account Settings'}
+                  {t('accountSettings')}
                   {hasAnyBinding ? (
                     <span style={{ fontSize: '10px', color: '#10b981', background: '#ecfdf5', padding: '1px 6px', borderRadius: '10px', fontWeight: 600, lineHeight: '18px' }}>
-                      {lang === 'zh' ? '已绑定' : 'Linked'}
+                      {t('linked')}
                     </span>
                   ) : (
                     <span style={{ fontSize: '10px', color: '#f59e0b', background: '#fffbeb', padding: '1px 6px', borderRadius: '10px', fontWeight: 600, lineHeight: '18px' }}>
-                      {lang === 'zh' ? '未绑定' : 'Unlinked'}
+                      {t('unlinked')}
                     </span>
                   )}
                 </button>
@@ -1450,7 +1450,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 {mfaStep === 'select' ? (
                   <>
                     <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', textAlign: 'center', color: 'var(--text-primary)' }}>
-                      {lang === 'zh' ? '请选择验证方式' : 'Verify your identity'}
+                      {t('selectVerifyMethod')}
                     </h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       {verificationProviders.filter(p => p !== 'oauth').map(prov => (
@@ -1474,15 +1474,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         >
                           {prov === 'github' ? <Github size={20} /> : prov === 'google' ? <GoogleIcon size={20} /> : <Mail size={20} />}
                           <span style={{ marginLeft: '12px' }}>
-                            {lang === 'zh' 
-                              ? `通过 ${prov === 'email' ? '电子邮箱' : (prov.charAt(0).toUpperCase() + prov.slice(1))} 验证` 
-                              : `Verify with ${prov.charAt(0).toUpperCase() + prov.slice(1)}`}
+                            {t('verifyVia').replace('{method}', prov === 'email' ? (lang === 'zh' ? '电子邮箱' : 'Email') : (prov.charAt(0).toUpperCase() + prov.slice(1)))}
                           </span>
                         </button>
                       ))}
                       {verificationProviders.length === 0 && (
                         <div style={{ color: '#dc2626', fontSize: '13px', textAlign: 'center', padding: '10px', background: '#fee2e2', borderRadius: '8px' }}>
-                          {lang === 'zh' ? '无法识别验证渠道，请联系管理员' : 'No verification provider found.'}
+                          {t('noVerifyProvider')}
                         </div>
                       )}
                     </div>
@@ -1491,10 +1489,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div style={{ textAlign: 'center', marginBottom: '8px' }}>
                       <h3 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 8px 0', color: 'var(--text-primary)' }}>
-                        {lang === 'zh' ? '输入验证码' : 'Enter Verification Code'}
+                        {t('enterCode')}
                       </h3>
                       <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
-                        {lang === 'zh' ? `验证码已发送至 ${mfaMaskedEmail}` : `Code sent to ${mfaMaskedEmail}`}
+                        {t('codeSentTo').replace('{email}', mfaMaskedEmail)}
                       </p>
                     </div>
 
@@ -1524,7 +1522,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                           cursor: (authLoading || mfaCooldown > 0) ? 'not-allowed' : 'pointer'
                         }}
                       >
-                        {mfaCooldown > 0 ? `${mfaCooldown}s` : (lang === 'zh' ? '重新获取' : 'Resend')}
+                        {mfaCooldown > 0 ? `${mfaCooldown}s` : t('resend')}
                       </button>
                     </div>
 
@@ -1538,14 +1536,14 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         opacity: (authLoading || mfaCode.length !== 6) ? 0.6 : 1
                       }}
                     >
-                      {authLoading ? (lang === 'zh' ? '验证中...' : 'Verifying...') : (lang === 'zh' ? '完成登录' : 'Complete Login')}
+                      {authLoading ? t('verifying') : t('completeLogin')}
                     </button>
 
                     <button 
                       onClick={() => setMfaStep('select')}
                       style={{ background: 'none', border: 'none', color: 'var(--text-tertiary)', fontSize: '13px', cursor: 'pointer', textAlign: 'center' }}
                     >
-                      {lang === 'zh' ? '← 返回选择其他方式' : '← Back to options'}
+                      {t('backToOptions')}
                     </button>
                   </div>
                 )}
@@ -1555,7 +1553,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     onClick={resetVerificationStates}
                     style={{ width: '100%', marginTop: '16px', background: 'none', border: 'none', color: 'var(--text-tertiary)', fontSize: '13px', cursor: 'pointer', textDecoration: 'underline' }}
                   >
-                    {lang === 'zh' ? '使用其他账号登录' : 'Login with another account'}
+                    {t('loginWithOther')}
                   </button>
                 )}
               </div>
@@ -1652,7 +1650,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     }}
                     onClick={() => setLoginMethod('password')}
                   >
-                    {lang === 'zh' ? '密码登录' : 'Password'}
+                    {t('passwordLogin')}
                   </button>
 
                   {/* 验证码登录按钮 */}
@@ -1678,7 +1676,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     }}
                     onClick={() => setLoginMethod('otp')}
                   >
-                    {lang === 'zh' ? '验证码登录' : 'Email OTP'}
+                    {t('otpLogin')}
                   </button>
                 </div>
 
@@ -1729,12 +1727,12 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     {/* Row 1: Email Address */}
                     <div>
                       <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '14px' }}>
-                        {lang === 'zh' ? '邮箱地址' : 'Email Address'}
+                        {t('emailAddress')}
                       </label>
                       <input
                         id="otp-email-input"
                         type="email"
-                        placeholder={lang === 'zh' ? '请输入邮箱' : 'Enter email'}
+                        placeholder={t('enterEmailPlaceholder')}
                         value={otpEmail}
                         onChange={e => { setOtpEmail(e.target.value); setAuthError(''); }}
                         style={{ 
@@ -1751,7 +1749,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     {/* Row 2: Verification Code + Send Button */}
                     <div>
                       <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '14px' }}>
-                        {lang === 'zh' ? '验证码' : 'Verification Code'}
+                        {t('enterCode')}
                       </label>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 130px', gap: '10px', width: '100%' }}>
                         <input
@@ -1759,7 +1757,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                           type="text"
                           inputMode="numeric"
                           maxLength={6}
-                          placeholder={lang === 'zh' ? '请输入验证码' : '6-digit code'}
+                          placeholder={t('enterCodePlaceholder')}
                           value={otpCode}
                           onChange={e => { setOtpCode(e.target.value.replace(/\D/g, '')); setAuthError(''); }}
                           style={{ 
@@ -1793,7 +1791,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                             boxShadow: (authLoading || otpCooldown > 0) ? 'none' : '0 2px 4px rgba(2, 132, 199, 0.15)'
                           }}
                         >
-                          {otpCooldown > 0 ? `${otpCooldown}s` : (lang === 'zh' ? '获取验证码' : 'Send Code')}
+                          {otpCooldown > 0 ? `${otpCooldown}s` : t('getCode')}
                         </button>
                       </div>
                     </div>
@@ -1916,7 +1914,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   value={authForm.username}
                   onChange={e => setAuthForm({...authForm, username: e.target.value})}
                   required
-                  placeholder={lang === 'zh' ? '设置登录用户名' : 'Set your username'}
+                  placeholder={t('setUsernamePlaceholder')}
                   style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
                 />
               </div>
@@ -1927,7 +1925,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   value={authForm.password}
                   onChange={e => setAuthForm({...authForm, password: e.target.value})}
                   required
-                  placeholder={lang === 'zh' ? '设置登录密码' : 'Set your password'}
+                  placeholder={t('setPasswordPlaceholder')}
                   style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}
                 />
               </div>
@@ -1937,14 +1935,14 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 {/* Row 1: Email Address */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '14px' }}>
-                    {lang === 'zh' ? '邮箱地址' : 'Email Address'}
+                    {t('emailAddress')}
                   </label>
                   <input
                     type="email"
                     value={authForm.email}
                     onChange={e => setAuthForm({...authForm, email: e.target.value})}
                     required
-                    placeholder={lang === 'zh' ? '请输入邮箱' : 'Enter email'}
+                    placeholder={t('enterEmailPlaceholder')}
                     style={{ 
                       width: '100%', 
                       padding: '10px 14px', 
@@ -1959,14 +1957,14 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 {/* Row 2: Verification Code + Send Button */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '14px' }}>
-                    {lang === 'zh' ? '验证码' : 'Verification Code'}
+                    {t('enterCode')}
                   </label>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 130px', gap: '10px', width: '100%' }}>
                     <input
                       type="text"
                       inputMode="numeric"
                       maxLength={6}
-                      placeholder={lang === 'zh' ? '请输入验证码' : '6-digit code'}
+                      placeholder={t('enterCodePlaceholder')}
                       value={authForm.code}
                       onChange={e => setAuthForm({...authForm, code: e.target.value.replace(/\D/g, '')})}
                       style={{ 
@@ -2128,8 +2126,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between'
             }}>
               <div>
-                <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>账号设置</h2>
-                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>管理您的第三方登录绑定</p>
+                <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>{t('accountSettings')}</h2>
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>{t('manageBindings')}</p>
               </div>
               <button
                 onClick={handleCloseBindModal}
@@ -2163,7 +2161,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
               {/* Providers section label */}
               <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px' }}>
-                已支持的第三方账号
+                {t('supportedAccounts')}
               </div>
 
               {/* GitHub Row */}
@@ -2223,7 +2221,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                               onMouseOver={e => e.currentTarget.style.background = '#e2e8f0'}
                               onMouseOut={e => e.currentTarget.style.background = '#f1f5f9'}
                             >
-                              {lang === 'zh' ? '更换' : 'Change'}
+                              {t('change')}
                             </button>
                             <button
                               onClick={handleUnbindEmail}
@@ -2238,7 +2236,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                               onMouseOut={e => e.currentTarget.style.background = 'white'}
                             >
                               <Trash2 size={13} />
-                              {lang === 'zh' ? '解绑' : 'Unbind'}
+                              {t('unbind')}
                             </button>
                           </div>
                         ) : (
@@ -2305,7 +2303,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         display: 'flex', flexDirection: 'column', gap: '12px'
                       }}>
                         <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                          {lang === 'zh' ? '绑定新邮箱' : 'Bind new email'}
+                          {t('bindNewEmail')}
                         </div>
                         <div style={{ display: 'flex', gap: '8px' }}>
                           <input 
@@ -2412,7 +2410,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                                 border: 'none', fontSize: '13px', fontWeight: 600, cursor: 'pointer'
                               }}
                             >
-                              {changeEmailForm.loading ? <GeometricLoader size={14} /> : (lang === 'zh' ? '确认更换' : 'Confirm')}
+                              {changeEmailForm.loading ? <GeometricLoader size={14} /> : t('confirmChange')}
                             </button>
                           </div>
                         )}
@@ -2429,7 +2427,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6
               }}>
                 <ShieldCheck size={13} style={{ display: 'inline', marginRight: '5px', color: '#10b981', verticalAlign: 'middle' }} />
-                绑定第三方账号后，您可以使用该账号快捷登录，并享受双重身份验证保护。
+                {t('bindingTip')}
               </div>
             </div>
           </div>

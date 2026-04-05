@@ -17,7 +17,14 @@ const VideoDetail = () => {
   
   // Use passed videoData for instant rendering (eliminates white flicker)
   const initialVideoData = location.state?.videoData;
-  const [video, setVideo] = useState(initialVideoData || null);
+  // Account for both 'is_liked_by_me' (API) and '_liked' (local override from TheoremCard)
+  const [video, setVideo] = useState(() => {
+    if (!initialVideoData) return null;
+    return {
+      ...initialVideoData,
+      is_liked_by_me: initialVideoData.is_liked_by_me || initialVideoData._liked || false
+    };
+  });
   const [isLoading, setIsLoading] = useState(!initialVideoData);
   const [error, setError] = useState('');
   
@@ -161,7 +168,7 @@ const VideoDetail = () => {
         }}
       >
         {/* Modal Header Controls */}
-        <div className="p-4 md:p-6 w-full flex justify-start items-center" style={{ paddingBottom: 0 }}>
+        <div className="p-6 md:p-8 w-full flex justify-start items-center" style={{ paddingBottom: 0 }}>
           <button 
              onClick={handleBack}
              title={t('backToGallery')}
@@ -204,12 +211,8 @@ const VideoDetail = () => {
                 />
               </motion.div>
 
-              {/* Action Bar (Uploader, Like, Code) */}
-              <div className="w-full flex justify-between items-center flex-wrap gap-4 mb-8">
-                <span style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  {t('uploadedBy')} @{video.uploader_username}
-                </span>
-
+              {/* Action Bar (Buttons Left, Uploader Right) */}
+              <div className="w-full flex justify-between items-center flex-wrap gap-4 mb-10" style={{ marginTop: '12px' }}>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                   <button 
                     onClick={toggleLike}
@@ -230,7 +233,8 @@ const VideoDetail = () => {
                       className="btn-ghost" 
                       style={{ 
                         padding: '8px 20px', borderRadius: '24px', minWidth: '120px', border: '1px solid var(--border-color)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '15px', fontWeight: '600'
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '15px', fontWeight: '600',
+                        background: 'var(--bg-secondary)', color: 'var(--text-primary)'
                       }}
                       onClick={handleViewCode}
                     >
@@ -238,6 +242,10 @@ const VideoDetail = () => {
                     </button>
                   )}
                 </div>
+
+                <span style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {t('uploadedBy')} {video.uploader_username}
+                </span>
               </div>
 
               {/* Info Container - Title & Tags */}

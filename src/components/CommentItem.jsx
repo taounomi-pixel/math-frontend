@@ -37,8 +37,11 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
   const isLikingRef = useRef(false);
 
   useEffect(() => {
-    setLocalLiked(comment.is_liked);
-    setLocalLikesCount(comment.likes_count);
+    // Only update from props if they actually change and we aren't in the middle of a like action
+    if (!isLikingRef.current) {
+      if (comment.is_liked !== localLiked) setLocalLiked(comment.is_liked);
+      if (comment.likes_count !== localLikesCount) setLocalLikesCount(comment.likes_count);
+    }
   }, [comment.is_liked, comment.likes_count]);
 
   const handleLike = async () => {
@@ -148,7 +151,7 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
         {/* Header Info */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
           <span style={{ fontWeight: '700', fontSize: '14px', color: 'var(--text-primary)' }}>
-            @{comment.username}
+            {comment.username}
           </span>
           <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }} data-tick={tick}>
             {getRelativeTime(comment.created_at, lang)}
@@ -180,14 +183,14 @@ const CommentItem = ({ comment, videoId, onRefresh, isReply = false }) => {
             <span style={{ fontWeight: '600' }}>{localLikesCount > 0 ? localLikesCount : ''}</span>
           </button>
 
-          <button
+          <button 
             onClick={() => setIsReplying(!isReplying)}
-            style={{
+            style={{ 
               background: 'none', border: 'none', cursor: 'pointer',
               color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '600'
             }}
           >
-            {t('reply')}
+            {t('reply') || (lang === 'zh' ? '回复' : 'Reply')}
           </button>
 
           {currentUserId && parseInt(currentUserId) === comment.user_id && (
