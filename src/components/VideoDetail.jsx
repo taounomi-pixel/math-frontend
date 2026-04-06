@@ -41,6 +41,14 @@ const VideoDetail = () => {
   // Video ref for deferred autoplay
   const videoRef = useRef(null);
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   // Close uploader card on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {

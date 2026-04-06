@@ -93,13 +93,15 @@ const CommentSection = ({ videoId }) => {
         <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '16px', marginBottom: '48px', alignItems: 'start' }}>
           <div style={{
             width: '40px', height: '40px', borderRadius: '50%',
-            background: 'linear-gradient(135deg, rgba(80, 160, 240, 0.3), rgba(168, 85, 247, 0.3))',
-            backdropFilter: 'blur(10px)',
-            border: '2px solid var(--border-color)',
-            color: 'var(--text-primary)',
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(226, 232, 240, 0.8) 100%)',
+            border: '1px solid rgba(255, 255, 255, 0.9)',
+            boxShadow: 'inset 0px 2px 4px rgba(255, 255, 255, 1), inset 0px -2px 4px rgba(0, 0, 0, 0.03), 0px 3px 6px rgba(0, 0, 0, 0.06)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            color: '#1e293b',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '18px', fontWeight: '700', flexShrink: 0,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.08), inset 0 2px 4px rgba(255,255,255,0.6)'
+            userSelect: 'none'
           }}>
             {localStorage.getItem('username')?.charAt(0).toUpperCase()}
           </div>
