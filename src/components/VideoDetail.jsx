@@ -308,7 +308,7 @@ const VideoDetail = () => {
         </div>
 
         {/* ── Main Content ── */}
-        <div style={{ padding: '0 32px 32px' }}>
+        <div className="px-5 sm:px-8 pb-8">
           {!video ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '120px 0', gap: '24px' }}>
               <GeometricLoader size={120} />
@@ -341,16 +341,9 @@ const VideoDetail = () => {
               </motion.div>
 
               {/* ── Below-video row: Title+Tags (left) | Like+Code (right) ── */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-                gap: '24px',
-                marginTop: '20px',
-                marginBottom: '28px'
-              }}>
+              <div className="flex flex-col sm:flex-row justify-between items-start gap-4 sm:gap-6 mt-5 mb-7">
                 {/* Left: Title + Tags */}
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
                   <h1 style={{
                     fontSize: '26px', margin: '0 0 10px 0',
                     fontWeight: '800', lineHeight: '1.25',
