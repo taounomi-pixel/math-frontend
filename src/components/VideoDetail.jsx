@@ -228,7 +228,6 @@ const VideoDetail = () => {
           {/* Uploader Avatar + Glass Card */}
           {video && (
             <motion.button
-              layout
               ref={uploaderCardRef}
               onClick={() => setShowUploaderCard(prev => !prev)}
               initial={false}
@@ -236,11 +235,8 @@ const VideoDetail = () => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'flex-start',
-                gap: showUploaderCard ? '12px' : '0px',
-                padding: showUploaderCard ? '4px 4px 4px 16px' : '0px',
                 height: '40px',
-                minWidth: '40px',
+                padding: '4px',
                 borderRadius: '50px', // Creates the pill shape
                 /* Same liquid-glass gradient as Header default avatar */
                 background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(226, 232, 240, 0.8) 100%)',
@@ -262,35 +258,37 @@ const VideoDetail = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.96 }}
             >
-              <AnimatePresence>
+              <AnimatePresence initial={false}>
                 {showUploaderCard && (
-                  <motion.span
-                    layout
-                    initial={{ opacity: 0, width: 0, filter: 'blur(4px)' }}
-                    animate={{ opacity: 1, width: 'auto', filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, width: 0, filter: 'blur(4px)' }}
+                  <motion.div
+                    initial={{ width: 0, opacity: 0 }}
+                    animate={{ width: "auto", opacity: 1 }}
+                    exit={{ width: 0, opacity: 0 }}
                     transition={{ type: "spring", stiffness: 450, damping: 30 }}
                     style={{
-                      fontSize: '15px',
-                      fontWeight: '700',
-                      whiteSpace: 'nowrap',
                       overflow: 'hidden',
-                      display: 'block',
-                      letterSpacing: '-0.1px',
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
                     }}
                   >
-                    {video.uploader_username}
-                  </motion.span>
+                    <span style={{ 
+                      marginLeft: '12px', marginRight: '12px', 
+                      fontSize: '15px', fontWeight: '700', letterSpacing: '-0.1px' 
+                    }}>
+                      {video.uploader_username}
+                    </span>
+                  </motion.div>
                 )}
               </AnimatePresence>
 
               <motion.div
-                layout
                 initial={false}
                 animate={{
-                  width: showUploaderCard ? '30px' : '38px',
-                  height: showUploaderCard ? '30px' : '38px',
+                  width: showUploaderCard ? 30 : 32,
+                  height: showUploaderCard ? 30 : 32,
                   background: showUploaderCard ? 'rgba(0,0,0,0.05)' : 'transparent',
+                  boxShadow: showUploaderCard ? 'inset 0px 1px 3px rgba(0,0,0,0.06)' : 'inset 0px 0px 0px rgba(0,0,0,0)'
                 }}
                 transition={{ type: "spring", stiffness: 450, damping: 30 }}
                 style={{
@@ -298,10 +296,9 @@ const VideoDetail = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: showUploaderCard ? '14px' : '17px',
+                  fontSize: showUploaderCard ? '14px' : '15px',
                   fontWeight: '700',
                   flexShrink: 0,
-                  boxShadow: showUploaderCard ? 'inset 0px 1px 3px rgba(0,0,0,0.06)' : 'none'
                 }}
               >
                 {video.uploader_username?.charAt(0).toUpperCase() || '?'}
