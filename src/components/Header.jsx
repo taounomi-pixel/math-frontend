@@ -1235,7 +1235,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   <ChevronDown size={14} style={{ 
                     opacity: 0.5, 
                     transform: isUserCardOpen ? 'rotate(180deg)' : 'rotate(0)',
-                    transition: 'transform 0.3s'
+                    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                   }} />
 
                   {/* ================= USER CARD DROPDOWN ================= */}
@@ -1246,7 +1246,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       initial={{ opacity: 0, y: -10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
+                      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
                       style={{
                       position: 'absolute', top: 'calc(100% + 12px)', right: 0,
                       width: '280px', background: 'white', borderRadius: '16px',
@@ -1367,7 +1367,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
+            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
             style={{ overflow: 'hidden', display: 'block', transformOrigin: 'top' }}
           >
             <div className="container mobile-nav-inner">
