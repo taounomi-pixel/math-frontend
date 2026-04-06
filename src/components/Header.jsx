@@ -1213,7 +1213,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       fontSize: '18px', 
                       fontWeight: '700',
                       lineHeight: '1',
-                      userSelect: 'none'
+                      userSelect: 'none',
+                      /* 5. 修复 Safari 动画期间圆角失效变方的 Bug */
+                      overflow: 'hidden',
+                      maskImage: 'radial-gradient(white, black)',
+                      WebkitMaskImage: '-webkit-radial-gradient(white, black)',
+                      transform: 'translateZ(0)',
+                      WebkitTransform: 'translateZ(0)'
                     }}
                   >
                     {getAvatarText(currentUser.username)}
@@ -1283,7 +1289,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                             fontSize: '24px', 
                             fontWeight: '700',
                             lineHeight: '1',
-                            userSelect: 'none'
+                            userSelect: 'none',
+                            /* 5. 修复 Safari 动画期间圆角失效变方的 Bug */
+                            overflow: 'hidden',
+                            maskImage: 'radial-gradient(white, black)',
+                            WebkitMaskImage: '-webkit-radial-gradient(white, black)',
+                            transform: 'translateZ(0)',
+                            WebkitTransform: 'translateZ(0)'
                           }}
                         >
                           {getAvatarText(currentUser.username)}
