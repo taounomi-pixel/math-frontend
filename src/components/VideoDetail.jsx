@@ -259,23 +259,36 @@ const VideoDetail = () => {
                 )}
               </AnimatePresence>
 
-              {/* Avatar button — matches comment section style */}
+              {/* Avatar button — matches Header default avatar, with enhanced border for glass modal */}
               <button
                 onClick={() => setShowUploaderCard(prev => !prev)}
                 title={video.uploader_username}
                 style={{
-                  width: '40px', height: '40px', borderRadius: '50%',
-                  background: 'linear-gradient(135deg, rgba(80, 160, 240, 0.3), rgba(168, 85, 247, 0.3))',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
-                  border: '2px solid var(--border-color)',
-                  color: 'var(--text-primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  flexShrink: 0,
+                  /* Same liquid-glass gradient as Header default avatar */
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(226, 232, 240, 0.8) 100%)',
+                  /* Enhanced border — more visible on the white modal background */
+                  border: '1.5px solid rgba(148, 163, 184, 0.5)',
+                  boxShadow: [
+                    'inset 0px 2px 4px rgba(255, 255, 255, 1)',
+                    'inset 0px -2px 4px rgba(0, 0, 0, 0.04)',
+                    '0px 4px 10px rgba(0, 0, 0, 0.09)'
+                  ].join(', '),
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  color: '#1e293b',
+                  fontSize: '17px',
+                  fontWeight: '700',
+                  lineHeight: '1',
+                  userSelect: 'none',
                   cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '16px', fontWeight: '700',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.08), inset 0 2px 4px rgba(255,255,255,0.6)',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  flexShrink: 0
+                  transition: 'transform 0.2s, box-shadow 0.2s'
                 }}
                 onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.06)'; }}
                 onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
