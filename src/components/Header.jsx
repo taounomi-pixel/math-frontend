@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Search, Globe, ChevronDown, User, Menu, X, LogOut, Upload, Link2, Mail, ShieldCheck, ShieldAlert, Trash2, ExternalLink, Github, Chrome } from 'lucide-react';
 
@@ -993,19 +994,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     }
   };
 
-  const [isUserCardClosing, setIsUserCardClosing] = useState(false);
   const [isBindModalClosing, setIsBindModalClosing] = useState(false);
   const [isAuthModalClosing, setIsAuthModalClosing] = useState(false);
   const [lastAuthType, setLastAuthType] = useState(null);
 
   const handleCloseUserCard = useCallback(() => {
-    if (!isUserCardOpen || isUserCardClosing) return;
-    setIsUserCardClosing(true);
-    setTimeout(() => {
-      setIsUserCardOpen(false);
-      setIsUserCardClosing(false);
-    }, 200);
-  }, [isUserCardOpen, isUserCardClosing]);
+    setIsUserCardOpen(false);
+  }, []);
 
   const handleCloseBindModal = useCallback(() => {
     if (!showBindModal || isBindModalClosing) return;
@@ -1244,14 +1239,22 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   }} />
 
                   {/* ================= USER CARD DROPDOWN ================= */}
-                  {(isUserCardOpen || isUserCardClosing) && (
-                    <div className={isUserCardClosing ? "ios-dropdown-closing" : "ios-dropdown-anim"} style={{
+                  <AnimatePresence>
+                  {isUserCardOpen && (
+                    <motion.div 
+                      key="user-card-dropdown"
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ type: "spring", stiffness: 450, damping: 30 }}
+                      style={{
                       position: 'absolute', top: 'calc(100% + 12px)', right: 0,
                       width: '280px', background: 'white', borderRadius: '16px',
                       boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
                       border: '1px solid var(--border-color)',
                       padding: '20px', zIndex: 10000,
-                      cursor: 'default'
+                      cursor: 'default',
+                      transformOrigin: 'top right'
                     }} onClick={e => e.stopPropagation()}>
                       
                       {/* Card Header */}
@@ -1333,8 +1336,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       >
                         <LogOut size={16} /> {t('logout')}
                       </button>
-                    </div>
+                    </motion.div>
                   )}
+                  </AnimatePresence>
                 </div>
               </div>
             ) : (
@@ -1355,8 +1359,18 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           </button>
         </div>
 
-        <div className={`mobile-nav ${isMobileNavOpen ? 'open' : ''}`} id="mobile-nav">
-          <div className="container mobile-nav-inner">
+        <AnimatePresence>
+        {isMobileNavOpen && (
+          <motion.div 
+            className="mobile-nav open" 
+            id="mobile-nav"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 450, damping: 30 }}
+            style={{ overflow: 'hidden', display: 'block', transformOrigin: 'top' }}
+          >
+            <div className="container mobile-nav-inner">
             <div className="header-search mobile-search">
               <Search className="search-icon" size={18} />
               <input 
@@ -1417,7 +1431,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
               )}
             </div>
           </div>
-        </div>
+          </motion.div>
+        )}
+        </AnimatePresence>
       </header>
 
       {/* ==================== AUTH MODALS ==================== */}
