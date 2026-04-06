@@ -211,66 +211,74 @@ const VideoDetail = () => {
           {/* Uploader Avatar + Glass Card */}
           {video && (
             <div ref={uploaderCardRef} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              {/* Glass popup card - slides in from the right, appears to the left of avatar */}
+              {/* iOS 26 Liquid Glass card — slides horizontally left like a card being pulled out */}
               <AnimatePresence>
                 {showUploaderCard && (
                   <motion.div
                     key="uploader-glass-card"
-                    initial={{ opacity: 0, x: 8, scale: 0.94 }}
-                    animate={{ opacity: 1, x: 0, scale: 1 }}
-                    exit={{ opacity: 0, x: 8, scale: 0.94 }}
-                    transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+                    initial={{ opacity: 0, scaleX: 0.6, x: 20, originX: 1 }}
+                    animate={{ opacity: 1, scaleX: 1, x: 0, originX: 1 }}
+                    exit={{ opacity: 0, scaleX: 0.6, x: 20, originX: 1 }}
+                    transition={{
+                      type: 'spring',
+                      stiffness: 380,
+                      damping: 26,
+                      mass: 0.9
+                    }}
                     style={{
                       position: 'absolute',
                       right: 'calc(100% + 10px)',
                       top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'rgba(255, 255, 255, 0.72)',
-                      backdropFilter: 'blur(20px)',
-                      WebkitBackdropFilter: 'blur(20px)',
-                      border: '1px solid rgba(255, 255, 255, 0.6)',
+                      translateY: '-50%',
+                      /* iOS 26 liquid glass */
+                      background: 'rgba(255, 255, 255, 0.18)',
+                      backdropFilter: 'blur(28px) saturate(200%) brightness(1.08)',
+                      WebkitBackdropFilter: 'blur(28px) saturate(200%) brightness(1.08)',
+                      border: '1px solid rgba(255, 255, 255, 0.45)',
                       borderRadius: '14px',
-                      padding: '10px 16px',
-                      boxShadow: '0 8px 32px rgba(15, 23, 42, 0.10)',
+                      padding: '10px 18px',
+                      boxShadow: [
+                        '0 4px 24px rgba(15, 23, 42, 0.09)',
+                        'inset 0 1px 0 rgba(255, 255, 255, 0.65)',
+                        'inset 0 -1px 0 rgba(0, 0, 0, 0.04)'
+                      ].join(', '),
                       whiteSpace: 'nowrap',
                       zIndex: 20,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px'
+                      transformOrigin: 'right center'
                     }}
                   >
-                    {/* Mini avatar in card */}
-                    <div style={{
-                      width: '28px', height: '28px', borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #0284c7, #38bdf8)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'white', fontSize: '12px', fontWeight: '700', flexShrink: 0
+                    <span style={{
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      color: 'var(--text-primary)',
+                      letterSpacing: '-0.1px'
                     }}>
-                      {video.uploader_username?.charAt(0).toUpperCase() || '?'}
-                    </div>
-                    <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)', letterSpacing: '-0.1px' }}>
                       {video.uploader_username}
                     </span>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              {/* Avatar button */}
+              {/* Avatar button — matches comment section style */}
               <button
                 onClick={() => setShowUploaderCard(prev => !prev)}
                 title={video.uploader_username}
                 style={{
                   width: '40px', height: '40px', borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #0284c7, #38bdf8)',
-                  color: 'white', border: 'none', cursor: 'pointer',
+                  background: 'linear-gradient(135deg, rgba(80, 160, 240, 0.3), rgba(168, 85, 247, 0.3))',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: '2px solid var(--border-color)',
+                  color: 'var(--text-primary)',
+                  cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '16px', fontWeight: '700',
-                  boxShadow: '0 4px 14px rgba(2, 132, 199, 0.28)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.08), inset 0 2px 4px rgba(255,255,255,0.6)',
                   transition: 'transform 0.2s, box-shadow 0.2s',
                   flexShrink: 0
                 }}
-                onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.06)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(2, 132, 199, 0.36)'; }}
-                onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(2, 132, 199, 0.28)'; }}
+                onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.06)'; }}
+                onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
               >
                 {video.uploader_username?.charAt(0).toUpperCase() || '?'}
               </button>
