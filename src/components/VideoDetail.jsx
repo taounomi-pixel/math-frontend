@@ -218,92 +218,85 @@ const VideoDetail = () => {
 
           {/* Uploader Avatar + Glass Card */}
           {video && (
-            <div ref={uploaderCardRef} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              {/* iOS 26 Liquid Glass card — slides horizontally left like a card being pulled out */}
+            <motion.button
+              ref={uploaderCardRef}
+              onClick={() => setShowUploaderCard(prev => !prev)}
+              initial={false}
+              animate={{
+                gap: showUploaderCard ? '12px' : '0px',
+                padding: showUploaderCard ? '4px 4px 4px 16px' : '0px',
+                width: showUploaderCard ? 'auto' : '40px',
+              }}
+              transition={{ type: "spring", stiffness: 450, damping: 30 }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: showUploaderCard ? 'space-between' : 'center',
+                height: '40px',
+                borderRadius: '50px', // Creates the pill shape
+                /* Same liquid-glass gradient as Header default avatar */
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(226, 232, 240, 0.8) 100%)',
+                /* Enhanced border — more visible on the white modal background */
+                border: '1.5px solid rgba(148, 163, 184, 0.5)',
+                boxShadow: [
+                  'inset 0px 2px 4px rgba(255, 255, 255, 1)',
+                  'inset 0px -2px 4px rgba(0, 0, 0, 0.04)',
+                  '0px 4px 10px rgba(0, 0, 0, 0.09)'
+                ].join(', '),
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                color: '#1e293b',
+                cursor: 'pointer',
+                overflow: 'hidden',
+                flexShrink: 0,
+                outline: 'none',
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.96 }}
+            >
               <AnimatePresence>
                 {showUploaderCard && (
-                  <motion.div
-                    key="uploader-glass-card"
-                    initial={{ opacity: 0, scaleX: 0.6, x: 20, originX: 1 }}
-                    animate={{ opacity: 1, scaleX: 1, x: 0, originX: 1 }}
-                    exit={{ opacity: 0, scaleX: 0.6, x: 20, originX: 1 }}
-                    transition={{
-                      type: 'spring',
-                      stiffness: 380,
-                      damping: 26,
-                      mass: 0.9
-                    }}
+                  <motion.span
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    exit={{ opacity: 0, width: 0 }}
+                    transition={{ type: "spring", stiffness: 450, damping: 30 }}
                     style={{
-                      position: 'absolute',
-                      right: 'calc(100% + 10px)',
-                      top: '50%',
-                      translateY: '-50%',
-                      /* iOS 26 liquid glass */
-                      background: 'rgba(255, 255, 255, 0.18)',
-                      backdropFilter: 'blur(28px) saturate(200%) brightness(1.08)',
-                      WebkitBackdropFilter: 'blur(28px) saturate(200%) brightness(1.08)',
-                      border: '1px solid rgba(255, 255, 255, 0.45)',
-                      borderRadius: '14px',
-                      padding: '10px 18px',
-                      boxShadow: [
-                        '0 4px 24px rgba(15, 23, 42, 0.09)',
-                        'inset 0 1px 0 rgba(255, 255, 255, 0.65)',
-                        'inset 0 -1px 0 rgba(0, 0, 0, 0.04)'
-                      ].join(', '),
+                      fontSize: '15px',
+                      fontWeight: '700',
                       whiteSpace: 'nowrap',
-                      zIndex: 20,
-                      transformOrigin: 'right center'
+                      overflow: 'hidden',
+                      display: 'block',
+                      letterSpacing: '-0.1px',
                     }}
                   >
-                    <span style={{
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      color: 'var(--text-primary)',
-                      letterSpacing: '-0.1px'
-                    }}>
-                      {video.uploader_username}
-                    </span>
-                  </motion.div>
+                    {video.uploader_username}
+                  </motion.span>
                 )}
               </AnimatePresence>
 
-              {/* Avatar button — matches Header default avatar, with enhanced border for glass modal */}
-              <button
-                onClick={() => setShowUploaderCard(prev => !prev)}
-                title={video.uploader_username}
+              <motion.div
+                initial={false}
+                animate={{
+                  width: showUploaderCard ? '30px' : '38px',
+                  height: showUploaderCard ? '30px' : '38px',
+                  background: showUploaderCard ? 'rgba(0,0,0,0.05)' : 'transparent',
+                }}
+                transition={{ type: "spring", stiffness: 450, damping: 30 }}
                 style={{
+                  borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  flexShrink: 0,
-                  /* Same liquid-glass gradient as Header default avatar */
-                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(226, 232, 240, 0.8) 100%)',
-                  /* Enhanced border — more visible on the white modal background */
-                  border: '1.5px solid rgba(148, 163, 184, 0.5)',
-                  boxShadow: [
-                    'inset 0px 2px 4px rgba(255, 255, 255, 1)',
-                    'inset 0px -2px 4px rgba(0, 0, 0, 0.04)',
-                    '0px 4px 10px rgba(0, 0, 0, 0.09)'
-                  ].join(', '),
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
-                  color: '#1e293b',
-                  fontSize: '17px',
+                  fontSize: showUploaderCard ? '14px' : '17px',
                   fontWeight: '700',
-                  lineHeight: '1',
-                  userSelect: 'none',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s, box-shadow 0.2s'
+                  flexShrink: 0,
+                  boxShadow: showUploaderCard ? 'inset 0px 1px 3px rgba(0,0,0,0.06)' : 'none'
                 }}
-                onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.06)'; }}
-                onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
               >
                 {video.uploader_username?.charAt(0).toUpperCase() || '?'}
-              </button>
-            </div>
+              </motion.div>
+            </motion.button>
           )}
         </div>
 
