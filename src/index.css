@@ -403,7 +403,6 @@ kbd {
   top: var(--header-height);
   left: 0;
   width: 100%;
-  height: calc(100vh - var(--header-height));
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -416,12 +415,7 @@ kbd {
 
 .mobile-nav.open {
   display: block;
-  animation: slideDown 0.2s ease-out;
-}
-
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  /* Animation is now solely controlled by Framer Motion — no CSS conflict */
 }
 
 .mobile-nav-inner {

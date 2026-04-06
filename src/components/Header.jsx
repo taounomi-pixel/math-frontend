@@ -1243,10 +1243,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   {isUserCardOpen && (
                     <motion.div 
                       key="user-card-dropdown"
-                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
                       style={{
                       position: 'absolute', top: 'calc(100% + 12px)', right: 0,
                       width: '280px', background: 'white', borderRadius: '16px',
@@ -1254,7 +1254,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       border: '1px solid var(--border-color)',
                       padding: '20px', zIndex: 10000,
                       cursor: 'default',
-                      transformOrigin: 'top right'
+                      transformOrigin: 'top right',
+                      willChange: 'transform, opacity',
+                      backfaceVisibility: 'hidden'
                     }} onClick={e => e.stopPropagation()}>
                       
                       {/* Card Header */}
@@ -1364,11 +1366,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           <motion.div 
             className="mobile-nav open" 
             id="mobile-nav"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            style={{ overflow: 'hidden', display: 'block', transformOrigin: 'top' }}
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            style={{ display: 'block', transformOrigin: 'top', willChange: 'transform, opacity', backfaceVisibility: 'hidden' }}
           >
             <div className="container mobile-nav-inner">
             <div className="header-search mobile-search">
