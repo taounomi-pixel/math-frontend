@@ -258,51 +258,43 @@ const VideoDetail = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.96 }}
             >
-              <AnimatePresence initial={false}>
-                {showUploaderCard && (
-                  <motion.div
-                    initial={{ width: 0, opacity: 0 }}
-                    animate={{ width: "auto", opacity: 1 }}
-                    exit={{ width: 0, opacity: 0 }}
-                    transition={{ type: "spring", stiffness: 450, damping: 30 }}
-                    style={{
-                      overflow: 'hidden',
-                      whiteSpace: 'nowrap',
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <span style={{ 
-                      marginLeft: '12px', marginRight: '12px', 
-                      fontSize: '15px', fontWeight: '700', letterSpacing: '-0.1px' 
-                    }}>
-                      {video.uploader_username}
-                    </span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <motion.div
-                initial={false}
-                animate={{
-                  width: showUploaderCard ? 30 : 32,
-                  height: showUploaderCard ? 30 : 32,
-                  background: showUploaderCard ? 'rgba(0,0,0,0.05)' : 'transparent',
-                  boxShadow: showUploaderCard ? 'inset 0px 1px 3px rgba(0,0,0,0.06)' : 'inset 0px 0px 0px rgba(0,0,0,0)'
-                }}
-                transition={{ type: "spring", stiffness: 450, damping: 30 }}
+              <div 
                 style={{
+                  maxWidth: showUploaderCard ? '200px' : '0px',
+                  opacity: showUploaderCard ? 1 : 0,
+                  paddingLeft: showUploaderCard ? '12px' : '0px',
+                  paddingRight: showUploaderCard ? '12px' : '0px',
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', 
+                  fontSize: '15px', 
+                  fontWeight: '700', 
+                  letterSpacing: '-0.1px',
+                  color: 'var(--text-primary)'
+                }}
+              >
+                {video.uploader_username}
+              </div>
+
+              <div
+                style={{
+                  width: showUploaderCard ? '30px' : '32px',
+                  height: showUploaderCard ? '30px' : '32px',
+                  background: showUploaderCard ? 'rgba(0,0,0,0.05)' : 'transparent',
+                  boxShadow: showUploaderCard ? 'inset 0px 1px 3px rgba(0,0,0,0.06)' : 'inset 0px 0px 0px rgba(0,0,0,0)',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: showUploaderCard ? '14px' : '15px',
                   fontWeight: '700',
+                  color: 'inherit',
                   flexShrink: 0,
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               >
                 {video.uploader_username?.charAt(0).toUpperCase() || '?'}
-              </motion.div>
+              </div>
             </motion.button>
           )}
         </div>
