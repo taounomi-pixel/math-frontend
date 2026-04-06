@@ -46,7 +46,7 @@ const LayoutContent = () => {
       <main style={{ position: 'relative' }} className="w-full flex-1">
         <Sidebar />
         
-        <div className="page-content" style={{ flex: 1, marginTop: '24px', position: 'relative' }}>
+        <div className="page-content" style={{ flex: 1, position: 'relative' }}>
           {/* 
             Background Gallery: Renders for homepage routes OR when we have a backgroundLocation.
             If we access /video/:id directly, backgroundLocation will be null/undefined.

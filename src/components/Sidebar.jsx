@@ -27,7 +27,7 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="sidebar-container container mx-auto px-4" style={{ marginBottom: '24px' }}>
+    <div className="sidebar-container container mx-auto px-4" style={{ marginTop: '24px', marginBottom: '24px' }}>
       <div className="topics-filter">
         <NavLink
           to="/"
