@@ -1,3 +1,4 @@
+// Video detail component with iOS style animations and liquid glass UI
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
