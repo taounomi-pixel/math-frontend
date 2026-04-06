@@ -1206,20 +1206,12 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(226, 232, 240, 0.8) 100%)',
                       border: '1px solid rgba(255, 255, 255, 0.9)',
                       boxShadow: 'inset 0px 2px 4px rgba(255, 255, 255, 1), inset 0px -2px 4px rgba(0, 0, 0, 0.03), 0px 3px 6px rgba(0, 0, 0, 0.06)',
-                      backdropFilter: 'blur(8px)',
-                      WebkitBackdropFilter: 'blur(8px)',
                       /* 4. 字体样式 */
                       color: '#1e293b', 
                       fontSize: '18px', 
                       fontWeight: '700',
                       lineHeight: '1',
-                      userSelect: 'none',
-                      /* 5. 修复 Safari 动画期间圆角失效变方的 Bug */
-                      overflow: 'hidden',
-                      maskImage: 'radial-gradient(white, black)',
-                      WebkitMaskImage: '-webkit-radial-gradient(white, black)',
-                      transform: 'translateZ(0)',
-                      WebkitTransform: 'translateZ(0)'
+                      userSelect: 'none'
                     }}
                   >
                     {getAvatarText(currentUser.username)}
@@ -1249,9 +1241,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   {isUserCardOpen && (
                     <motion.div 
                       key="user-card-dropdown"
-                      initial={{ opacity: 0, y: -8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
+                      initial={{ opacity: 0, scale: 0.8, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.8, y: -10 }}
                       transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
                       style={{
                       position: 'absolute', top: 'calc(100% + 12px)', right: 0,
@@ -1282,20 +1274,12 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                             background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(226, 232, 240, 0.8) 100%)',
                             border: '1px solid rgba(255, 255, 255, 0.9)',
                             boxShadow: 'inset 0px 2px 4px rgba(255, 255, 255, 1), inset 0px -2px 4px rgba(0, 0, 0, 0.03), 0px 3px 6px rgba(0, 0, 0, 0.06)',
-                            backdropFilter: 'blur(8px)',
-                            WebkitBackdropFilter: 'blur(8px)',
                             /* 4. 字体样式 (针对大头像优化) */
                             color: '#1e293b', 
                             fontSize: '24px', 
                             fontWeight: '700',
                             lineHeight: '1',
-                            userSelect: 'none',
-                            /* 5. 修复 Safari 动画期间圆角失效变方的 Bug */
-                            overflow: 'hidden',
-                            maskImage: 'radial-gradient(white, black)',
-                            WebkitMaskImage: '-webkit-radial-gradient(white, black)',
-                            transform: 'translateZ(0)',
-                            WebkitTransform: 'translateZ(0)'
+                            userSelect: 'none'
                           }}
                         >
                           {getAvatarText(currentUser.username)}
