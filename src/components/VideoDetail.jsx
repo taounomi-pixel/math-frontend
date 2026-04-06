@@ -42,11 +42,19 @@ const VideoDetail = () => {
   // Video ref for deferred autoplay
   const videoRef = useRef(null);
 
-  // Lock body scroll when modal is open
+  // Lock body scroll when modal is open and prevent layout shift
   useEffect(() => {
+    // Calculate scrollbar width to prevent page shift when overflow is hidden
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    
     document.body.style.overflow = 'hidden';
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+    
     return () => {
       document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
     };
   }, []);
 
@@ -220,20 +228,19 @@ const VideoDetail = () => {
           {/* Uploader Avatar + Glass Card */}
           {video && (
             <motion.button
+              layout
               ref={uploaderCardRef}
               onClick={() => setShowUploaderCard(prev => !prev)}
               initial={false}
-              animate={{
-                gap: showUploaderCard ? '12px' : '0px',
-                padding: showUploaderCard ? '4px 4px 4px 16px' : '0px',
-                width: showUploaderCard ? 'auto' : '40px',
-              }}
               transition={{ type: "spring", stiffness: 450, damping: 30 }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: showUploaderCard ? 'space-between' : 'center',
+                justifyContent: 'flex-start',
+                gap: showUploaderCard ? '12px' : '0px',
+                padding: showUploaderCard ? '4px 4px 4px 16px' : '0px',
                 height: '40px',
+                minWidth: '40px',
                 borderRadius: '50px', // Creates the pill shape
                 /* Same liquid-glass gradient as Header default avatar */
                 background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(226, 232, 240, 0.8) 100%)',
@@ -258,9 +265,10 @@ const VideoDetail = () => {
               <AnimatePresence>
                 {showUploaderCard && (
                   <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
+                    layout
+                    initial={{ opacity: 0, width: 0, filter: 'blur(4px)' }}
+                    animate={{ opacity: 1, width: 'auto', filter: 'blur(0px)' }}
+                    exit={{ opacity: 0, width: 0, filter: 'blur(4px)' }}
                     transition={{ type: "spring", stiffness: 450, damping: 30 }}
                     style={{
                       fontSize: '15px',
@@ -277,6 +285,7 @@ const VideoDetail = () => {
               </AnimatePresence>
 
               <motion.div
+                layout
                 initial={false}
                 animate={{
                   width: showUploaderCard ? '30px' : '38px',
