@@ -1246,7 +1246,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       initial={{ opacity: 0, y: -10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      transition={{ type: "spring", stiffness: 450, damping: 30 }}
+                      transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
                       style={{
                       position: 'absolute', top: 'calc(100% + 12px)', right: 0,
                       width: '280px', background: 'white', borderRadius: '16px',
@@ -1367,7 +1367,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 450, damping: 30 }}
+            transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
             style={{ overflow: 'hidden', display: 'block', transformOrigin: 'top' }}
           >
             <div className="container mobile-nav-inner">
