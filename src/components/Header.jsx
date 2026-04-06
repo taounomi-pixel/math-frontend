@@ -1178,15 +1178,16 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     display: 'flex', 
                     alignItems: 'center', 
                     gap: '8px', 
-                    padding: '4px 16px',
-                    paddingLeft: '4px',
+                    padding: '0 16px',
+                    paddingLeft: '1px', /* 微微偏移1像素避开边框抗锯齿重叠 */
                     borderRadius: '999px',
                     cursor: 'pointer',
                     background: 'var(--bg-secondary)',
                     transition: 'all 0.2s ease',
                     border: '1px solid var(--border-color)',
                     height: '38px',
-                    maxWidth: '180px'
+                    maxWidth: '180px',
+                    boxSizing: 'border-box'
                   }}
                   onMouseOver={e => e.currentTarget.style.background = '#f1f5f9'}
                   onMouseOut={e => e.currentTarget.style.background = 'var(--bg-secondary)'}
@@ -1211,7 +1212,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       fontSize: '18px', 
                       fontWeight: '700',
                       lineHeight: '1',
-                      userSelect: 'none'
+                      userSelect: 'none',
+                      boxSizing: 'border-box'
                     }}
                   >
                     {getAvatarText(currentUser.username)}
@@ -1237,7 +1239,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                   }} />
 
                   {/* ================= USER CARD DROPDOWN ================= */}
-                  <AnimatePresence>
+                  <AnimatePresence mode="wait">
                   {isUserCardOpen && (
                     <motion.div 
                       key="user-card-dropdown"
