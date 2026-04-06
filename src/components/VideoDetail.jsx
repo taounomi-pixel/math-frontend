@@ -69,14 +69,6 @@ const VideoDetail = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Deferred autoplay: wait for layout animation (~350ms) before playing
-  useEffect(() => {
-    if (!video) return;
-    const timer = setTimeout(() => {
-      videoRef.current?.play().catch(() => {});
-    }, 380);
-    return () => clearTimeout(timer);
-  }, [video]);
 
   const handleViewCode = async () => {
     setShowCode(true);
