@@ -583,6 +583,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || '发送失败');
       setRegisterOtpSent(true);
+      // Clear old code input so user enters the fresh code from the latest email
+      setAuthForm(prev => ({ ...prev, code: '' }));
       // Start 60-second cooldown
       setRegisterOtpCooldown(60);
       const timer = setInterval(() => {
