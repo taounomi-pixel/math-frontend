@@ -514,7 +514,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     });
 
     setAuthModal(null);
-    setAuthForm({ username: '', password: '', email: '' });
+    setAuthForm({ username: '', password: '', email: '', code: '' });
 
     // Force hard reload (only for manual logins) to ensure global state consistency
     if (shouldReload) {
@@ -937,7 +937,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     setLastAuthType(type);
     setAuthError('');
     setAuthSuccess('');
-    setAuthForm({ username: '', password: '', email: '' });
+    setAuthForm({ username: '', password: '', email: '', code: '' });
     setLoginMethod('password');
   };
 
