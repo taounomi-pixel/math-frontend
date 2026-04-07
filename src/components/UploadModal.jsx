@@ -186,14 +186,16 @@ const UploadModal = ({ isOpen, onClose, onRefresh }) => {
 
         // Execute the 2s pause only on absolute success
         setTimeout(() => {
-          console.log("馃弫 DEBUG: 2s delay finished. Executing final hardware-reload redirect.");
+          console.log("DEBUG: Delay finished. Executing final hardware-reload redirect.");
           if (onSuccess) onSuccess();
           if (onClose) onClose();
 
-          // Force a clean reload/redirect to clear state and URL hashes (#)
-          const target = window.location.origin + "/";
-          window.location.href = target;
-        }, 2000);
+          if (window.location.pathname === '/') {
+            window.location.reload();
+          } else {
+            window.location.href = "/";
+          }
+        }, 1200);
       } else {
         console.error(`鉂?DEBUG: Upload Failure (${xhr.status}). Text: ${xhr.responseText}`);
         // Handle 500, 401, 413 or other non-OK status codes
