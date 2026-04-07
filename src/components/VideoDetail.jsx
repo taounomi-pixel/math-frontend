@@ -314,14 +314,15 @@ const VideoDetail = () => {
                   willChange: 'transform, border-radius'
                 }}
               >
-                <video
-                  ref={videoRef}
-                  src={video.video_url.startsWith('http') ? video.video_url : `${API_BASE.replace('/api', '')}${video.video_url}`}
-                  controls
-                  /* autoPlay removed — deferred via useEffect to avoid competing with layout animation */
-                  className="w-full h-full object-contain"
-                  style={{ display: 'block' }}
-                />
+                {React.useMemo(() => (
+                  <video
+                    ref={videoRef}
+                    src={video.video_url.startsWith('http') ? video.video_url : `${API_BASE.replace('/api', '')}${video.video_url}`}
+                    controls
+                    className="w-full h-full object-contain"
+                    style={{ display: 'block' }}
+                  />
+                ), [video.id, video.video_url])}
               </motion.div>
 
               {/* ── Below-video row: Title+Tags (left) | Like+Code (right) ── */}
