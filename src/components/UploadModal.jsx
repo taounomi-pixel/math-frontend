@@ -5,8 +5,48 @@ import { CATEGORIES } from '../constants/categories';
 import { API_BASE } from '../utils/api';
 import GeometricLoader from './GeometricLoader';
 
+import { motion } from 'framer-motion';
+
 const allPossibleTags = Object.values(CATEGORIES).flat();
 
+const FaceIdCheckmark = ({ size = 24, color = "currentColor", style }) => (
+  <div style={{ width: size, height: size, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, ...style }}>
+    <motion.svg 
+      viewBox="0 0 50 50" 
+      style={{ width: '100%', height: '100%', position: 'absolute' }}
+      initial={{ rotate: -90 }}
+      animate={{ rotate: 0 }}
+      transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+    >
+      <motion.circle
+        cx="25" cy="25" r="22"
+        fill="none"
+        stroke={color}
+        strokeWidth="4"
+        strokeLinecap="round"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      />
+    </motion.svg>
+    <motion.svg 
+      viewBox="0 0 50 50" 
+      style={{ width: '100%', height: '100%', position: 'absolute' }}
+    >
+      <motion.path
+        fill="none"
+        stroke={color}
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15 25l8 8 14-14"
+        initial={{ pathLength: 0, scale: 0.8, opacity: 0 }}
+        animate={{ pathLength: 1, scale: 1, opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.4, type: "spring", stiffness: 300, damping: 20 }}
+      />
+    </motion.svg>
+  </div>
+);
 const UploadModal = ({ isOpen, onClose, onRefresh }) => {
   const { t, lang } = useLanguage();
   const [title, setTitle] = useState('');
@@ -491,9 +531,13 @@ const UploadModal = ({ isOpen, onClose, onRefresh }) => {
               >
                 {isUploading ? (
                   <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <GeometricLoader size={18} showText={false} style={{ marginRight: '8px' }} />
+                    {isSyncing ? (
+                      <FaceIdCheckmark size={18} color="#fff" style={{ marginRight: '8px' }} />
+                    ) : (
+                      <GeometricLoader size={18} showText={false} style={{ marginRight: '8px' }} />
+                    )}
                     {isSyncing
-                      ? (lang === 'zh' ? '上传成功，正在同步...' : 'Upload successful, syncing...')
+                      ? (lang === 'zh' ? '上传成功' : 'Upload successful')
                       : (uploadProgress === 100 ? (lang === 'zh' ? '服务器处理中...' : 'Server processing...') : `${uploadProgress}%`)
                     }
                   </span>
