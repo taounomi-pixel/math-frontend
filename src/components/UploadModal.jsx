@@ -530,20 +530,24 @@ const UploadModal = ({ isOpen, onClose, onRefresh }) => {
                 }}
               >
                 {isUploading ? (
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center' }}>
                     {isSyncing ? (
-                      <FaceIdCheckmark size={18} color="#fff" style={{ marginRight: '8px' }} />
+                      <FaceIdCheckmark size={20} color="#fff" style={{ marginRight: '12px' }} />
                     ) : (
-                      <GeometricLoader size={18} showText={false} style={{ marginRight: '8px' }} />
+                      <div style={{ marginRight: '12px', display: 'flex', alignItems: 'center' }}>
+                        <GeometricLoader size={20} showText={false} />
+                      </div>
                     )}
-                    {isSyncing
-                      ? (lang === 'zh' ? '上传成功' : 'Upload successful')
-                      : (uploadProgress === 100 ? (lang === 'zh' ? '服务器处理中...' : 'Server processing...') : `${uploadProgress}%`)
-                    }
+                    <span>
+                      {isSyncing
+                        ? (lang === 'zh' ? '上传成功' : 'Upload successful')
+                        : (lang === 'zh' ? `正在上传中... ${uploadProgress}%` : `Uploading... ${uploadProgress}%`)
+                      }
+                    </span>
                   </span>
                 ) : (
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    <Upload size={18} style={{ marginRight: '8px' }} />
+                  <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                    <Upload size={20} style={{ marginRight: '10px' }} />
                     {t('btnUpload')}
                   </span>
                 )}
