@@ -47,7 +47,7 @@ const FaceIdCheckmark = ({ size = 24, color = "currentColor", style }) => (
     </motion.svg>
   </div>
 );
-const UploadModal = ({ isOpen, onClose, onRefresh }) => {
+const UploadModal = ({ isOpen, onClose, onRefresh, onSuccess }) => {
   const { t, lang } = useLanguage();
   const [title, setTitle] = useState('');
   const [categoryL1, setCategoryL1] = useState('');
