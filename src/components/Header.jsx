@@ -750,8 +750,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
           const errData = await res.json();
           throw errData;
         }
-        setAuthModal('login');
-        setAuthSuccess(t('regSuccess'));
+        // Backend now returns JWT + user data — auto-login immediately
+        const data = await res.json();
+        loginWithLocalData(data);
       } else if (authModal === 'login') {
         const formData = new URLSearchParams();
         // Mandatory fields for OAuth2PasswordRequestForm
