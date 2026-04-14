@@ -1136,17 +1136,22 @@ kbd {
 .settings-profile-avatar {
   width: 48px;
   height: 48px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, var(--accent-primary, #6366f1), #8b5cf6);
-  color: white;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(226, 232, 240, 0.8) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    inset 0px 2px 4px rgba(255, 255, 255, 1),
+    inset 0px -2px 4px rgba(0, 0, 0, 0.03),
+    0px 3px 6px rgba(0, 0, 0, 0.06);
+  color: #1e293b;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.02em;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  user-select: none;
 }
 
 .settings-profile-info {
@@ -1196,7 +1201,7 @@ kbd {
 }
 
 .provider-card:hover {
-  transform: translateY(-1px);
+  transform: translateY(-3px);
 }
 
 .provider-card-inner {
@@ -1212,7 +1217,7 @@ kbd {
 }
 
 .provider-card:hover .provider-card-inner {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 /* Bound state: left accent bar */
