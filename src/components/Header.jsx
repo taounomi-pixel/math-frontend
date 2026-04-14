@@ -47,6 +47,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const cardRef = useRef(null);
   const langRef = useRef(null);
   const [unbindLoading, setUnbindLoading] = useState(null); // 'github' | 'google' | null
+  const [unbindConfirm, setUnbindConfirm] = useState(null); // 'github' | 'google' | 'email' | null
 
   // Verification flow (2FA)
   const [verificationRequired, setVerificationRequired] = useState(false);
@@ -93,10 +94,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   const [mfaSent, setMfaSent] = useState(false);
 
   const handleUnbindEmail = async () => {
-    if (!window.confirm(lang === 'zh' ? '确定要解绑邮箱吗？这可能会影响您的账号找回。' : 'Are you sure you want to unbind your email? This may affect account recovery.')) {
-      return;
-    }
-
+    setUnbindConfirm(null);
     setAuthLoading(true);
     setAuthError('');
     try {
@@ -945,10 +943,7 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   };
 
   const handleUnbindOAuth = async (provider) => {
-    if (!window.confirm(lang === 'zh' ? `确定要解除与 ${provider} 的绑定吗？` : `Are you sure you want to unbind ${provider}?`)) {
-      return;
-    }
-
+    setUnbindConfirm(null);
     setUnbindLoading(provider);
     try {
       const token = localStorage.getItem('access_token');
@@ -2128,200 +2123,183 @@ const Header = ({ searchQuery, setSearchQuery }) => {
         </div>
       )}
 
-      {/* Account Settings Modal */}
+      {/* Account Settings Modal — Phase 1 Redesign */}
       {(showBindModal || isBindModalClosing) && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.45)', zIndex: 9999, backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }} onClick={handleCloseBindModal}>
-          <div className={isBindModalClosing ? "ios-modal-closing" : "ios-modal-anim"} style={{
-            background: 'white', borderRadius: '20px',
-            width: '90%', maxWidth: '440px',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.18)',
-            overflow: 'hidden'
-          }} onClick={e => e.stopPropagation()}>
+        <div className="settings-overlay" onClick={handleCloseBindModal}>
+          <div className={`settings-modal ${isBindModalClosing ? "ios-modal-closing" : "ios-modal-anim"}`} onClick={e => e.stopPropagation()}>
 
             {/* Modal Header */}
-            <div style={{
-              padding: '24px 28px 20px',
-              borderBottom: '1px solid #f1f5f9',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between'
-            }}>
+            <div className="settings-header">
               <div>
-                <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>{t('accountSettings')}</h2>
-                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>{t('manageBindings')}</p>
+                <h2>{t('accountSettings')}</h2>
+                <p>{t('manageBindings')}</p>
               </div>
-              <button
-                onClick={handleCloseBindModal}
-                className="close-btn-circular"
-              >
+              <button onClick={handleCloseBindModal} className="close-btn-circular">
                 <X size={18} />
               </button>
             </div>
 
+            {/* User Identity Card */}
+            <div className="settings-profile-card">
+              <div className="settings-profile-avatar">
+                {getAvatarText(currentUser?.username)}
+              </div>
+              <div className="settings-profile-info">
+                <div className="settings-profile-name">{currentUser?.username || 'User'}</div>
+                <div className="settings-profile-email">
+                  {currentUser?.email || (lang === 'zh' ? '未绑定邮箱' : 'No email bound')}
+                </div>
+              </div>
+            </div>
+
             {/* Provider List */}
-            <div style={{ padding: '20px 28px' }}>
+            <div className="settings-content">
 
               {/* Error / Success banners */}
               {authError && (
-                <div style={{ padding: '10px 14px', background: '#fee2e2', color: '#dc2626', borderRadius: '10px', marginBottom: '16px', fontSize: '13px' }}>
+                <div className="settings-alert settings-alert--error">
+                  <ShieldAlert size={14} />
                   {authError}
                 </div>
               )}
               {authSuccess && (
-                <div style={{ padding: '10px 14px', background: '#dcfce7', color: '#16a34a', borderRadius: '10px', marginBottom: '16px', fontSize: '13px' }}>
+                <div className="settings-alert settings-alert--success">
+                  <ShieldCheck size={14} />
                   {authSuccess}
                 </div>
               )}
 
               {/* Providers section label */}
-              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px' }}>
+              <div className="settings-section-label">
                 {t('supportedAccounts')}
               </div>
 
-              {/* GitHub Row */}
+              {/* Provider Cards */}
               {[{ key: 'github', label: 'GitHub', icon: <Github size={20} />, color: '#24292e' },
               { key: 'google', label: 'Google', icon: <GoogleIcon size={20} />, color: '#ffffff' },
               { key: 'email', label: t('email'), icon: <Mail size={20} />, color: '#10b981' }]
                 .map(({ key, label, icon, color }) => {
                   const isBound = key === 'email' ? (!!currentUser?.email && currentUser.email.includes('@')) : isBoundTo(key);
                   return (
-                    <div key={key} style={{ marginBottom: '10px' }}>
-                      <div style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '14px 16px', borderRadius: '12px',
-                        background: isBound ? '#f0fdf4' : '#f8fafc',
-                        border: `1px solid ${isBound ? '#bbf7d0' : '#e2e8f0'}`,
-                        transition: 'all 0.2s'
-                      }}>
+                    <div key={key} className={`provider-card ${isBound ? 'provider-card--bound' : 'provider-card--unbound'}`}>
+                      <div className="provider-card-inner">
                         {/* Left: icon + name + badge */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <div style={{
-                            width: '38px', height: '38px', borderRadius: '10px',
-                            background: isBound ? color : '#e2e8f0',
-                            color: isBound ? 'white' : '#94a3b8',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            transition: 'all 0.2s'
-                          }}>
+                        <div className="provider-card-left">
+                          <div
+                            className={`provider-icon ${isBound ? 'provider-icon--bound' : 'provider-icon--unbound'}`}
+                            style={isBound ? {
+                              background: key === 'google' ? '#fff' : color,
+                              color: key === 'google' ? '#374151' : 'white',
+                              border: key === 'google' ? '1px solid #e5e7eb' : 'none'
+                            } : {}}
+                          >
                             {icon}
                           </div>
                           <div>
-                            <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)' }}>{label}</div>
+                            <div className="provider-name">{label}</div>
                             {isBound ? (
-                              <span style={{ fontSize: '11px', color: '#16a34a', fontWeight: 500 }}>
-                                {key === 'email' ? currentUser.email : t('boundTo')}
-                              </span>
+                              key === 'email' ? (
+                                <span className="provider-email-text">{currentUser.email}</span>
+                              ) : (
+                                <span className="badge-bound">
+                                  <ShieldCheck size={10} /> {t('boundTo')}
+                                </span>
+                              )
                             ) : (
-                              <span style={{ fontSize: '11px', color: '#94a3b8' }}>{t('notBound')}</span>
+                              <span className="badge-unbound">
+                                <ShieldAlert size={10} /> {t('notBound')}
+                              </span>
                             )}
                           </div>
                         </div>
 
-                        {/* Right: action button */}
-                        {key === 'email' ? (
-                          isBound ? (
-                            <div style={{ display: 'flex', gap: '8px' }}>
+                        {/* Right: action buttons with inline confirm */}
+                        <div className="provider-actions">
+                          {key === 'email' ? (
+                            isBound ? (
+                              unbindConfirm === 'email' ? (
+                                <>
+                                  <button className="btn-confirm-danger" onClick={handleUnbindEmail}>
+                                    {lang === 'zh' ? '确认解绑' : 'Confirm'}
+                                  </button>
+                                  <button className="btn-confirm-cancel" onClick={() => setUnbindConfirm(null)}>
+                                    {lang === 'zh' ? '取消' : 'Cancel'}
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  <button
+                                    className="btn-change"
+                                    onClick={() => {
+                                      setChangeEmailForm(prev => ({ ...prev, isExpanded: !prev.isExpanded }));
+                                      setEmailBindForm(prev => ({ ...prev, isExpanded: false }));
+                                      setUnbindConfirm(null);
+                                    }}
+                                  >
+                                    {t('change')}
+                                  </button>
+                                  <button
+                                    className="btn-unbind"
+                                    onClick={() => setUnbindConfirm('email')}
+                                  >
+                                    <Trash2 size={12} />
+                                    {t('unbind')}
+                                  </button>
+                                </>
+                              )
+                            ) : (
                               <button
+                                className="btn-bind"
                                 onClick={() => {
-                                  setChangeEmailForm(prev => ({ ...prev, isExpanded: !prev.isExpanded }));
-                                  setEmailBindForm(prev => ({ ...prev, isExpanded: false }));
+                                  setEmailBindForm(prev => ({ ...prev, isExpanded: !prev.isExpanded }));
+                                  setChangeEmailForm(prev => ({ ...prev, isExpanded: false }));
                                 }}
-                                style={{
-                                  display: 'flex', alignItems: 'center', gap: '6px',
-                                  padding: '7px 12px', borderRadius: '8px',
-                                  background: '#f1f5f9', color: 'var(--text-primary)',
-                                  border: '1px solid #e2e8f0', fontSize: '12px', fontWeight: 500,
-                                  cursor: 'pointer', transition: 'all 0.15s'
-                                }}
-                                onMouseOver={e => e.currentTarget.style.background = '#e2e8f0'}
-                                onMouseOut={e => e.currentTarget.style.background = '#f1f5f9'}
                               >
-                                {t('change')}
+                                <Link2 size={13} />
+                                {t('bindAccount')}
                               </button>
+                            )
+                          ) : (
+                            isBound ? (
+                              unbindConfirm === key ? (
+                                <>
+                                  <button className="btn-confirm-danger" onClick={() => handleUnbindOAuth(key)}>
+                                    {lang === 'zh' ? '确认解绑' : 'Confirm'}
+                                  </button>
+                                  <button className="btn-confirm-cancel" onClick={() => setUnbindConfirm(null)}>
+                                    {lang === 'zh' ? '取消' : 'Cancel'}
+                                  </button>
+                                </>
+                              ) : (
+                                <button
+                                  className="btn-unbind"
+                                  disabled={unbindLoading === key}
+                                  onClick={() => setUnbindConfirm(key)}
+                                >
+                                  {unbindLoading === key ? <GeometricLoader size={13} /> : <Trash2 size={13} />}
+                                  {lang === 'zh' ? '解绑' : 'Unlink'}
+                                </button>
+                              )
+                            ) : (
                               <button
-                                onClick={handleUnbindEmail}
-                                style={{
-                                  display: 'flex', alignItems: 'center', gap: '6px',
-                                  padding: '7px 12px', borderRadius: '8px',
-                                  background: 'white', border: '1px solid #fca5a5',
-                                  color: '#ef4444', fontSize: '12px', fontWeight: 500,
-                                  cursor: 'pointer', transition: 'all 0.15s'
-                                }}
-                                onMouseOver={e => e.currentTarget.style.background = '#fef2f2'}
-                                onMouseOut={e => e.currentTarget.style.background = 'white'}
+                                className="btn-bind"
+                                onClick={() => handleBindOAuth(key)}
                               >
-                                <Trash2 size={13} />
-                                {t('unbind')}
+                                <Link2 size={13} />
+                                {t('bindAccount')}
                               </button>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => {
-                                setEmailBindForm(prev => ({ ...prev, isExpanded: !prev.isExpanded }));
-                                setChangeEmailForm(prev => ({ ...prev, isExpanded: false }));
-                              }}
-                              style={{
-                                display: 'flex', alignItems: 'center', gap: '6px',
-                                padding: '7px 14px', borderRadius: '8px',
-                                background: color, color: 'white',
-                                border: 'none', fontSize: '13px', fontWeight: 500,
-                                cursor: 'pointer', transition: 'opacity 0.15s'
-                              }}
-                            >
-                              <Link2 size={14} />
-                              {t('bindAccount')}
-                            </button>
-                          )
-                        ) : (
-                          isBound ? (
-                            <button
-                              onClick={() => handleUnbindOAuth(key)}
-                              disabled={unbindLoading === key}
-                              style={{
-                                display: 'flex', alignItems: 'center', gap: '6px',
-                                padding: '7px 14px', borderRadius: '8px',
-                                background: 'white', border: '1px solid #fca5a5',
-                                color: '#ef4444', fontSize: '13px', fontWeight: 500,
-                                cursor: unbindLoading === key ? 'not-allowed' : 'pointer',
-                                opacity: unbindLoading === key ? 0.6 : 1,
-                                transition: 'all 0.15s'
-                              }}
-                            >
-                              {unbindLoading === key ? <GeometricLoader size={14} /> : <Trash2 size={14} />}
-                              {lang === 'zh' ? '解绑' : 'Unlink'}
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleBindOAuth(key)}
-                              style={{
-                                display: 'flex', alignItems: 'center', gap: '6px',
-                                padding: '7px 14px', borderRadius: '8px',
-                                background: color,
-                                color: key === 'google' ? '#374151' : 'white',
-                                border: key === 'google' ? '1px solid #d1d5db' : 'none',
-                                fontSize: '13px', fontWeight: 500,
-                                cursor: 'pointer', transition: 'opacity 0.15s'
-                              }}
-                            >
-                              <Link2 size={14} />
-                              {t('bindAccount')}
-                            </button>
-                          )
-                        )}
+                            )
+                          )}
+                        </div>
                       </div>
 
                       {/* Email Bind Expanded Form */}
                       {key === 'email' && emailBindForm.isExpanded && (
-                        <div style={{
-                          marginTop: '8px', padding: '16px', background: '#f8fafc',
-                          borderRadius: '12px', border: '1px solid #e2e8f0',
-                          display: 'flex', flexDirection: 'column', gap: '12px'
-                        }}>
-                          <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                        <div className="settings-expand-form">
+                          <div className="settings-expand-label">
                             {t('bindNewEmail')}
                           </div>
-                          <div style={{ display: 'flex', gap: '8px' }}>
+                          <div className="settings-expand-row">
                             <input
                               type="email"
                               placeholder={t('email')}
@@ -2330,22 +2308,18 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                                 const val = e.target.value;
                                 setEmailBindForm(prev => ({ ...prev, email: val }));
                               }}
-                              style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '14px' }}
+                              className="settings-expand-input"
                             />
                             <button
                               onClick={handleSendBindEmailCode}
                               disabled={emailBindForm.loading || emailBindForm.cooldown > 0}
-                              style={{
-                                padding: '8px 12px', borderRadius: '8px', background: 'white', border: '1px solid var(--border-color)',
-                                fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap',
-                                color: emailBindForm.cooldown > 0 ? '#94a3b8' : 'var(--text-primary)'
-                              }}
+                              className="settings-send-code-btn"
                             >
                               {emailBindForm.cooldown > 0 ? `${emailBindForm.cooldown}s` : t('getCode')}
                             </button>
                           </div>
                           {emailBindForm.sent && (
-                            <div style={{ display: 'flex', gap: '8px' }}>
+                            <div className="settings-expand-row">
                               <input
                                 type="text"
                                 placeholder={t('verificationCodePlaceholder')}
@@ -2355,15 +2329,12 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                                   setEmailBindForm(prev => ({ ...prev, code: val }));
                                 }}
                                 maxLength={6}
-                                style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '14px' }}
+                                className="settings-expand-input"
                               />
                               <button
                                 onClick={handleConfirmEmailBind}
                                 disabled={emailBindForm.loading || emailBindForm.code.length !== 6}
-                                style={{
-                                  padding: '8px 16px', borderRadius: '8px', background: '#10b981', color: 'white',
-                                  border: 'none', fontSize: '13px', fontWeight: 600, cursor: 'pointer'
-                                }}
+                                className="settings-confirm-btn"
                               >
                                 {emailBindForm.loading ? <GeometricLoader size={14} /> : t('bindConfirm')}
                               </button>
@@ -2374,15 +2345,11 @@ const Header = ({ searchQuery, setSearchQuery }) => {
 
                       {/* Email Change Expanded Form */}
                       {key === 'email' && changeEmailForm.isExpanded && (
-                        <div style={{
-                          marginTop: '8px', padding: '16px', background: '#f8fafc',
-                          borderRadius: '12px', border: '1px solid #e2e8f0',
-                          display: 'flex', flexDirection: 'column', gap: '12px'
-                        }}>
-                          <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                        <div className="settings-expand-form">
+                          <div className="settings-expand-label">
                             {lang === 'zh' ? '更换新邮箱' : 'Change to new email'}
                           </div>
-                          <div style={{ display: 'flex', gap: '8px' }}>
+                          <div className="settings-expand-row">
                             <input
                               type="email"
                               placeholder={lang === 'zh' ? '新邮箱地址' : 'New email address'}
@@ -2391,22 +2358,18 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                                 const val = e.target.value;
                                 setChangeEmailForm(prev => ({ ...prev, email: val }));
                               }}
-                              style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '14px' }}
+                              className="settings-expand-input"
                             />
                             <button
                               onClick={handleSendChangeEmailCode}
                               disabled={changeEmailForm.loading || changeEmailForm.cooldown > 0}
-                              style={{
-                                padding: '8px 12px', borderRadius: '8px', background: 'white', border: '1px solid var(--border-color)',
-                                fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap',
-                                color: changeEmailForm.cooldown > 0 ? '#94a3b8' : 'var(--text-primary)'
-                              }}
+                              className="settings-send-code-btn"
                             >
                               {changeEmailForm.cooldown > 0 ? `${changeEmailForm.cooldown}s` : t('getCode')}
                             </button>
                           </div>
                           {changeEmailForm.sent && (
-                            <div style={{ display: 'flex', gap: '8px' }}>
+                            <div className="settings-expand-row">
                               <input
                                 type="text"
                                 placeholder={t('verificationCodePlaceholder')}
@@ -2416,15 +2379,12 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                                   setChangeEmailForm(prev => ({ ...prev, code: val }));
                                 }}
                                 maxLength={6}
-                                style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '14px' }}
+                                className="settings-expand-input"
                               />
                               <button
                                 onClick={handleConfirmChangeEmail}
                                 disabled={changeEmailForm.loading || changeEmailForm.code.length !== 6}
-                                style={{
-                                  padding: '8px 16px', borderRadius: '8px', background: 'var(--accent-primary)', color: 'white',
-                                  border: 'none', fontSize: '13px', fontWeight: 600, cursor: 'pointer'
-                                }}
+                                className="settings-confirm-btn"
                               >
                                 {changeEmailForm.loading ? <GeometricLoader size={14} /> : t('confirmChange')}
                               </button>
@@ -2437,14 +2397,9 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 })}
 
               {/* Security note */}
-              <div style={{
-                marginTop: '16px', padding: '12px 14px',
-                background: '#f8fafc', borderRadius: '10px',
-                border: '1px solid #e2e8f0',
-                fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6
-              }}>
-                <ShieldCheck size={13} style={{ display: 'inline', marginRight: '5px', color: '#10b981', verticalAlign: 'middle' }} />
-                {t('bindingTip')}
+              <div className="settings-security-tip">
+                <ShieldCheck size={14} />
+                <span>{t('bindingTip')}</span>
               </div>
             </div>
           </div>
