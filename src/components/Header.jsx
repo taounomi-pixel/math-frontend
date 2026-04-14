@@ -1035,15 +1035,17 @@ const Header = ({ searchQuery, setSearchQuery }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [handleCloseUserCard]);
 
-  // ---- OAuth Button Style ----
+  // ---- OAuth Button Style (glassmorphism) ----
   const oauthBtnStyle = (bg, textColor = 'white', borderColor = 'transparent') => ({
     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-    width: '100%', padding: '11px 16px', borderRadius: '10px',
-    border: borderColor === 'transparent' ? 'none' : `1px solid ${borderColor}`,
+    width: '100%', padding: '12px 16px', borderRadius: '14px',
+    border: 'none',
     background: bg, color: textColor,
     fontSize: '15px', fontWeight: 600, cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    boxShadow: bg === 'white' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
+    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+    boxShadow: bg === 'white'
+      ? '0 4px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.05)'
+      : '0 4px 16px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08)'
   });
 
   return (
@@ -1247,9 +1249,13 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
                         style={{
                           position: 'absolute', top: 'calc(100% + 12px)', right: 0,
-                          width: '280px', background: 'white', borderRadius: '16px',
-                          boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
-                          border: '1px solid var(--border-color)',
+                          width: '280px',
+                          background: 'rgba(255, 255, 255, 0.92)',
+                          backdropFilter: 'blur(20px) saturate(180%)',
+                          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                          borderRadius: '18px',
+                          boxShadow: '0 16px 48px rgba(0,0,0,0.10), 0 6px 16px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)',
+                          border: 'none',
                           padding: '20px', zIndex: 10000,
                           cursor: 'default',
                           transformOrigin: 'top right',
@@ -1300,12 +1306,15 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                           style={{
                             width: '100%', display: 'flex', alignItems: 'center',
                             justifyContent: 'space-between',
-                            padding: '10px 12px', borderRadius: '10px', marginBottom: '10px',
-                            background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
-                            cursor: 'pointer', transition: 'background 0.15s'
+                            padding: '11px 14px', borderRadius: '14px', marginBottom: '10px',
+                            background: 'rgba(248, 250, 252, 0.8)',
+                            border: 'none',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03), 0 0 0 1px rgba(0,0,0,0.04)',
+                            cursor: 'pointer',
+                            transition: 'all 0.22s cubic-bezier(0.4, 0, 0.2, 1)'
                           }}
-                          onMouseOver={e => e.currentTarget.style.background = '#f1f5f9'}
-                          onMouseOut={e => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                          onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(2,132,199,0.10), 0 2px 6px rgba(0,0,0,0.04), 0 0 0 1px rgba(2,132,199,0.10)'; }}
+                          onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03), 0 0 0 1px rgba(0,0,0,0.04)'; }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <ShieldCheck size={16} style={{ color: hasAnyBinding ? '#10b981' : 'var(--text-secondary)' }} />
@@ -1323,14 +1332,15 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                         <button
                           onClick={handleLogout}
                           style={{
-                            width: '100%', padding: '10px', borderRadius: '10px',
+                            width: '100%', padding: '11px', borderRadius: '14px',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                            background: '#fff1f2', color: '#e11d48', border: 'none',
+                            background: 'rgba(255, 241, 242, 0.8)', color: '#e11d48', border: 'none',
                             fontWeight: 600, fontSize: '14px', cursor: 'pointer',
-                            transition: 'background 0.2s'
+                            transition: 'all 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
+                            boxShadow: '0 2px 8px rgba(225,29,72,0.06), 0 1px 3px rgba(0,0,0,0.03), 0 0 0 1px rgba(225,29,72,0.06)'
                           }}
-                          onMouseOver={e => e.currentTarget.style.background = '#ffe4e6'}
-                          onMouseOut={e => e.currentTarget.style.background = '#fff1f2'}
+                          onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(225,29,72,0.12), 0 2px 6px rgba(0,0,0,0.04), 0 0 0 1px rgba(225,29,72,0.10)'; }}
+                          onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(225,29,72,0.06), 0 1px 3px rgba(0,0,0,0.03), 0 0 0 1px rgba(225,29,72,0.06)'; }}
                         >
                           <LogOut size={16} /> {t('logout')}
                         </button>
@@ -1494,8 +1504,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                             prov === 'google' ? '#374151' : 'white',
                             prov === 'google' ? '#d1d5db' : 'transparent'
                           )}
-                          onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
-                          onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                          onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = prov === 'github' ? '0 8px 24px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.10)' : prov === 'google' ? '0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.08)' : '0 8px 24px rgba(3,105,161,0.15), 0 2px 6px rgba(0,0,0,0.06)'; }}
+                          onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = prov === 'google' ? '0 4px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.05)' : '0 4px 16px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08)'; }}
                         >
                           {prov === 'github' ? <Github size={20} /> : prov === 'google' ? <GoogleIcon size={20} /> : <Mail size={20} />}
                           <span style={{ marginLeft: '12px' }}>
@@ -1591,8 +1601,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       <button
                         onClick={() => handleOAuthLogin('github')}
                         style={oauthBtnStyle('#24292e')}
-                        onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
-                        onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                        onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.10)'; }}
+                        onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08)'; }}
                       >
                         <Github size={20} />
                         <span style={{ marginLeft: '12px' }}>{t('loginWithGithub')}</span>
@@ -1600,14 +1610,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                       <button
                         onClick={() => handleOAuthLogin('google')}
                         style={oauthBtnStyle('white', '#374151', '#d1d5db')}
-                        onMouseOver={e => {
-                          e.currentTarget.style.background = '#f9fafb';
-                          e.currentTarget.style.borderColor = '#9ca3af';
-                        }}
-                        onMouseOut={e => {
-                          e.currentTarget.style.background = 'white';
-                          e.currentTarget.style.borderColor = '#d1d5db';
-                        }}
+                        onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.08)'; }}
+                        onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.05)'; }}
                       >
                         <GoogleIcon size={20} />
                         <span style={{ marginLeft: '12px' }}>{t('loginWithGoogle')}</span>
@@ -1894,8 +1898,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 <button
                   onClick={() => handleOAuthLogin('github')}
                   style={oauthBtnStyle('#24292e')}
-                  onMouseOver={e => e.currentTarget.style.opacity = '0.9'}
-                  onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                  onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.10)'; }}
+                  onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08)'; }}
                 >
                   <Github size={20} />
                   <span style={{ marginLeft: '12px' }}>{t('registerWithGithub')}</span>
@@ -1903,14 +1907,8 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 <button
                   onClick={() => handleOAuthLogin('google')}
                   style={oauthBtnStyle('white', '#374151', '#d1d5db')}
-                  onMouseOver={e => {
-                    e.currentTarget.style.background = '#f9fafb';
-                    e.currentTarget.style.borderColor = '#9ca3af';
-                  }}
-                  onMouseOut={e => {
-                    e.currentTarget.style.background = 'white';
-                    e.currentTarget.style.borderColor = '#d1d5db';
-                  }}
+                  onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.08)'; }}
+                  onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.05)'; }}
                 >
                   <GoogleIcon size={20} />
                   <span style={{ marginLeft: '12px' }}>{t('registerWithGoogle')}</span>
