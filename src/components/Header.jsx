@@ -1001,25 +1001,14 @@ const Header = ({ searchQuery, setSearchQuery }) => {
   }, []);
 
   const handleCloseBindModal = useCallback(() => {
-    if (!showBindModal || isBindModalClosing) return;
-    setIsBindModalClosing(true);
-    setTimeout(() => {
-      setShowBindModal(false);
-      setIsBindModalClosing(false);
-    }, 280);
-  }, [showBindModal, isBindModalClosing]);
+    setShowBindModal(false);
+  }, []);
 
   const handleCloseAuthModal = useCallback(() => {
-    if (!authModal || isAuthModalClosing) return;
-    setIsAuthModalClosing(true);
-    setTimeout(() => {
-      setAuthModal(null);
-      setIsAuthModalClosing(false);
-      setLastAuthType(null);
-      setAuthError('');
-      setAuthSuccess('');
-    }, 280);
-  }, [authModal, isAuthModalClosing]);
+    setAuthModal(null);
+    setAuthError('');
+    setAuthSuccess('');
+  }, []);
 
   // Close card/dropdown when clicking outside
   useEffect(() => {
@@ -1243,10 +1232,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                     {isUserCardOpen && (
                       <motion.div
                         key="user-card-dropdown"
-                        initial={{ opacity: 0, scale: 0.8, y: -10 }}
+                        initial={{ opacity: 0, scale: 0.88, y: -8 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.8, y: -10 }}
-                        transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                        exit={{ opacity: 0, scale: 0.88, y: -8 }}
+                        transition={{ type: 'spring', stiffness: 420, damping: 28 }}
                         style={{
                           position: 'absolute', top: 'calc(100% + 12px)', right: 0,
                           width: '280px',
@@ -1447,16 +1436,40 @@ const Header = ({ searchQuery, setSearchQuery }) => {
       {/* ==================== AUTH MODALS ==================== */}
 
       {/* Login Modal */}
-      {(authModal === 'login' || (isAuthModalClosing && lastAuthType === 'login')) && (
+      <AnimatePresence>
+      {authModal === 'login' && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.5)', zIndex: 9999, backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }} onClick={handleCloseAuthModal}>
-          <div className={isAuthModalClosing ? "ios-modal-closing" : "ios-modal-anim"} style={{
-            background: 'white', padding: '32px', borderRadius: '20px',
-            width: '90%', maxWidth: '420px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.18)'
-          }} onClick={e => e.stopPropagation()}>
+          zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          {/* Backdrop */}
+          <motion.div
+            key="login-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onClick={handleCloseAuthModal}
+            style={{
+              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.3)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)'
+            }}
+          />
+          {/* Modal Content */}
+          <motion.div
+            key="login-content"
+            initial={{ opacity: 0, scale: 0.92, y: 24 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 24 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+            style={{
+              background: 'white', padding: '32px', borderRadius: '24px',
+              width: '90%', maxWidth: '420px',
+              boxShadow: '0 32px 64px -16px rgba(0,0,0,0.16), 0 0 0 1px rgba(0,0,0,0.04)',
+              position: 'relative', zIndex: 1
+            }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
               <h2 style={{ fontSize: '24px', margin: 0, color: 'var(--text-primary)', fontWeight: 700 }}>
                 {t('loginTitle')}
@@ -1859,21 +1872,44 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 {t('signUpLink')}
               </button>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
+      </AnimatePresence>
 
       {/* Register Modal */}
-      {(authModal === 'register' || (isAuthModalClosing && lastAuthType === 'register')) && (
+      <AnimatePresence>
+      {authModal === 'register' && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.5)', zIndex: 9999, backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }} onClick={handleCloseAuthModal}>
-          <div className={isAuthModalClosing ? "ios-modal-closing" : "ios-modal-anim"} style={{
-            background: 'white', padding: '32px', borderRadius: '20px',
-            width: '90%', maxWidth: '420px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.18)'
-          }} onClick={e => e.stopPropagation()}>
+          zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <motion.div
+            key="register-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onClick={handleCloseAuthModal}
+            style={{
+              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.3)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)'
+            }}
+          />
+          <motion.div
+            key="register-content"
+            initial={{ opacity: 0, scale: 0.92, y: 24 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 24 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+            style={{
+              background: 'white', padding: '32px', borderRadius: '24px',
+              width: '90%', maxWidth: '420px',
+              boxShadow: '0 32px 64px -16px rgba(0,0,0,0.16), 0 0 0 1px rgba(0,0,0,0.04)',
+              position: 'relative', zIndex: 1
+            }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
               <h2 style={{ fontSize: '24px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
                 {t('registerTitle')}
@@ -2042,21 +2078,42 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 {t('signInLink')}
               </button>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
-
+      </AnimatePresence>
       {/* Complete Registration Modal */}
+      <AnimatePresence>
       {authModal === 'complete-registration' && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.5)', zIndex: 9999,
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
+          zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}>
-          <div style={{
-            background: 'white', padding: '32px', borderRadius: '16px',
-            width: '90%', maxWidth: '420px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
-          }}>
+          <motion.div
+            key="complete-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            style={{
+              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.3)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)'
+            }}
+          />
+          <motion.div
+            key="complete-content"
+            initial={{ opacity: 0, scale: 0.92, y: 24 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 24 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+            style={{
+              background: 'white', padding: '32px', borderRadius: '24px',
+              width: '90%', maxWidth: '420px',
+              boxShadow: '0 32px 64px -16px rgba(0,0,0,0.16), 0 0 0 1px rgba(0,0,0,0.04)',
+              position: 'relative', zIndex: 1
+            }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
               <h2 style={{ fontSize: '22px', margin: 0, color: 'var(--text-primary)', fontWeight: 700 }}>
                 {t('completeRegTitle')}
@@ -2117,14 +2174,42 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 {authLoading ? (lang === 'zh' ? '请稍候...' : 'Please wait...') : t('finishRegistration')}
               </button>
             </form>
-          </div>
+          </motion.div>
         </div>
       )}
+      </AnimatePresence>
 
       {/* Account Settings Modal — Phase 1 Redesign */}
-      {(showBindModal || isBindModalClosing) && (
-        <div className="settings-overlay" onClick={handleCloseBindModal}>
-          <div className={`settings-modal ${isBindModalClosing ? "ios-modal-closing" : "ios-modal-anim"}`} onClick={e => e.stopPropagation()}>
+      <AnimatePresence>
+      {showBindModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <motion.div
+            key="settings-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onClick={handleCloseBindModal}
+            style={{
+              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(15, 23, 42, 0.25)',
+              backdropFilter: 'blur(14px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(14px) saturate(180%)'
+            }}
+          />
+          <motion.div
+            key="settings-content"
+            className="settings-modal"
+            initial={{ opacity: 0, scale: 0.92, y: 24 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 24 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+            onClick={e => e.stopPropagation()}
+            style={{ position: 'relative', zIndex: 1 }}
+          >
 
             {/* Modal Header */}
             <div className="settings-header">
@@ -2400,10 +2485,10 @@ const Header = ({ searchQuery, setSearchQuery }) => {
                 <span>{t('bindingTip')}</span>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
-
+      </AnimatePresence>
       {showUploadModal && (
         <UploadModal
           onClose={() => setShowUploadModal(false)}
